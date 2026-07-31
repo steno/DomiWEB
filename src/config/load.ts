@@ -22,6 +22,7 @@ const ConfigSchema = z.object({
     keywords: z.array(z.string()).min(1),
     categoryHints: z.array(z.string()).default([]),
     chainBlocklist: z.array(z.string()).default([]),
+    illustrativeImages: z.array(z.string()).default([]),
   }),
   cities: z.array(CitySchema).min(1),
   qualification: z.object({

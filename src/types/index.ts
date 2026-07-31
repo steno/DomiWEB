@@ -81,6 +81,8 @@ export interface NicheConfig {
     keywords: string[];
     categoryHints: string[];
     chainBlocklist: string[];
+    /** Local illustrative image paths (under public/) when Google photos missing */
+    illustrativeImages?: string[];
   };
   cities: CityConfig[];
   qualification: {

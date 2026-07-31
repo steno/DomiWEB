@@ -34,6 +34,12 @@
       "Kia Motors",
       "Chevrolet",
       "Ford Service"
+    ],
+    "illustrativeImages": [
+      "assets/illustrative/talleres-mecanicos/hero.jpg",
+      "assets/illustrative/talleres-mecanicos/g1.jpg",
+      "assets/illustrative/talleres-mecanicos/g2.jpg",
+      "assets/illustrative/talleres-mecanicos/g3.jpg"
     ]
   },
 

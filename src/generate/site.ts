@@ -154,14 +154,24 @@ export function fallbackSiteHtml(lead: Lead, config: NicheConfig): string {
   const quotes = p.reviews
     .filter((r) => r.text.trim().length > 15)
     .slice(0, 5);
-  const photos = p.photos
+
+  const googlePhotos = p.photos
     .map((ph) => ph.url)
     .filter(isUsablePhotoUrl)
     .slice(0, 5);
-  const hasRealPhotos = photos.length > 0;
-  const footer = hasRealPhotos
-    ? "Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas"
-    : "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas";
+
+  const illustrative = (config.niche.illustrativeImages ?? []).map((rel) => {
+    const clean = rel.replace(/^\/+/, "");
+    return `../../${clean}`;
+  });
+
+  const usingIllustrative = googlePhotos.length === 0 && illustrative.length > 0;
+  const photos = googlePhotos.length ? googlePhotos : illustrative;
+  const footer = usingIllustrative
+    ? "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas"
+    : googlePhotos.length
+      ? "Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas"
+      : "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas";
 
   const heroPhoto = photos[0] ?? null;
   const gallery = photos.slice(1);
@@ -179,7 +189,7 @@ export function fallbackSiteHtml(lead: Lead, config: NicheConfig): string {
   const galleryBlocks = gallery
     .map(
       (url) =>
-        `<img src="${escapeHtml(url)}" alt="${escapeHtml(p.name)}" loading="lazy" width="800" height="500" />`,
+        `<figure class="shot"><img src="${escapeHtml(url)}" alt="${escapeHtml(p.name)}" loading="lazy" width="800" height="500" />${usingIllustrative ? "<figcaption>Ilustrativa</figcaption>" : ""}</figure>`,
     )
     .join("\n");
 
@@ -212,12 +222,10 @@ export function fallbackSiteHtml(lead: Lead, config: NicheConfig): string {
 <title>${escapeHtml(p.name)}</title>
 <style>
 :root {
-  --bg: #0e1411;
+  --bg: #0c100e;
   --ink: #f3f6f2;
   --muted: #a7b6ab;
   --accent: #c4a35a;
-  --accent-2: #3f7a55;
-  --panel: rgba(18, 28, 22, 0.78);
   --line: rgba(196, 163, 90, 0.28);
 }
 * { box-sizing: border-box; }
@@ -232,34 +240,22 @@ body {
 .hero {
   position: relative;
   min-height: 100vh;
-  display: grid;
-  align-items: end;
-  padding: 1.25rem;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(1.5rem, 4vh, 2.5rem) 1.25rem 1.75rem;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(8,12,10,0.25) 0%, rgba(8,12,10,0.55) 45%, rgba(8,12,10,0.92) 100%),
-    radial-gradient(ellipse at 20% 10%, rgba(63,122,85,0.35), transparent 50%),
-    radial-gradient(ellipse at 85% 30%, rgba(196,163,90,0.18), transparent 45%),
+    linear-gradient(180deg, rgba(8,12,10,0.2) 0%, rgba(8,12,10,0.55) 48%, rgba(8,12,10,0.94) 100%),
     linear-gradient(135deg, #1a2820, #0e1411 55%, #182218);
 }
 .hero.has-photo {
   background-image:
-    linear-gradient(180deg, rgba(8,12,10,0.2) 0%, rgba(8,12,10,0.62) 48%, rgba(8,12,10,0.94) 100%),
-    var(--hero-image),
-    linear-gradient(135deg, #1a2820, #0e1411);
-  background-size: cover, cover, auto;
-  background-position: center, center, center;
-}
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    -18deg,
-    transparent 0 11px,
-    rgba(255,255,255,0.015) 11px 12px
-  );
-  pointer-events: none;
+    linear-gradient(180deg, rgba(8,12,10,0.15) 0%, rgba(8,12,10,0.4) 45%, rgba(8,12,10,0.92) 100%),
+    var(--hero-image);
+  background-size: cover, cover;
+  background-position: center, center;
 }
 .hero-inner {
   position: relative;
@@ -267,11 +263,10 @@ body {
   max-width: 920px;
   width: 100%;
   margin: 0 auto;
-  padding: 2.5rem 0 2rem;
 }
 .kicker {
   display: inline-block;
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.75rem;
   font-family: system-ui, sans-serif;
   font-size: 0.72rem;
   letter-spacing: 0.14em;
@@ -280,28 +275,28 @@ body {
 }
 .brand {
   margin: 0;
-  font-size: clamp(2.8rem, 9vw, 5.4rem);
-  line-height: 0.95;
+  font-size: clamp(3rem, 10vw, 5.6rem);
+  line-height: 0.92;
   letter-spacing: -0.035em;
   font-weight: 700;
-  max-width: 12ch;
+  max-width: 11ch;
   text-wrap: balance;
+  text-shadow: 0 10px 40px rgba(0,0,0,0.45);
 }
 .sub {
-  margin: 1rem 0 0;
-  color: var(--muted);
-  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
-  max-width: 28rem;
+  margin: 0.9rem 0 0;
+  color: #d5ddd6;
+  font-size: clamp(1.05rem, 2.4vw, 1.28rem);
+  max-width: 30rem;
 }
 .meta {
-  margin: 1rem 0 0;
-  color: var(--ink);
+  margin: 0.9rem 0 0;
+  color: var(--accent);
   font-family: system-ui, sans-serif;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.95rem;
-  letter-spacing: 0.02em;
 }
-.cta { margin: 1.5rem 0 0; display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; }
+.cta { margin: 1.35rem 0 0; display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; }
 .btn {
   display: inline-flex;
   align-items: center;
@@ -311,28 +306,43 @@ body {
   text-decoration: none;
   padding: 0.95rem 1.35rem;
   font-family: system-ui, sans-serif;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1rem;
-  letter-spacing: 0.01em;
   border: 0;
 }
-.phone-hint {
+.phone-hint { font-family: system-ui, sans-serif; color: #c5d0c8; font-size: 0.92rem; }
+.photo-note {
+  margin: 0.85rem 0 0;
   font-family: system-ui, sans-serif;
-  color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.75rem;
+  color: rgba(243,246,242,0.7);
 }
-.scroll-cue {
-  margin-top: 2.25rem;
+.wrap { max-width: 960px; margin: 0 auto; padding: 2.75rem 1.25rem 3.5rem; }
+.photos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+  margin: 0 0 2.5rem;
+}
+.shot { margin: 0; position: relative; overflow: hidden; background: #1c2620; }
+.shot img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.95) contrast(1.04);
+}
+.shot figcaption {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.45rem;
   font-family: system-ui, sans-serif;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--muted);
-}
-.wrap {
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 2.5rem 1.25rem 3.5rem;
+  color: #fff;
+  background: rgba(0,0,0,0.45);
+  padding: 0.2rem 0.4rem;
 }
 section h2 {
   margin: 0 0 1.25rem;
@@ -340,16 +350,14 @@ section h2 {
   letter-spacing: -0.02em;
 }
 .quote {
-  margin: 0 0 1.5rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  margin: 0 0 1.6rem;
+  padding: 0 0 0 1rem;
+  border-left: 3px solid var(--accent);
 }
 .quote blockquote {
   margin: 0;
-  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  font-size: clamp(1.15rem, 2.4vw, 1.5rem);
   line-height: 1.35;
-  letter-spacing: -0.01em;
   max-width: 34rem;
 }
 .quote figcaption {
@@ -357,19 +365,6 @@ section h2 {
   color: var(--muted);
   font-family: system-ui, sans-serif;
   font-size: 0.84rem;
-}
-.photos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.55rem;
-  margin: 2.5rem 0 0;
-}
-.photos img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  background: #1c2620;
-  filter: saturate(0.92) contrast(1.05);
 }
 footer {
   margin-top: 3rem;
@@ -379,9 +374,10 @@ footer {
   font-family: system-ui, sans-serif;
   font-size: 0.78rem;
 }
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .brand { max-width: none; }
-  .hero-inner { padding-bottom: 1.5rem; }
+  .photos { grid-template-columns: 1fr; }
+  .shot img { height: 220px; }
 }
 </style>
 </head>
@@ -393,15 +389,15 @@ footer {
       <p class="sub">${placeLine}</p>
       ${ratingLine}
       ${phoneBlock}
-      <p class="scroll-cue">Reseñas reales de Google ↓</p>
+      ${usingIllustrative ? `<p class="photo-note">Imagen ilustrativa del oficio · no es una foto del local</p>` : ""}
     </div>
   </header>
   <main class="wrap">
+    ${gallery.length ? `<section aria-label="Fotos"><div class="photos">${galleryBlocks}</div></section>` : ""}
     <section>
       <h2>Lo que dicen en Google</h2>
       ${quoteBlocks || "<p>Consulta nuestras reseñas en Google.</p>"}
     </section>
-    ${gallery.length ? `<div class="photos">${galleryBlocks}</div>` : ""}
     <footer><p>${escapeHtml(footer)}</p></footer>
   </main>
 </body>

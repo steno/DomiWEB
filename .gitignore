@@ -27,6 +27,8 @@ public/claim/**
 !public/claim/taller-el-rayo/**
 !public/claim/taller-los-hermanos/**
 !public/index.html
+!public/assets/**
+!public/assets/**/*
 public/videos/**
 !public/videos/.gitkeep
 !public/videos/facecam-*.mp4
