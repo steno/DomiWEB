@@ -123,6 +123,8 @@ Salida:
 
 Cada sitio: un solo HTML, sin JS, teléfono `tel:`, citas verbatim, footer de atribución Google.
 
+**Design/images are mandatory:** every site gets a full-bleed hero photo (Google when available, otherwise `niche.illustrativeImages` under `public/assets/illustrative/<niche-id>/`). Do not ship empty-gradient heroes. When adding a niche, also add its illustrative asset set in config.
+
 ### Step 6 — claim / walkthrough (GitHub Pages)
 
 ```bash
