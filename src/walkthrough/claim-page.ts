@@ -344,7 +344,19 @@ h1 {
           : ""
       }
       <a class="btn btn-ghost" href="${escapeAttr(siteHref)}" target="_blank" rel="noopener">Abrir sitio completo</a>
-      ${phone ? `<a class="btn btn-ghost" href="tel:${escapeAttr(phone.replace(/[^\d+]/g, ""))}">${escapeHtml(phone)}</a>` : ""}
+      ${
+        phone
+          ? (() => {
+              const wa = buildWhatsAppUrl(
+                phone,
+                `Hola, vi la página de ${lead.place.name}.`,
+              );
+              return wa
+                ? `<a class="btn btn-ghost" href="${escapeAttr(wa)}">WhatsApp del negocio</a>`
+                : `<a class="btn btn-ghost" href="tel:${escapeAttr(phone.replace(/[^\d+]/g, ""))}">${escapeHtml(phone)}</a>`;
+            })()
+          : ""
+      }
     </div>
     <div id="panel-ok" role="status">
       Gracias. Anotamos tu interés en <strong>${escapeHtml(lead.place.name)}</strong>.

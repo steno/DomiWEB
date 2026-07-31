@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { getOpenAI, openAiSiteModel } from "../ai/openai.js";
 import type { Lead, NicheConfig, Review, ScrapedPlace } from "../types/index.js";
 import { resolveGithubPagesUrls } from "../config/load.js";
+import { buildWhatsAppUrl } from "../outreach/phone.js";
 import { dataDir, promptsDir, publicDir } from "../utils/paths.js";
 import { log } from "../utils/logger.js";
 
@@ -100,8 +101,8 @@ export function validateGeneratedHtml(
     const digits = place.phone.replace(/\D/g, "");
     if (digits.length >= 7 && !html.replace(/\D/g, "").includes(digits.slice(-7))) {
       // soft: tel link may format differently — check tel: presence
-      if (!/tel:/i.test(html)) {
-        errors.push("Hay teléfono pero no hay enlace tel:");
+      if (!/wa\.me\/|tel:/i.test(html)) {
+        errors.push("Hay teléfono pero no hay enlace WhatsApp (wa.me) ni tel:");
       }
     }
   }
@@ -130,6 +131,19 @@ function escapeAttr(s: string): string {
 function telHref(phone: string): string {
   const cleaned = phone.replace(/[^\d+]/g, "");
   return `tel:${cleaned}`;
+}
+
+function contactCtaHtml(phone: string, businessName: string): string {
+  const wa = buildWhatsAppUrl(
+    phone,
+    `Hola, vi la página de ${businessName} y me gustaría más información.`,
+  );
+  if (wa) {
+    return `<p class="cta"><a class="btn" href="${escapeAttr(wa)}">WhatsApp</a>
+       <a class="phone-hint" href="${telHref(phone)}">${escapeHtml(phone)}</a></p>`;
+  }
+  return `<p class="cta"><a class="btn" href="${telHref(phone)}">Llamar ahora</a>
+       <span class="phone-hint">${escapeHtml(phone)}</span></p>`;
 }
 
 function isUsablePhotoUrl(url: string): boolean {
@@ -193,10 +207,7 @@ export function fallbackSiteHtml(lead: Lead, config: NicheConfig): string {
     )
     .join("\n");
 
-  const phoneBlock = p.phone
-    ? `<p class="cta"><a class="btn" href="${telHref(p.phone)}">Llamar ahora</a>
-       <span class="phone-hint">${escapeHtml(p.phone)}</span></p>`
-    : "";
+  const phoneBlock = p.phone ? contactCtaHtml(p.phone, p.name) : "";
 
   const ratingBits: string[] = [];
   if (p.rating != null) ratingBits.push(`${p.rating}★ en Google`);
