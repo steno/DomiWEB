@@ -27,11 +27,28 @@ export interface OutreachMessage {
   /** Follow-up after they like / open the claim */
   whatsappPriceMessage: string;
   whatsappPriceUrl: string | null;
+  /** After they say yes to the price — bank + delivery */
+  whatsappCloseMessage: string;
+  whatsappCloseUrl: string | null;
   priceOnce: string;
   hostingNote: string;
   /** Primary channel for DR local businesses */
   channelHint: "whatsapp" | "email_or_postcard" | "postcard";
 }
+
+const BAD_OWNER_NAMES = new Set([
+  "hola",
+  "hello",
+  "hi",
+  "dueño",
+  "dueno",
+  "owner",
+  "n/a",
+  "na",
+  "unknown",
+  "?",
+  "-",
+]);
 
 function fill(template: string, vars: Record<string, string>): string {
   let out = template;
@@ -70,10 +87,42 @@ function parseWhatsAppTemplate(raw: string): string {
   return (match?.[1] ?? raw).trim();
 }
 
-function greetingName(lead: Lead): string {
+/** Real first name only — never ship "Hola hola". */
+export function greetingName(lead: Lead): string {
   const n = lead.ownerFirstName?.trim();
-  if (n) return n;
-  return "";
+  if (!n || n.length < 2) return "";
+  if (BAD_OWNER_NAMES.has(n.toLowerCase())) return "";
+  return n;
+}
+
+function reviewSnippet(quote: string | null): string {
+  if (quote) return ` — alguien escribió: “${quote}”`;
+  return " — tus clientes te dejan muy buenas opiniones";
+}
+
+function transferVars(): {
+  TRANSFER_BANK: string;
+  TRANSFER_ACCOUNT: string;
+  TRANSFER_NAME: string;
+  DELIVERY_HOURS: string;
+  missing: string[];
+} {
+  const bank = process.env.TRANSFER_BANK?.trim() || "";
+  const account = process.env.TRANSFER_ACCOUNT?.trim() || "";
+  const name = process.env.TRANSFER_NAME?.trim() || "";
+  const hours =
+    process.env.DELIVERY_HOURS?.trim() || "24–48 horas";
+  const missing: string[] = [];
+  if (!bank) missing.push("TRANSFER_BANK");
+  if (!account) missing.push("TRANSFER_ACCOUNT");
+  if (!name) missing.push("TRANSFER_NAME");
+  return {
+    TRANSFER_BANK: bank || "[configura TRANSFER_BANK en .env]",
+    TRANSFER_ACCOUNT: account || "[configura TRANSFER_ACCOUNT en .env]",
+    TRANSFER_NAME: name || "[configura TRANSFER_NAME en .env]",
+    DELIVERY_HOURS: hours,
+    missing,
+  };
 }
 
 function resolveClaimUrl(lead: Lead, config: NicheConfig): string {
@@ -99,6 +148,15 @@ export function usePriceFollowUp(messages: OutreachMessage[]): OutreachMessage[]
   }));
 }
 
+/** Swap active WhatsApp copy to the close / transfer kit (for send --close). */
+export function useCloseFollowUp(messages: OutreachMessage[]): OutreachMessage[] {
+  return messages.map((m) => ({
+    ...m,
+    whatsappMessage: m.whatsappCloseMessage,
+    whatsappUrl: m.whatsappCloseUrl,
+  }));
+}
+
 export function buildOutreachForLead(
   lead: Lead,
   config: NicheConfig,
@@ -115,41 +173,69 @@ export function buildOutreachForLead(
   const waPriceTpl = parseWhatsAppTemplate(
     readFileSync(promptsDir("outreach-whatsapp-price.md"), "utf8"),
   );
+  const waCloseTpl = parseWhatsAppTemplate(
+    readFileSync(promptsDir("outreach-whatsapp-close.md"), "utf8"),
+  );
 
-  const quote =
-    lead.outreachQuote?.trim() ||
-    pickOutreachQuote(lead.place.reviews) ||
-    "muy buen servicio";
+  // Prefer a Spanish quote; never ship English tourist text in cold outreach.
+  const stored = lead.outreachQuote?.trim() || "";
+  const finalQuote =
+    (stored
+      ? pickOutreachQuote(
+          [
+            {
+              text: stored,
+              rating: 5,
+              author: "",
+              publishedAt: null,
+              ownerResponse: null,
+            },
+          ],
+          { spanishOnly: true, maxLen: 100 },
+        )
+      : null) ||
+    pickOutreachQuote(lead.place.reviews, {
+      spanishOnly: true,
+      maxLen: 100,
+    });
 
   const owner = greetingName(lead);
   const priceOnce = config.pricing?.onceLabel ?? "RD$2,000";
   const hostingNote =
-    config.pricing?.hostingNote ?? "al precio estándar del proveedor";
+    config.pricing?.hostingNote ?? "si lo necesitas, lo hablamos aparte";
+  const transfer = transferVars();
 
   const vars = {
-    OWNER_FIRST_NAME: owner || "hola",
+    OWNER_FIRST_NAME: owner,
     OWNER_GREETING: owner ? ` ${owner}` : "",
     BUSINESS_NAME: lead.place.name,
-    REVIEW_QUOTE: quote,
+    REVIEW_QUOTE: finalQuote ?? "",
+    REVIEW_SNIPPET: reviewSnippet(finalQuote),
     CLAIM_URL: resolveClaimUrl(lead, config),
     PRICE_ONCE: priceOnce,
     HOSTING_NOTE: hostingNote,
+    TRANSFER_BANK: transfer.TRANSFER_BANK,
+    TRANSFER_ACCOUNT: transfer.TRANSFER_ACCOUNT,
+    TRANSFER_NAME: transfer.TRANSFER_NAME,
+    DELIVERY_HOURS: transfer.DELIVERY_HOURS,
   };
 
   const whatsappMessage = fill(waTpl, vars);
   const whatsappPriceMessage = fill(waPriceTpl, vars);
+  const whatsappCloseMessage = fill(waCloseTpl, vars);
   const phone = lead.place.phone ?? "";
   const whatsappUrl = buildWhatsAppUrl(phone, whatsappMessage);
   const whatsappPriceUrl = buildWhatsAppUrl(phone, whatsappPriceMessage);
+  const whatsappCloseUrl = buildWhatsAppUrl(phone, whatsappCloseMessage);
 
   return {
     leadId: lead.id,
     slug: lead.slug,
     businessName: lead.place.name,
-    ownerFirstName: owner || "hola",
+    ownerFirstName: owner || "",
     phone,
     address: lead.place.address ?? "",
-    reviewQuote: quote,
+    reviewQuote: finalQuote ?? "",
     claimUrl: vars.CLAIM_URL,
     siteUrl: resolveSiteUrl(lead, config),
     emailSubject: fill(emailTpl.subject, vars),
@@ -160,6 +246,8 @@ export function buildOutreachForLead(
     whatsappUrl,
     whatsappPriceMessage,
     whatsappPriceUrl,
+    whatsappCloseMessage,
+    whatsappCloseUrl,
     priceOnce,
     hostingNote,
     channelHint: whatsappUrl ? "whatsapp" : "postcard",
@@ -191,6 +279,8 @@ export function exportOutreachBundle(
     whatsappMessage: m.whatsappMessage.replace(/\n/g, "\\n"),
     whatsappPriceUrl: m.whatsappPriceUrl ?? "",
     whatsappPriceMessage: m.whatsappPriceMessage.replace(/\n/g, "\\n"),
+    whatsappCloseUrl: m.whatsappCloseUrl ?? "",
+    whatsappCloseMessage: m.whatsappCloseMessage.replace(/\n/g, "\\n"),
     emailSubject: m.emailSubject,
     emailBody: m.emailBody.replace(/\n/g, "\\n"),
     postcardFront: m.postcardFront,
@@ -214,6 +304,11 @@ export function exportOutreachBundle(
       "utf8",
     );
     writeFileSync(
+      join(dir, "whatsapp-close.txt"),
+      `${m.whatsappCloseMessage}\n\n${m.whatsappCloseUrl ?? "(sin teléfono WhatsApp)"}\n`,
+      "utf8",
+    );
+    writeFileSync(
       join(dir, "email.txt"),
       `Asunto: ${m.emailSubject}\n\n${m.emailBody}\n`,
       "utf8",
@@ -233,13 +328,21 @@ export function prepareOutreach(
   config: NicheConfig,
   opts: { limit?: number; write?: boolean } = {},
 ): { messages: OutreachMessage[]; csvPath?: string; jsonPath?: string } {
+  const transfer = transferVars();
+  if (transfer.missing.length) {
+    log.warn(
+      `Transferencia incompleta (${transfer.missing.join(", ")}) — rellena .env antes de send-whatsapp --close`,
+    );
+  }
+
   const batch = opts.limit ? leads.slice(0, opts.limit) : leads;
   const messages = batch.map((lead) => {
     log.info(`Outreach · ${lead.place.name}`);
     const msg = buildOutreachForLead(lead, config);
     const wa = msg.whatsappUrl ? "WhatsApp OK" : "sin WA";
+    const name = msg.ownerFirstName || "(sin nombre)";
     log.ok(
-      `  → ${msg.ownerFirstName} · ${wa} · ${msg.priceOnce} único · ${msg.claimUrl}`,
+      `  → ${name} · ${wa} · ${msg.priceOnce} único · ${msg.claimUrl}`,
     );
     return msg;
   });

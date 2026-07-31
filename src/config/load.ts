@@ -52,11 +52,11 @@ const ConfigSchema = z.object({
       onceLabel: z.string().default("RD$2,000"),
       hostingNote: z
         .string()
-        .default("al precio estándar del proveedor"),
+        .default("si lo necesitas, lo hablamos aparte"),
     })
     .default({
       onceLabel: "RD$2,000",
-      hostingNote: "al precio estándar del proveedor",
+      hostingNote: "si lo necesitas, lo hablamos aparte",
     }),
 });
 

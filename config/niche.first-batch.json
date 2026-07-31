@@ -57,6 +57,14 @@
         "taller mecánico Santiago República Dominicana"
       ],
       "maxResults": 25
+    },
+    {
+      "id": "puerto-plata",
+      "name": "Puerto Plata",
+      "searchQueries": [
+        "taller mecánico Puerto Plata República Dominicana"
+      ],
+      "maxResults": 30
     }
   ],
   "qualification": {
@@ -87,6 +95,6 @@
   },
   "pricing": {
     "onceLabel": "RD$2,000",
-    "hostingNote": "al precio estándar del proveedor"
+    "hostingNote": "si lo necesitas, lo hablamos aparte"
   }
 }

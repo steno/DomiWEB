@@ -26,6 +26,7 @@ import { downloadToFile, generateLipsyncVideo } from "./generate/lipsync.js";
 import {
   loadLatestOutreachMessages,
   prepareOutreach,
+  useCloseFollowUp,
   usePriceFollowUp,
 } from "./outreach/prepare.js";
 import {
@@ -386,7 +387,7 @@ program
       updateOutreachReady(msg.leadId, {
         claimUrl: msg.claimUrl,
         siteUrl: msg.siteUrl,
-        outreachQuote: msg.reviewQuote,
+        outreachQuote: msg.reviewQuote || null,
       });
     }
 
@@ -418,7 +419,12 @@ program
   )
   .option(
     "--price",
-    "Send price follow-up (RD$2,000 once + hosting optional) — only after interest",
+    "Send price follow-up (RD$2,000 once) — only after interest",
+    false,
+  )
+  .option(
+    "--close",
+    "Send payment/transfer close kit — only after they say yes to price",
     false,
   )
   .action(async (opts: {
@@ -431,9 +437,22 @@ program
     slug?: string;
     to?: string;
     price?: boolean;
+    close?: boolean;
   }) => {
     const config = loadConfig(opts.config);
-    log.step(7, opts.price ? "Send WhatsApp precio (follow-up)" : "Send WhatsApp (semi-auto)");
+    if (opts.price && opts.close) {
+      log.error("Usa --price o --close, no ambos.");
+      return;
+    }
+    const mode = opts.close ? "close" : opts.price ? "price" : "first";
+    log.step(
+      7,
+      mode === "close"
+        ? "Send WhatsApp cierre (transferencia)"
+        : mode === "price"
+          ? "Send WhatsApp precio (follow-up)"
+          : "Send WhatsApp (semi-auto)",
+    );
 
     let messages = loadLatestOutreachMessages() ?? [];
 
@@ -449,15 +468,15 @@ program
         updateOutreachReady(msg.leadId, {
           claimUrl: msg.claimUrl,
           siteUrl: msg.siteUrl,
-          outreachQuote: msg.reviewQuote,
+          outreachQuote: msg.reviewQuote || null,
         });
       }
     }
 
-    // Rebuild if latest JSON predates price fields
+    // Rebuild if latest JSON predates price/close fields
     if (
-      opts.price &&
-      messages.some((m) => !m.whatsappPriceMessage)
+      (opts.price && messages.some((m) => !m.whatsappPriceMessage)) ||
+      (opts.close && messages.some((m) => !m.whatsappCloseMessage))
     ) {
       const leads = listLeadsForOutreach(true, opts.slug);
       messages = prepareOutreach(leads, config, {
@@ -481,8 +500,24 @@ program
 
     if (opts.price) {
       messages = usePriceFollowUp(messages);
+      log.info(`Precio: ${config.pricing.onceLabel} único`);
+    }
+
+    if (opts.close) {
+      const missing = [
+        !process.env.TRANSFER_BANK?.trim() && "TRANSFER_BANK",
+        !process.env.TRANSFER_ACCOUNT?.trim() && "TRANSFER_ACCOUNT",
+        !process.env.TRANSFER_NAME?.trim() && "TRANSFER_NAME",
+      ].filter(Boolean) as string[];
+      if (missing.length) {
+        log.error(
+          `Falta configurar en .env: ${missing.join(", ")} — no envíes el cierre con placeholders.`,
+        );
+        return;
+      }
+      messages = useCloseFollowUp(messages);
       log.info(
-        `Precio: ${config.pricing.onceLabel} único · hosting ${config.pricing.hostingNote}`,
+        `Cierre: ${config.pricing.onceLabel} → ${process.env.TRANSFER_BANK} / ${process.env.TRANSFER_NAME}`,
       );
     }
 
@@ -501,7 +536,12 @@ program
       open: opts.open !== false,
       skipSent: opts.to ? false : !opts.includeSent,
       limit: opts.limit,
-      kind: opts.price ? "whatsapp-price" : "whatsapp",
+      kind:
+        opts.close
+          ? "whatsapp-close"
+          : opts.price
+            ? "whatsapp-price"
+            : "whatsapp",
     });
 
     log.ok(

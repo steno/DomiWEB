@@ -54,18 +54,55 @@ export function buildBusinessPayload(lead: Lead, config: NicheConfig) {
   };
 }
 
-export function pickOutreachQuote(reviews: Review[]): string | null {
+/** Heuristic: Spanish/Dominican Spanish vs English tourist reviews. */
+export function looksSpanish(text: string): boolean {
+  const t = text.toLowerCase();
+  if (/[áéíóúñü¿¡]/.test(t)) return true;
+  const esHits = (
+    t.match(
+      /\b(el|la|los|las|de|del|que|muy|buen[oa]s?|excelente|servicio|recomiendo|atenci[oó]n|gracias|taller|carro|auto|mec[aá]nico|siempre|aqu[ií]|tambi[eé]n|est[aá]|est[aá]n|para|con|por|una|unos|unas|r[aá]pido|honesto|confianza|calidad|trabajo|precio|amigo)\b/g,
+    ) ?? []
+  ).length;
+  const enHits = (
+    t.match(
+      /\b(the|and|for|with|this|that|was|were|have|has|great|good|service|thank|thanks|owner|would|their|they|from|very|really|excellent|first|knowledge|relating|automotive|repair|decisions)\b/g,
+    ) ?? []
+  ).length;
+  if (esHits >= 2 && esHits > enHits) return true;
+  if (enHits >= 2 && enHits >= esHits) return false;
+  return esHits > enHits;
+}
+
+/**
+ * Pick a short quote for WhatsApp / claim. Prefer Spanish; skip English-only
+ * so cold outreach does not mix languages (hurts trust).
+ */
+export function pickOutreachQuote(
+  reviews: Review[],
+  opts: { maxLen?: number; spanishOnly?: boolean } = {},
+): string | null {
+  const maxLen = opts.maxLen ?? 100;
+  const spanishOnly = opts.spanishOnly !== false;
+
   const scored = reviews
     .filter((r) => r.text.trim().length >= 20 && r.rating >= 4)
     .map((r) => {
       const t = r.text.trim().replace(/\s+/g, " ");
-      return { t, score: Math.min(t.length, 120) + r.rating * 5 };
+      const spanish = looksSpanish(t);
+      return {
+        t,
+        spanish,
+        score: Math.min(t.length, 120) + r.rating * 5 + (spanish ? 200 : 0),
+      };
     })
     .sort((a, b) => b.score - a.score);
 
-  if (!scored.length) return null;
-  let quote = scored[0]!.t;
-  if (quote.length > 140) quote = `${quote.slice(0, 137).trim()}…`;
+  const pick = spanishOnly
+    ? scored.find((s) => s.spanish)
+    : scored[0];
+  if (!pick) return null;
+  let quote = pick.t;
+  if (quote.length > maxLen) quote = `${quote.slice(0, maxLen - 1).trim()}…`;
   return quote;
 }
 

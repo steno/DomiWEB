@@ -6,9 +6,9 @@ Anverso (corto):
 
 Reverso:
 
-Hola {{OWNER_FIRST_NAME}},
+Hola{{OWNER_GREETING}},
 
-Vi tu negocio en Google. Una reseña decía: “{{REVIEW_QUOTE}}”.
+Vi tu negocio en Google{{REVIEW_SNIPPET}}.
 
 Te dejé un sitio listo con esas reseñas. Míralo aquí:
 

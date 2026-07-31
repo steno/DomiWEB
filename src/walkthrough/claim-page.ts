@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { Lead, NicheConfig } from "../types/index.js";
 import { resolveGithubPagesUrls } from "../config/load.js";
+import { looksSpanish } from "../generate/site.js";
 import { buildWhatsAppUrl } from "../outreach/phone.js";
 import { dataDir, publicDir } from "../utils/paths.js";
 import { log } from "../utils/logger.js";
@@ -42,10 +43,23 @@ export function resolveFaceCamPublicHref(config: NicheConfig): string | null {
   return null;
 }
 
+function claimOwnerLabel(lead: Lead): string {
+  const n = lead.ownerFirstName?.trim();
+  if (!n || n.length < 2) return "";
+  const lower = n.toLowerCase();
+  if (["hola", "hello", "hi", "dueño", "dueno", "owner", "n/a", "na"].includes(lower)) {
+    return "";
+  }
+  return n;
+}
+
 function claimMessage(lead: Lead, claimUrl: string | null): string {
-  const name = lead.ownerFirstName?.trim() || "hola";
+  const name = claimOwnerLabel(lead);
+  const intro = name
+    ? `Hola, soy ${name} de ${lead.place.name}.`
+    : `Hola, escribo por ${lead.place.name}.`;
   return [
-    `Hola, soy ${name} de ${lead.place.name}.`,
+    intro,
     "",
     "Vi la página con nuestras reseñas de Google y quiero reclamarla.",
     claimUrl ? `Link: ${claimUrl}` : "",
@@ -83,6 +97,18 @@ function claimActionHref(
   return { href: "#reclamar", kind: "fallback" };
 }
 
+/** Fail fast so claim CTAs always reach you. */
+export function requireClaimContact(): void {
+  if (
+    !process.env.CLAIM_WHATSAPP?.trim() &&
+    !process.env.CLAIM_INBOX?.trim()
+  ) {
+    throw new Error(
+      "Set CLAIM_WHATSAPP in .env so “Reclamar mi sitio” opens WhatsApp to you (or CLAIM_INBOX as mailto fallback).",
+    );
+  }
+}
+
 /**
  * Claim / walkthrough page:
  * - iframe of the generated site with gentle auto-scroll
@@ -99,13 +125,13 @@ export function buildClaimPageHtml(
   const absoluteSite = urls.siteUrl ?? siteHref;
   const videoHref = resolveFaceCamPublicHref(config);
   const claim = claimActionHref(lead, urls.claimUrl);
-  const greeting = lead.ownerFirstName
-    ? `Hola ${escapeHtml(lead.ownerFirstName)}`
-    : "Hola";
-  const quote = lead.outreachQuote
-    ? `“${escapeHtml(lead.outreachQuote)}”`
-    : null;
-  const phone = lead.place.phone;
+  const owner = claimOwnerLabel(lead);
+  const greeting = owner ? `Hola ${escapeHtml(owner)}` : "Hola";
+  const rawQuote = lead.outreachQuote?.trim() || "";
+  const quote =
+    rawQuote && looksSpanish(rawQuote)
+      ? `“${escapeHtml(rawQuote)}”`
+      : null;
 
   const claimHref = claim.href;
   const claimExtra = claim.kind === "fallback" ? `data-fallback="1"` : "";
@@ -344,19 +370,6 @@ h1 {
           : ""
       }
       <a class="btn btn-ghost" href="${escapeAttr(siteHref)}" target="_blank" rel="noopener">Abrir sitio completo</a>
-      ${
-        phone
-          ? (() => {
-              const wa = buildWhatsAppUrl(
-                phone,
-                `Hola, vi la página de ${lead.place.name}.`,
-              );
-              return wa
-                ? `<a class="btn btn-ghost" href="${escapeAttr(wa)}">WhatsApp del negocio</a>`
-                : `<a class="btn btn-ghost" href="tel:${escapeAttr(phone.replace(/[^\d+]/g, ""))}">${escapeHtml(phone)}</a>`;
-            })()
-          : ""
-      }
     </div>
     <div id="panel-ok" role="status">
       Gracias. Anotamos tu interés en <strong>${escapeHtml(lead.place.name)}</strong>.
@@ -542,8 +555,11 @@ export function writeClaimPage(
 export function generateClaimPagesForLeads(
   leads: Lead[],
   config: NicheConfig,
-  opts: { limit?: number } = {},
+  opts: { limit?: number; requireContact?: boolean } = {},
 ): Array<{ lead: Lead; claim: GeneratedClaimPage }> {
+  if (opts.requireContact !== false) {
+    requireClaimContact();
+  }
   const batch = opts.limit ? leads.slice(0, opts.limit) : leads;
   const out: Array<{ lead: Lead; claim: GeneratedClaimPage }> = [];
   for (const lead of batch) {

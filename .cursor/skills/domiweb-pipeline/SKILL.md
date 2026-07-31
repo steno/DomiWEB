@@ -25,7 +25,8 @@ Read this skill before inventing new CLI flags or re-explaining the funnel.
 ## Env (`.env`, never commit)
 
 Required for live work: `APIFY_TOKEN`, `OPENAI_API_KEY`, `GITHUB_PAGES_BASE_URL`, `FAL_KEY` (video).  
-Claim CTA: set `CLAIM_WHATSAPP` (your number) so “Reclamar mi sitio” opens WhatsApp to you. Optional: `CLAIM_INBOX`.
+Claim CTA: set `CLAIM_WHATSAPP` (your number) so “Reclamar mi sitio” opens WhatsApp to you. Optional: `CLAIM_INBOX`.  
+Close kit (after yes): `TRANSFER_BANK`, `TRANSFER_ACCOUNT`, `TRANSFER_NAME` (+ optional `DELIVERY_HOURS`).
 
 ## Commands (run from repo root)
 
@@ -40,6 +41,7 @@ npm run outreach -- --force
 npm run send-whatsapp                       # first contact (no price)
 npm run send-whatsapp -- --slug <slug>
 npm run send-whatsapp -- --price --slug <slug>   # AFTER interest only
+npm run send-whatsapp -- --close --slug <slug>   # AFTER they say yes → bank details
 npm run send-whatsapp -- --to +1XXXXXXXXXX  # redirect to a real phone (test)
 npm run send-whatsapp -- --batch --limit 10
 npm run generate-video -- --lipsync         # optional face-cam
@@ -53,11 +55,12 @@ Fixture phones `809-555-…` are **not** on WhatsApp — use scrape or `--to`.
 1. scrape → qualify (hard gates in `config/niche.config.json`)
 2. extract-names (gpt-4o-mini)
 3. generate-sites (crafted template default; Google photos)
-4. claim-pages → `public/claim/<slug>/`
-5. outreach → CSV/JSON + `whatsapp.txt` + `whatsapp-price.txt`
+4. claim-pages → `public/claim/<slug>/` (requires `CLAIM_WHATSAPP`)
+5. outreach → CSV/JSON + `whatsapp.txt` + `whatsapp-price.txt` + `whatsapp-close.txt`
 6. send-whatsapp (user hits Send in WhatsApp)
 7. On interest → `send-whatsapp --price`
-8. Commit + push `public/` so Pages serves claim URLs
+8. On yes → `send-whatsapp --close` (transfer details)
+9. Commit + push `public/` so Pages serves claim URLs **before** first WA
 
 Apify calls need `locationQuery` (city + country) — already in `maps-scraper.ts`.
 
@@ -68,18 +71,25 @@ Config: `config/niche.config.json` → `pricing`
 | Field | Default |
 |-------|---------|
 | `onceLabel` | `RD$2,000` (pago único — transfer site) |
-| `hostingNote` | `al precio estándar del proveedor` (optional add-on) |
+| `hostingNote` | `si lo necesitas, lo hablamos aparte` (not in default price WA) |
 
 Templates:
 
-- First: `prompts/outreach-whatsapp.md` — no price
+- First: `prompts/outreach-whatsapp.md` — no price; Spanish review quotes only
 - Follow-up: `prompts/outreach-whatsapp-price.md` — only with `--price`
+- Close: `prompts/outreach-whatsapp-close.md` — only with `--close` after yes
+
+## Conversion rules
+
+- Prefer Spanish Google quotes in WA; if none, generic “muy buenas opiniones” (never English tourist quotes)
+- Never greet with fake names (`hola`, empty) — omit name
+- Claim page: one CTA to you (`CLAIM_WHATSAPP`); no “WhatsApp del negocio”
+- One outreach message per business; no fake scarcity
 
 ## Product rules
 
 - Sites: photographic (see `.cursor/rules/site-design-imagery.mdc`)
 - Honesty fences: no invented years, prices, awards, fake reviews
-- One outreach message per business; no fake scarcity
 - Claim audio: muted preview; first click = restart from 0 + sound; labels “Click to listen” / “Mute”
 - Track `public/sites/**` and `public/claim/**` in git (Pages); keep `data/**` runtime dumps gitignored
 
