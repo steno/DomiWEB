@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es-DO">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reclama tu menú · Tornasol Restaurante</title>
+<meta name="robots" content="noindex" />
+<style>
+:root {
+  --bg: #101612;
+  --panel: #18211b;
+  --ink: #eef3ee;
+  --muted: #9aab9e;
+  --accent: #7eb887;
+  --accent-ink: #0f1a12;
+  --line: #2a3830;
+  --danger: #c97858;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at 10% 0%, #1e3228 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 100%, #1a2a22 0%, transparent 40%),
+    var(--bg);
+}
+.shell {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+.top {
+  padding: 1rem 1.15rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(16,22,18,0.88);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.eyebrow {
+  margin: 0 0 0.35rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3.5vw, 1.85rem);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.lead {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+  max-width: 40rem;
+}
+.quote {
+  margin: 0.65rem 0 0;
+  color: var(--accent);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.9rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.2rem;
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.stage {
+  position: relative;
+  min-height: 62vh;
+  background: #0a0e0b;
+}
+.stage iframe {
+  width: 100%;
+  height: min(78vh, 920px);
+  border: 0;
+  background: #fff;
+  display: block;
+}
+.face-dock {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  width: min(34vw, 180px);
+}
+.bubble {
+  position: relative;
+  width: min(28vw, 168px);
+  height: min(28vw, 168px);
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(238,243,238,0.85);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  background: #1a2420;
+  cursor: pointer;
+}
+.bubble video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.audio-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.7rem 0.85rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+.audio-btn.hidden { display: none; }
+.audio-btn.is-on {
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.bubble-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 0.75rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.bottom {
+  padding: 1rem 1.15rem 1.4rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--panel);
+}
+.bottom p {
+  margin: 0;
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.82rem;
+  max-width: 36rem;
+}
+#panel-ok {
+  display: none;
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: #1e2e24;
+  border: 1px solid var(--line);
+  font-family: system-ui, sans-serif;
+  font-size: 0.92rem;
+}
+#panel-ok.visible { display: block; }
+@media (max-width: 640px) {
+  .face-dock {
+    right: 0.65rem;
+    bottom: 0.65rem;
+    width: 132px;
+  }
+  .bubble {
+    width: 112px;
+    height: 112px;
+  }
+  .audio-btn { font-size: 0.78rem; padding: 0.65rem 0.7rem; }
+  .stage iframe { height: 58vh; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <p class="eyebrow">Menú digital · restaurante</p>
+    <h1>Hola José, esto es para Tornasol Restaurante</h1>
+    <p class="lead">
+      Armamos tu menú digital con categorías, platos de ejemplo y un QR permanente.
+      Míralo abajo (con un vistazo rápido en el video).
+      Si te gusta, reclámalo — es tuyo.
+    </p>
+    <p class="quote">“I walked by earlier today on the way to the malecón, and the sign caught my eyes so I noted it on g…”</p>
+    <div class="actions">
+      <a class="btn btn-primary" id="btn-claim" href="https://wa.me/17542133764?text=Hola%2C%20soy%20Jos%C3%A9%20de%20Tornasol%20Restaurante.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Ftornasol-restaurante%2F%0ATel%20del%20negocio%3A%20%2B1%20809-687-6842%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
+      <button type="button" class="btn btn-ghost" id="btn-audio-top">Escuchar</button>
+      <a class="btn btn-ghost" href="../../menus/tornasol-restaurante/index.html" target="_blank" rel="noopener">Abrir menú completo</a>
+    </div>
+    <div id="panel-ok" role="status">
+      Gracias. Anotamos tu interés en <strong>Tornasol Restaurante</strong>.
+      Se abre WhatsApp para confirmar — escríbenos ahí y te la pasamos.
+    </div>
+  </header>
+
+  <section class="stage" aria-label="Vista previa">
+    <iframe id="site-frame" title="Tornasol Restaurante" src="../../menus/tornasol-restaurante/index.html" loading="eager"></iframe>
+    <div class="face-dock">
+      <div class="bubble" id="face-bubble" title="Escuchar" role="button" tabindex="0">
+        <video id="face-video" src="../../videos/facecam-restaurantes.mp4" autoplay muted loop playsinline preload="auto"></video>
+      </div>
+      <button type="button" class="audio-btn" id="unmute-btn">Escuchar</button>
+    </div>
+  </section>
+
+  <footer class="bottom">
+    <p>
+      Vista previa honesta a partir de reseñas públicas de Google.
+      No inventamos datos. El menú vive en
+      <a href="https://steno.github.io/DomiWEB/menus/tornasol-restaurante/" style="color:var(--accent)">https://steno.github.io/DomiWEB/menus/tornasol-restaurante/</a>
+    </p>
+    <a class="btn btn-primary" href="https://wa.me/17542133764?text=Hola%2C%20soy%20Jos%C3%A9%20de%20Tornasol%20Restaurante.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Ftornasol-restaurante%2F%0ATel%20del%20negocio%3A%20%2B1%20809-687-6842%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
+  </footer>
+</div>
+<script>
+(function () {
+  var frame = document.getElementById("site-frame");
+  var ok = document.getElementById("panel-ok");
+  var buttons = document.querySelectorAll("[data-fallback], #btn-claim");
+
+  function markClaimed() {
+    try { localStorage.setItem("domiweb-claim-tornasol-restaurante", "1"); } catch (e) {}
+    if (ok) ok.classList.add("visible");
+  }
+
+  if (localStorage.getItem("domiweb-claim-tornasol-restaurante")) {
+    if (ok) ok.classList.add("visible");
+  }
+
+  buttons.forEach(function (btn) {
+    btn.addEventListener("click", function (ev) {
+      if (btn.getAttribute("data-fallback") === "1") {
+        ev.preventDefault();
+        markClaimed();
+        var el = document.getElementById("panel-ok");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      } else {
+        markClaimed();
+      }
+    });
+  });
+
+  function startScroll() {
+    try {
+      var doc = frame.contentWindow && frame.contentWindow.document;
+      if (!doc || !doc.documentElement) return;
+      var max = Math.max(0, (doc.documentElement.scrollHeight || 0) - (frame.contentWindow.innerHeight || 0));
+      if (max < 40) return;
+      var y = 0;
+      var dir = 1;
+      setInterval(function () {
+        y += dir * 1.15;
+        if (y >= max) { y = max; dir = -1; }
+        if (y <= 0) { y = 0; dir = 1; }
+        frame.contentWindow.scrollTo(0, y);
+      }, 32);
+    } catch (err) {
+      /* file:// or blocked — preview still works without scroll */
+    }
+  }
+
+  frame.addEventListener("load", function () {
+    setTimeout(startScroll, 700);
+  });
+
+  var vid = document.getElementById("face-video");
+  var unmute = document.getElementById("unmute-btn");
+  var topAudio = document.getElementById("btn-audio-top");
+  var bubble = document.getElementById("face-bubble");
+  var audioOn = false;
+  var startedWithSound = false;
+
+  function syncLabels() {
+    if (unmute) {
+      unmute.classList.remove("hidden");
+      unmute.textContent = audioOn ? "Silenciar" : "Escuchar";
+      unmute.classList.toggle("is-on", audioOn);
+    }
+    if (topAudio) {
+      topAudio.textContent = audioOn ? "Silenciar" : "Escuchar";
+      topAudio.classList.toggle("is-on", audioOn);
+    }
+    if (bubble) {
+      bubble.title = audioOn ? "Silenciar" : "Escuchar";
+    }
+  }
+
+  function playFromStartWithSound() {
+    if (!vid) return;
+    startedWithSound = true;
+    audioOn = true;
+    vid.muted = false;
+    vid.volume = 1;
+    vid.loop = false;
+    try { vid.currentTime = 0; } catch (e) {}
+    var p = vid.play();
+    if (p && p.then) p.catch(function () {});
+    syncLabels();
+  }
+
+  function muteAudio() {
+    if (!vid) return;
+    audioOn = false;
+    vid.muted = true;
+    syncLabels();
+  }
+
+  function toggleAudio(ev) {
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+    if (audioOn) {
+      muteAudio();
+      return;
+    }
+    // Best practice for a pitch clip: first listen starts at 0 with sound.
+    playFromStartWithSound();
+  }
+
+  if (unmute) unmute.addEventListener("click", toggleAudio);
+  if (topAudio) topAudio.addEventListener("click", toggleAudio);
+  if (bubble) {
+    bubble.addEventListener("click", toggleAudio);
+    bubble.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" || ev.key === " ") toggleAudio(ev);
+    });
+  }
+
+  // Muted autoplay preview only — browsers block sound without a click.
+  if (vid) {
+    vid.muted = true;
+    vid.loop = true;
+    vid.play().catch(function () {});
+  }
+  syncLabels();
+})();
+</script>
+</body>
+</html>

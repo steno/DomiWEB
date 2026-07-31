@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es-DO">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Menú · Maison Kreyol</title>
+<style>
+:root {
+  --bg: #140f0a;
+  --ink: #f7f1e8;
+  --muted: #b7a894;
+  --accent: #e2a45a;
+  --panel: #1c1610;
+  --line: rgba(226, 164, 90, 0.28);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  background: var(--bg);
+  line-height: 1.45;
+}
+.hero {
+  position: relative;
+  min-height: 72vh;
+  min-height: 72svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(1.4rem, 4vh, 2.2rem) 1.15rem 1.5rem;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(20,15,10,0.2) 0%, rgba(20,15,10,0.55) 48%, rgba(20,15,10,0.96) 100%),
+    linear-gradient(135deg, #2a1c12, #140f0a 55%, #24180f);
+}
+.hero.has-photo {
+  background-image:
+    linear-gradient(180deg, rgba(20,15,10,0.12) 0%, rgba(20,15,10,0.42) 42%, rgba(20,15,10,0.95) 100%),
+    var(--hero-image);
+  background-size: cover, cover;
+  background-position: center, center;
+}
+.hero-inner { position: relative; z-index: 1; max-width: 40rem; }
+.kicker {
+  margin: 0 0 0.55rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.brand {
+  margin: 0;
+  font-size: clamp(2.6rem, 11vw, 4.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  text-wrap: balance;
+  text-shadow: 0 12px 36px rgba(0,0,0,0.45);
+}
+.sub {
+  margin: 0.75rem 0 0;
+  color: #e8dccb;
+  font-size: clamp(1rem, 2.6vw, 1.15rem);
+}
+.meta {
+  margin: 0.7rem 0 0;
+  color: var(--accent);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.cta-row {
+  margin: 1.15rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #1a1208;
+  text-decoration: none;
+  padding: 0.9rem 1.2rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 0.98rem;
+}
+.photo-note {
+  margin: 0.8rem 0 0;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.72rem;
+  color: rgba(247,241,232,0.72);
+}
+.wrap { max-width: 40rem; margin: 0 auto; padding: 1.75rem 1.15rem 3rem; }
+.banner {
+  margin: 0 0 1.5rem;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: #dccbb4;
+}
+.cat { margin: 0 0 1.85rem; }
+.cat h2 {
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.35rem, 3.5vw, 1.7rem);
+  letter-spacing: -0.02em;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.45rem;
+}
+.items { list-style: none; margin: 0; padding: 0; }
+.item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(226,164,90,0.12);
+}
+.item-name { margin: 0; font-size: 1.08rem; font-weight: 650; }
+.item-note {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.82rem;
+}
+.item-price {
+  margin: 0;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.qr-block {
+  margin: 2.25rem 0 0;
+  padding: 1.25rem 1rem;
+  background: #f3e7d4;
+  color: #1a1208;
+  text-align: center;
+}
+.qr-block h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+}
+.qr-block p {
+  margin: 0 0 1rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: #4a3a28;
+}
+.qr-frame {
+  display: inline-flex;
+  padding: 0.65rem;
+  background: #fff;
+}
+.qr-frame svg { display: block; width: 180px; height: 180px; }
+.qr-url {
+  margin: 0.85rem 0 0;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.72rem;
+  word-break: break-all;
+  color: #5a4632;
+}
+footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.75rem;
+}
+</style>
+</head>
+<body>
+  <header class="hero has-photo" style="--hero-image:url('https://lh3.googleusercontent.com/gps-cs-s/AHRPTWkQTEXpVzWXMbTjET5Jmno9-HLNcYeWM5oBDOc2o7nrVOy3L9y9eHAd0bRVZsXCOqbLzw2EgvCSZwzFQXQiHv8vs-jTEBqZPGSdQ1wdUzhJga5D-AFn9wGKMhHBIs52hAAfoFJJ=w1920-h1080-k-no')">
+    <div class="hero-inner">
+      <p class="kicker">Menú digital</p>
+      <h1 class="brand">Maison Kreyol</h1>
+      <p class="sub">Restaurante haitiano · Av. Pedro Henríquez Ureña 3, Santo Domingo 10201, República Dominicana</p>
+      <p class="meta">4.5★ Google · 984 reseñas</p>
+      <div class="cta-row"><a class="btn" href="https://wa.me/18092377062?text=Hola%2C%20vi%20el%20men%C3%BA%20digital%20de%20Maison%20Kreyol%20y%20quiero%20ordenar.">Pedir por WhatsApp</a></div>
+      
+    </div>
+  </header>
+  <main class="wrap">
+    <p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — al reclamar los cambias por tu carta real.</p>
+    <section class="cat" id="entradas">
+  <h2>Entradas</h2>
+  <ul class="items"><li class="item">
+  <div class="item-main">
+    <p class="item-name">Tostones</p>
+    <p class="item-note">Con salsa de ajo</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li>
+<li class="item">
+  <div class="item-main">
+    <p class="item-name">Empanaditas</p>
+    <p class="item-note">Pollo o queso</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li>
+<li class="item">
+  <div class="item-main">
+    <p class="item-name">Ensalada de la casa</p>
+    <p class="item-note">Fresca del día</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li></ul>
+</section>
+<section class="cat" id="fuertes">
+  <h2>Platos fuertes</h2>
+  <ul class="items"><li class="item">
+  <div class="item-main">
+    <p class="item-name">Bandera dominicana</p>
+    <p class="item-note">Arroz, habichuelas y carne</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li>
+<li class="item">
+  <div class="item-main">
+    <p class="item-name">Pollo guisado</p>
+    <p class="item-note">Con acompañamiento</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li>
+<li class="item">
+  <div class="item-main">
+    <p class="item-name">Pescado frito</p>
+    <p class="item-note">Según disponibilidad</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li>
+<li class="item">
+  <div class="item-main">
+    <p class="item-name">Mofongo</p>
+    <p class="item-note">Con chicharrón o camarones</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li></ul>
+</section>
+<section class="cat" id="bebidas">
+  <h2>Bebidas</h2>
+  <ul class="items"><li class="item">
+  <div class="item-main">
+    <p class="item-name">Jugo natural</p>
+    <p class="item-note">Pregunta el sabor del día</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li>
+<li class="item">
+  <div class="item-main">
+    <p class="item-name">Refresco</p>
+    <p class="item-note">Lata o vaso</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li>
+<li class="item">
+  <div class="item-main">
+    <p class="item-name">Cerveza</p>
+    <p class="item-note">Nacional</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li>
+<li class="item">
+  <div class="item-main">
+    <p class="item-name">Café</p>
+    <p class="item-note">Dominicano</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li></ul>
+</section>
+<section class="cat" id="postres">
+  <h2>Postres</h2>
+  <ul class="items"><li class="item">
+  <div class="item-main">
+    <p class="item-name">Flan</p>
+    <p class="item-note">Casero</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li>
+<li class="item">
+  <div class="item-main">
+    <p class="item-name">Dulce de leche</p>
+    <p class="item-note">Porción</p>
+  </div>
+  <p class="item-price">RD$ —</p>
+</li></ul>
+</section>
+    <section class="qr-block" aria-label="Código QR del menú">
+      <h2>Tu QR permanente</h2>
+      <p>Imprímelo para la mesa o la ventana. Apunta a este menú.</p>
+      <div class="qr-frame"><svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 35 35" shape-rendering="crispEdges"><path stroke="#1a1208" d="M1 1.5h7m1 0h2m4 0h2m2 0h1m3 0h1m1 0h1m1 0h7M1 2.5h1m5 0h1m3 0h5m1 0h3m3 0h1m1 0h1m1 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m2 0h1m2 0h1m3 0h1m2 0h1m4 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m3 0h2m2 0h1m1 0h1m1 0h2m1 0h3m2 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m2 0h1m2 0h5m1 0h3m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h1m1 0h3m1 0h1m1 0h1m3 0h3m3 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M10 8.5h1m1 0h1m2 0h1m3 0h3m2 0h2M1 9.5h1m1 0h1m3 0h2m2 0h1m1 0h2m1 0h1m4 0h1m3 0h1m2 0h1m2 0h1m1 0h1M3 10.5h2m1 0h1m2 0h3m1 0h1m3 0h1m2 0h1m1 0h1m1 0h2m1 0h1m2 0h1m2 0h1M3 11.5h6m1 0h2m2 0h3m1 0h4m1 0h3m4 0h2m1 0h1M1 12.5h1m1 0h4m4 0h1m3 0h1m3 0h2m2 0h4m1 0h3m1 0h1M4 13.5h1m2 0h1m2 0h1m1 0h4m1 0h5m3 0h1m1 0h2M1 14.5h1m4 0h1m2 0h1m1 0h2m1 0h2m1 0h4m2 0h3m1 0h2m1 0h1m1 0h2M1 15.5h1m1 0h3m1 0h1m1 0h1m2 0h1m4 0h1m2 0h2m2 0h1m6 0h1m1 0h1M2 16.5h1m1 0h1m3 0h4m3 0h3m1 0h1m1 0h1m1 0h8M1 17.5h2m2 0h1m1 0h1m3 0h1m3 0h1m1 0h1m1 0h1m1 0h1m3 0h1m1 0h2m1 0h1m1 0h1M2 18.5h1m1 0h3m1 0h2m1 0h1m4 0h3m1 0h2m2 0h4m2 0h1m2 0h1M3 19.5h5m1 0h1m2 0h1m1 0h3m3 0h1m2 0h2m1 0h3m1 0h2m1 0h1M5 20.5h1m2 0h2m1 0h2m2 0h1m1 0h2m2 0h1m3 0h2m2 0h2m1 0h2M1 21.5h1m1 0h2m2 0h1m3 0h1m1 0h1m4 0h1m1 0h2m2 0h2m1 0h2M4 22.5h1m3 0h2m4 0h1m3 0h1m1 0h3m1 0h2m1 0h1m2 0h2m1 0h1M1 23.5h2m2 0h1m1 0h4m2 0h4m3 0h1m1 0h3m1 0h2m2 0h1m2 0h1M3 24.5h4m2 0h1m2 0h2m1 0h1m3 0h3m1 0h2m1 0h2m2 0h1M1 25.5h2m3 0h2m2 0h1m1 0h1m2 0h4m5 0h6m3 0h1M9 26.5h1m4 0h1m1 0h2m2 0h2m1 0h1m1 0h1m3 0h1m3 0h1M1 27.5h7m1 0h3m1 0h4m1 0h5m2 0h1m1 0h1m1 0h5M1 28.5h1m5 0h1m2 0h1m3 0h1m1 0h2m1 0h1m3 0h3m3 0h2m2 0h1M1 29.5h1m1 0h3m1 0h1m3 0h3m3 0h3m1 0h1m2 0h6m2 0h2M1 30.5h1m1 0h3m1 0h1m2 0h1m1 0h4m1 0h1m1 0h3m1 0h1m2 0h1m1 0h3m1 0h2M1 31.5h1m1 0h3m1 0h1m1 0h2m2 0h2m2 0h2m1 0h1m1 0h1m2 0h1m2 0h2m1 0h3M1 32.5h1m5 0h1m6 0h1m1 0h2m6 0h2m1 0h4M1 33.5h7m1 0h4m1 0h1m2 0h1m3 0h1m3 0h1m1 0h3m3 0h1"/></svg>
+</div>
+      <p class="qr-url">https://steno.github.io/DomiWEB/menus/maison-kreyol/</p>
+    </section>
+    <footer><p>Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas · Los platos son plantilla — edítalos al reclamar</p></footer>
+  </main>
+</body>
+</html>
