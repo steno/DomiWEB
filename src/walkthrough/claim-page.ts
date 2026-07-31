@@ -461,14 +461,15 @@ h1 {
   function syncLabels() {
     if (unmute) {
       unmute.classList.remove("hidden");
-      unmute.textContent = audioOn ? "Mute" : "Click to listen";
+      unmute.textContent = audioOn ? "Silenciar" : "Escuchar";
       unmute.classList.toggle("is-on", audioOn);
     }
     if (topAudio) {
-      topAudio.textContent = audioOn ? "Mute" : "Click to listen";
+      topAudio.textContent = audioOn ? "Silenciar" : "Escuchar";
+      topAudio.classList.toggle("is-on", audioOn);
     }
     if (bubble) {
-      bubble.title = audioOn ? "Click to mute" : "Click to listen";
+      bubble.title = audioOn ? "Silenciar" : "Escuchar";
     }
   }
 
