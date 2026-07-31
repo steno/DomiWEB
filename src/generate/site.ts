@@ -202,8 +202,9 @@ function isUsablePhotoUrl(url: string): boolean {
  */
 export function fallbackSiteHtml(lead: Lead, config: NicheConfig): string {
   const p = lead.place;
+  // Only show strong reviews on the public site (never 1–3★).
   const quotes = p.reviews
-    .filter((r) => r.text.trim().length > 15)
+    .filter((r) => r.text.trim().length > 15 && r.rating >= 4)
     .slice(0, 5);
 
   const googlePhotos = p.photos

@@ -23,7 +23,7 @@ Incluye:
 2. Categoría / tipo de negocio si existe.
 3. Zona o dirección **solo si viene en los datos**.
 4. Rating y cantidad de reseñas **exactos** de los datos.
-5. 3–6 citas **verbatim** cortas de `reviews` (con autor; puedes acortar con “…”, nunca reescribir).
+5. 3–6 citas **verbatim** cortas de `reviews` con **rating ≥ 4** solamente (nunca muestres reseñas 1–3★). Con autor; puedes acortar con “…”, nunca reescribir.
 6. Un CTA de WhatsApp si hay `phone` (preferir wa.me; tel: solo como respaldo).
 
 No agregues secciones de “servicios”, “nosotros”, “años de experiencia” u “horarios” a menos que esos hechos estén explícitos en los datos (casi nunca lo están — en ese caso **no** inventes la sección).
