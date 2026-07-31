@@ -16,7 +16,7 @@ function hostnameOf(url: string): string | null {
   }
 }
 
-/** True when website is missing or only Facebook/Instagram. */
+/** True when website is missing or only Facebook/Instagram/WhatsApp short links. */
 export function hasNoRealWebsite(
   website: string | null | undefined,
   socialHosts: string[],
@@ -24,7 +24,17 @@ export function hasNoRealWebsite(
   if (!website || !website.trim()) return true;
   const host = hostnameOf(website.trim());
   if (!host) return true;
-  return socialHosts.some(
+  const extras = [
+    ...socialHosts,
+    "wa.link",
+    "wa.me",
+    "api.whatsapp.com",
+    "chat.whatsapp.com",
+    "linktr.ee",
+    "linkbio.co",
+    "perfildigitalrs.linkbio.co",
+  ];
+  return extras.some(
     (s) => host === s.toLowerCase() || host.endsWith(`.${s.toLowerCase()}`),
   );
 }
@@ -59,12 +69,36 @@ function looksOnNiche(place: ScrapedPlace, config: NicheConfig): boolean {
     ...place.categories,
   ]
     .join(" ")
-    .toLowerCase();
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "");
 
-  const keywords = config.niche.keywords.map((k) => k.toLowerCase());
-  const hints = config.niche.categoryHints.map((k) => k.toLowerCase());
+  const needles = [...config.niche.keywords, ...config.niche.categoryHints].map(
+    (k) =>
+      k
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/\p{M}/gu, ""),
+  );
 
-  return [...keywords, ...hints].some((k) => hay.includes(k));
+  if (needles.some((k) => hay.includes(k))) return true;
+
+  // Spanish Google Maps categories often differ from our English keywords
+  const loose = [
+    "taller",
+    "mecan",
+    "automotriz",
+    "automecan",
+    "auto repair",
+    "car repair",
+    "mechanic",
+    "chapa",
+    "pintura",
+    "gomer",
+    "alineacion",
+    "frenos",
+  ];
+  return loose.some((k) => hay.includes(k));
 }
 
 /**

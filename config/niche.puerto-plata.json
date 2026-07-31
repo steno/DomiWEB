@@ -2,7 +2,6 @@
   "language": "es-DO",
   "country": "DO",
   "countryName": "República Dominicana",
-
   "niche": {
     "id": "talleres-mecanicos",
     "label": "Talleres mecánicos",
@@ -49,25 +48,7 @@
       "assets/illustrative/talleres-mecanicos/g3.jpg"
     ]
   },
-
   "cities": [
-    {
-      "id": "santo-domingo",
-      "name": "Santo Domingo",
-      "searchQueries": [
-        "taller mecánico Santo Domingo República Dominicana",
-        "taller de autos Santo Domingo RD"
-      ],
-      "maxResults": 80
-    },
-    {
-      "id": "santiago",
-      "name": "Santiago",
-      "searchQueries": [
-        "taller mecánico Santiago República Dominicana"
-      ],
-      "maxResults": 50
-    },
     {
       "id": "puerto-plata",
       "name": "Puerto Plata",
@@ -77,12 +58,11 @@
       "maxResults": 35
     }
   ],
-
   "qualification": {
     "minRating": 4.0,
-    "minReviews": 20,
-    "minPhotos": 5,
-    "recentReviewDays": 90,
+    "minReviews": 10,
+    "minPhotos": 3,
+    "recentReviewDays": 180,
     "allowSocialOnlyWebsite": true,
     "socialWebsiteHosts": [
       "facebook.com",
@@ -90,23 +70,22 @@
       "fb.me",
       "instagram.com",
       "instagr.am",
-      "m.facebook.com"
+      "m.facebook.com",
+      "wa.link",
+      "wa.me"
     ]
   },
-
   "scrape": {
     "reviewsPerPlace": 40,
     "language": "es",
     "maxConcurrency": 5
   },
-
   "hosting": {
     "provider": "github-pages",
     "baseUrl": "https://steno.github.io/DomiWEB",
     "sitesPath": "sites",
     "claimPath": "claim"
   },
-
   "pricing": {
     "onceLabel": "RD$2,000",
     "hostingNote": "al precio estándar del proveedor"
