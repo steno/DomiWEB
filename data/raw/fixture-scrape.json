@@ -1,0 +1,187 @@
+[
+  {
+    "placeId": "ChIJfixture_qualified_sd",
+    "name": "Taller El Rayo",
+    "category": "Taller mecánico",
+    "categories": ["Auto repair shop", "Taller mecánico"],
+    "address": "Av. Independencia 123, Santo Domingo",
+    "city": "Santo Domingo",
+    "phone": "+1 809-555-0101",
+    "website": null,
+    "rating": 4.6,
+    "reviewCount": 47,
+    "reviews": [
+      {
+        "author": "Luis M.",
+        "rating": 5,
+        "text": "Excelente trabajo, don Carlos dejó el carro como nuevo. Muy honestos.",
+        "publishedAt": "2026-06-15T14:00:00.000Z",
+        "ownerResponse": "Gracias Luis, aquí estamos para servirle. — Carlos"
+      },
+      {
+        "author": "Ana R.",
+        "rating": 5,
+        "text": "Buen precio y rápido. Recomendado en Gazcue.",
+        "publishedAt": "2026-05-01T10:00:00.000Z",
+        "ownerResponse": null
+      },
+      {
+        "author": "Pedro V.",
+        "rating": 4,
+        "text": "Arreglaron la transmisión sin vueltas.",
+        "publishedAt": "2026-04-20T09:00:00.000Z",
+        "ownerResponse": null
+      }
+    ],
+    "photos": [
+      { "url": "https://example.com/p1.jpg" },
+      { "url": "https://example.com/p2.jpg" },
+      { "url": "https://example.com/p3.jpg" },
+      { "url": "https://example.com/p4.jpg" },
+      { "url": "https://example.com/p5.jpg" },
+      { "url": "https://example.com/p6.jpg" }
+    ],
+    "googleMapsUrl": "https://maps.google.com/?cid=fixture1",
+    "lat": 18.46,
+    "lng": -69.93,
+    "scrapedAt": "2026-07-31T12:00:00.000Z",
+    "searchQuery": "taller mecánico Santo Domingo República Dominicana",
+    "metroId": "santo-domingo"
+  },
+  {
+    "placeId": "ChIJfixture_has_website",
+    "name": "Mecánica Digital Pro",
+    "category": "Taller mecánico",
+    "categories": ["Auto repair shop"],
+    "address": "Calle El Conde 10, Santo Domingo",
+    "city": "Santo Domingo",
+    "phone": "+1 809-555-0202",
+    "website": "https://www.mecanicadigitalpro.do",
+    "rating": 4.8,
+    "reviewCount": 120,
+    "reviews": [
+      {
+        "author": "María",
+        "rating": 5,
+        "text": "Muy profesional.",
+        "publishedAt": "2026-07-01T12:00:00.000Z",
+        "ownerResponse": null
+      }
+    ],
+    "photos": [
+      { "url": "https://example.com/a.jpg" },
+      { "url": "https://example.com/b.jpg" },
+      { "url": "https://example.com/c.jpg" },
+      { "url": "https://example.com/d.jpg" },
+      { "url": "https://example.com/e.jpg" }
+    ],
+    "googleMapsUrl": "https://maps.google.com/?cid=fixture2",
+    "lat": 18.47,
+    "lng": -69.9,
+    "scrapedAt": "2026-07-31T12:00:00.000Z",
+    "searchQuery": "taller mecánico Santo Domingo República Dominicana",
+    "metroId": "santo-domingo"
+  },
+  {
+    "placeId": "ChIJfixture_facebook_ok",
+    "name": "Taller Los Hermanos",
+    "category": "Taller mecánico",
+    "categories": ["Mechanic"],
+    "address": "Av. 27 de Febrero, Santo Domingo",
+    "city": "Santo Domingo",
+    "phone": "+1 809-555-0303",
+    "website": "https://www.facebook.com/tallerleshermanosrd",
+    "rating": 4.3,
+    "reviewCount": 28,
+    "reviews": [
+      {
+        "author": "José",
+        "rating": 5,
+        "text": "Buen taller de barrio, precios justos.",
+        "publishedAt": "2026-07-10T08:00:00.000Z",
+        "ownerResponse": null
+      }
+    ],
+    "photos": [
+      { "url": "https://example.com/1.jpg" },
+      { "url": "https://example.com/2.jpg" },
+      { "url": "https://example.com/3.jpg" },
+      { "url": "https://example.com/4.jpg" },
+      { "url": "https://example.com/5.jpg" }
+    ],
+    "googleMapsUrl": "https://maps.google.com/?cid=fixture3",
+    "lat": 18.48,
+    "lng": -69.91,
+    "scrapedAt": "2026-07-31T12:00:00.000Z",
+    "searchQuery": "taller mecánico Santo Domingo República Dominicana",
+    "metroId": "santo-domingo"
+  },
+  {
+    "placeId": "ChIJfixture_low_reviews",
+    "name": "Taller Pequeño",
+    "category": "Taller mecánico",
+    "categories": ["Auto repair shop"],
+    "address": "Villa Mella",
+    "city": "Santo Domingo",
+    "phone": null,
+    "website": null,
+    "rating": 5,
+    "reviewCount": 8,
+    "reviews": [
+      {
+        "author": "Rafa",
+        "rating": 5,
+        "text": "Bien.",
+        "publishedAt": "2026-07-01T12:00:00.000Z",
+        "ownerResponse": null
+      }
+    ],
+    "photos": [
+      { "url": "https://example.com/x.jpg" },
+      { "url": "https://example.com/y.jpg" },
+      { "url": "https://example.com/z.jpg" },
+      { "url": "https://example.com/w.jpg" },
+      { "url": "https://example.com/v.jpg" }
+    ],
+    "googleMapsUrl": null,
+    "lat": null,
+    "lng": null,
+    "scrapedAt": "2026-07-31T12:00:00.000Z",
+    "searchQuery": "taller mecánico Santo Domingo República Dominicana",
+    "metroId": "santo-domingo"
+  },
+  {
+    "placeId": "ChIJfixture_chain",
+    "name": "Firestone Completo Santo Domingo",
+    "category": "Taller mecánico",
+    "categories": ["Tire shop", "Auto repair shop"],
+    "address": "Autopista Duarte",
+    "city": "Santo Domingo",
+    "phone": "+1 809-555-0404",
+    "website": null,
+    "rating": 4.2,
+    "reviewCount": 200,
+    "reviews": [
+      {
+        "author": "Cliente",
+        "rating": 4,
+        "text": "Ok.",
+        "publishedAt": "2026-07-20T12:00:00.000Z",
+        "ownerResponse": null
+      }
+    ],
+    "photos": [
+      { "url": "https://example.com/f1.jpg" },
+      { "url": "https://example.com/f2.jpg" },
+      { "url": "https://example.com/f3.jpg" },
+      { "url": "https://example.com/f4.jpg" },
+      { "url": "https://example.com/f5.jpg" }
+    ],
+    "googleMapsUrl": null,
+    "lat": null,
+    "lng": null,
+    "scrapedAt": "2026-07-31T12:00:00.000Z",
+    "searchQuery": "taller mecánico Santo Domingo República Dominicana",
+    "metroId": "santo-domingo"
+  }
+]

@@ -1,0 +1,44 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+
+# Runtime data (keep folder structure via .gitkeep)
+data/leads/*.json
+data/leads/*.csv
+data/sites/**
+data/videos/**
+data/walkthroughs/**
+data/outreach/**
+data/db/*.sqlite
+data/db/*.sqlite-*
+!data/**/.gitkeep
+
+# Generated GitHub Pages content (sites/claim pages are published from public/)
+# Keep demo fixture pages tracked so Pages works out of the box.
+public/sites/**
+public/claim/**
+!public/sites/.gitkeep
+!public/claim/.gitkeep
+!public/sites/taller-el-rayo/**
+!public/sites/taller-los-hermanos/**
+!public/claim/taller-el-rayo/**
+!public/claim/taller-los-hermanos/**
+!public/index.html
+public/videos/**
+!public/videos/.gitkeep
+!public/videos/facecam-*.mp4
+!public/videos/facecam-source.png
+
+# Scraped raw dumps
+data/raw/**
+!data/raw/.gitkeep
+!data/raw/fixture-scrape.json
+
+# Local video work files (mp3 intermediates)
+data/videos/*
+!data/videos/.gitkeep
+!data/videos/*-script.txt
+

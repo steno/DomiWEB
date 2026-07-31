@@ -1,0 +1,88 @@
+{
+  "language": "es-DO",
+  "country": "DO",
+  "countryName": "República Dominicana",
+
+  "niche": {
+    "id": "talleres-mecanicos",
+    "label": "Talleres mecánicos",
+    "labelSingular": "taller mecánico",
+    "keywords": [
+      "taller mecánico",
+      "taller de autos",
+      "mecánica automotriz",
+      "taller de mecánica"
+    ],
+    "categoryHints": [
+      "Auto repair shop",
+      "Car repair",
+      "Mechanic",
+      "Taller mecánico",
+      "Auto workshop"
+    ],
+    "chainBlocklist": [
+      "Firestone",
+      "Goodyear",
+      "Midas",
+      "Jiffy Lube",
+      "Pep Boys",
+      "Discount Tire",
+      "Bridgestone",
+      "Servicio Honda",
+      "Servicio Toyota",
+      "Hyundai",
+      "Kia Motors",
+      "Chevrolet",
+      "Ford Service"
+    ]
+  },
+
+  "cities": [
+    {
+      "id": "santo-domingo",
+      "name": "Santo Domingo",
+      "searchQueries": [
+        "taller mecánico Santo Domingo República Dominicana",
+        "taller de autos Santo Domingo RD"
+      ],
+      "maxResults": 80
+    },
+    {
+      "id": "santiago",
+      "name": "Santiago",
+      "searchQueries": [
+        "taller mecánico Santiago República Dominicana"
+      ],
+      "maxResults": 50
+    }
+  ],
+
+  "qualification": {
+    "minRating": 4.0,
+    "minReviews": 20,
+    "minPhotos": 5,
+    "recentReviewDays": 90,
+    "allowSocialOnlyWebsite": true,
+    "socialWebsiteHosts": [
+      "facebook.com",
+      "fb.com",
+      "fb.me",
+      "instagram.com",
+      "instagr.am",
+      "m.facebook.com"
+    ]
+  },
+
+  "scrape": {
+    "reviewsPerPlace": 40,
+    "language": "es",
+    "maxConcurrency": 5
+  },
+
+  "hosting": {
+    "provider": "github-pages",
+    "baseUrl": "https://steno.github.io/DomiWEB",
+    "sitesPath": "sites",
+    "claimPath": "claim"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "domiweb-walkthrough-machine",
+  "version": "1.0.0",
+  "description": "Walkthrough Machine pipeline for Dominican Republic local businesses — scrape, qualify, build sites, outreach",
+  "type": "module",
+  "bin": {
+    "domiweb": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "scrape": "tsx src/cli.ts scrape",
+    "qualify": "tsx src/cli.ts qualify",
+    "pipeline": "tsx src/cli.ts pipeline",
+    "status": "tsx src/cli.ts status",
+    "typecheck": "tsc --noEmit",
+    "extract-names": "tsx src/cli.ts extract-names",
+    "generate-sites": "tsx src/cli.ts generate-sites",
+    "claim-pages": "tsx src/cli.ts claim-pages",
+    "serve:public": "npx --yes serve public -p 4173",
+    "generate-video": "tsx src/cli.ts generate-video"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "apify-client": "^2.12.0",
+    "better-sqlite3": "^11.8.1",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "csv-stringify": "^6.5.2",
+    "dotenv": "^16.4.7",
+    "node-edge-tts": "^1.2.10",
+    "openai": "^7.2.0",
+    "ora": "^8.2.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
