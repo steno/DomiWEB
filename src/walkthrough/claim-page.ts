@@ -317,7 +317,7 @@ h1 {
       <a class="btn btn-primary" id="btn-claim" href="${escapeAttr(claimHref)}" ${claimExtra}>Reclamar mi sitio</a>
       ${
         videoHref
-          ? `<button type="button" class="btn btn-ghost" id="btn-audio-top">Oír mensaje</button>`
+          ? `<button type="button" class="btn btn-ghost" id="btn-audio-top">Click to listen</button>`
           : ""
       }
       <a class="btn btn-ghost" href="${escapeAttr(siteHref)}" target="_blank" rel="noopener">Abrir sitio completo</a>
@@ -334,10 +334,10 @@ h1 {
     ${
       videoHref
         ? `<div class="face-dock">
-      <div class="bubble" id="face-bubble" title="Toca para oír desde el inicio" role="button" tabindex="0">
+      <div class="bubble" id="face-bubble" title="Click to listen" role="button" tabindex="0">
         <video id="face-video" src="${escapeAttr(videoHref)}" autoplay muted loop playsinline preload="auto"></video>
       </div>
-      <button type="button" class="audio-btn" id="unmute-btn">Toca para oír</button>
+      <button type="button" class="audio-btn" id="unmute-btn">Click to listen</button>
     </div>`
         : `<div class="face-dock"><div class="bubble"><div class="bubble-placeholder">Video face-cam<br/>próximamente</div></div></div>`
     }
@@ -413,16 +413,14 @@ h1 {
   function syncLabels() {
     if (unmute) {
       unmute.classList.remove("hidden");
-      unmute.textContent = audioOn ? "Silenciar" : "Toca para oír";
+      unmute.textContent = audioOn ? "Mute" : "Click to listen";
       unmute.classList.toggle("is-on", audioOn);
     }
     if (topAudio) {
-      topAudio.textContent = audioOn ? "Silenciar" : "Oír mensaje";
+      topAudio.textContent = audioOn ? "Mute" : "Click to listen";
     }
     if (bubble) {
-      bubble.title = audioOn
-        ? "Toca para silenciar"
-        : "Toca para oír desde el inicio";
+      bubble.title = audioOn ? "Click to mute" : "Click to listen";
     }
   }
 
