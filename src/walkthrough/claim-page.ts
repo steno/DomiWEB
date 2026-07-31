@@ -349,7 +349,7 @@ h1 {
       <a class="btn btn-primary" id="btn-claim" href="${escapeAttr(claimHref)}" ${claimExtra}>Reclamar mi sitio</a>
       ${
         videoHref
-          ? `<button type="button" class="btn btn-ghost" id="btn-audio-top">Activar audio del video</button>`
+          ? `<button type="button" class="btn btn-ghost" id="btn-audio-top">Activar / silenciar audio</button>`
           : ""
       }
       <a class="btn btn-ghost" href="${escapeAttr(siteHref)}" target="_blank" rel="noopener">Abrir sitio completo</a>
@@ -448,18 +448,32 @@ h1 {
   var gate = document.getElementById("audio-gate");
   var audioOn = false;
 
-  function markAudioOn() {
-    audioOn = true;
-    if (gate) gate.classList.remove("visible");
+  function syncLabels() {
+    if (gate) gate.classList.toggle("visible", !audioOn);
     if (unmute) {
-      unmute.textContent = "Audio activado";
-      unmute.classList.add("is-on");
-      setTimeout(function () { if (unmute) unmute.classList.add("hidden"); }, 900);
+      unmute.classList.remove("hidden");
+      unmute.textContent = audioOn ? "Silenciar" : "Toca para oír";
+      unmute.classList.toggle("is-on", audioOn);
     }
     if (topAudio) {
-      topAudio.textContent = "Audio activado";
-      topAudio.style.opacity = "0.7";
+      topAudio.textContent = audioOn ? "Silenciar audio" : "Activar audio";
+      topAudio.style.opacity = "1";
     }
+    if (bubble) {
+      bubble.title = audioOn ? "Toca para silenciar" : "Toca para activar el audio";
+    }
+  }
+
+  function setAudioOn(on) {
+    if (!vid) return;
+    audioOn = !!on;
+    vid.muted = !audioOn;
+    vid.volume = 1;
+    if (audioOn) {
+      var p = vid.play();
+      if (p && p.then) p.catch(function () {});
+    }
+    syncLabels();
   }
 
   function enableAudio(ev) {
@@ -467,45 +481,51 @@ h1 {
       ev.preventDefault();
       ev.stopPropagation();
     }
-    if (!vid || audioOn) return;
-    vid.muted = false;
-    vid.volume = 1;
-    var p = vid.play();
-    if (p && p.then) {
-      p.then(markAudioOn).catch(function () {
-        vid.muted = true;
-        if (gate) gate.classList.add("visible");
-      });
-    } else {
-      markAudioOn();
+    setAudioOn(true);
+  }
+
+  function muteAudio(ev) {
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
     }
+    setAudioOn(false);
+  }
+
+  function toggleAudio(ev) {
+    if (audioOn) muteAudio(ev);
+    else enableAudio(ev);
   }
 
   function tryAutoSound() {
     if (!vid) return;
-    // Browsers usually block this; we try anyway, then fall back to one-tap gate.
+    // Browsers usually block unmuted autoplay; fall back to one-tap gate.
     vid.muted = false;
     vid.volume = 1;
     var p = vid.play();
     if (p && p.then) {
-      p.then(markAudioOn).catch(function () {
+      p.then(function () {
+        setAudioOn(true);
+      }).catch(function () {
         vid.muted = true;
         vid.play().catch(function () {});
+        setAudioOn(false);
         if (gate) gate.classList.add("visible");
       });
     }
   }
 
-  if (unmute) unmute.addEventListener("click", enableAudio);
-  if (topAudio) topAudio.addEventListener("click", enableAudio);
+  if (unmute) unmute.addEventListener("click", toggleAudio);
+  if (topAudio) topAudio.addEventListener("click", toggleAudio);
   if (gate) gate.addEventListener("click", enableAudio);
   if (bubble) {
-    bubble.addEventListener("click", enableAudio);
+    bubble.addEventListener("click", toggleAudio);
     bubble.addEventListener("keydown", function (ev) {
-      if (ev.key === "Enter" || ev.key === " ") enableAudio(ev);
+      if (ev.key === "Enter" || ev.key === " ") toggleAudio(ev);
     });
   }
 
+  syncLabels();
   if (vid) {
     if (vid.readyState >= 2) tryAutoSound();
     else vid.addEventListener("loadeddata", tryAutoSound, { once: true });
