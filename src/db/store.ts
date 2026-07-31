@@ -342,6 +342,69 @@ export function updateWalkthroughReady(
   return row ? rowToLead(row) : null;
 }
 
+/** Mark lead outreach_ready; optionally refresh claim/site URLs + quote. */
+export function updateOutreachReady(
+  leadId: string,
+  fields: {
+    claimUrl?: string | null;
+    siteUrl?: string | null;
+    outreachQuote?: string | null;
+  } = {},
+): Lead | null {
+  const db = openDb();
+  const existing = db.prepare("SELECT * FROM leads WHERE id = ?").get(leadId) as
+    | Record<string, unknown>
+    | undefined;
+  if (!existing) {
+    db.close();
+    return null;
+  }
+
+  const now = new Date().toISOString();
+  db.prepare(
+    `UPDATE leads SET
+      claim_url = COALESCE(@claim_url, claim_url),
+      site_url = COALESCE(@site_url, site_url),
+      outreach_quote = COALESCE(@outreach_quote, outreach_quote),
+      status = 'outreach_ready',
+      updated_at = @updated_at,
+      error = NULL
+    WHERE id = @id`,
+  ).run({
+    id: leadId,
+    claim_url: fields.claimUrl ?? null,
+    site_url: fields.siteUrl ?? null,
+    outreach_quote: fields.outreachQuote ?? null,
+    updated_at: now,
+  });
+
+  const row = db.prepare("SELECT * FROM leads WHERE id = ?").get(leadId) as
+    | Record<string, unknown>
+    | undefined;
+  db.close();
+  return row ? rowToLead(row) : null;
+}
+
+export function listLeadsForOutreach(force = false, slug?: string): Lead[] {
+  let leads = force
+    ? [
+        ...listLeads("walkthrough_ready"),
+        ...listLeads("outreach_ready"),
+        ...listLeads("site_generated"),
+      ]
+    : listLeads("walkthrough_ready");
+
+  const seen = new Set<string>();
+  leads = leads.filter((l) => {
+    if (!l.sitePath) return false;
+    if (seen.has(l.id)) return false;
+    seen.add(l.id);
+    return true;
+  });
+  if (slug) leads = leads.filter((l) => l.slug === slug);
+  return leads;
+}
+
 export function listLeadsForClaimPages(force = false, slug?: string): Lead[] {
   let leads = force
     ? [

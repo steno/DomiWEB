@@ -18,7 +18,8 @@
     "generate-sites": "tsx src/cli.ts generate-sites",
     "claim-pages": "tsx src/cli.ts claim-pages",
     "serve:public": "npx --yes serve public -p 4173",
-    "generate-video": "tsx src/cli.ts generate-video"
+    "generate-video": "tsx src/cli.ts generate-video",
+    "outreach": "tsx src/cli.ts outreach"
   },
   "engines": {
     "node": ">=20"

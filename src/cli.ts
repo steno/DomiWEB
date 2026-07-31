@@ -8,11 +8,13 @@ import {
   exportQualifiedJsonCsv,
   listLeads,
   listLeadsForClaimPages,
+  listLeadsForOutreach,
   listLeadsForSiteGen,
   saveRawScrape,
   saveRunSummary,
   statusCounts,
   updateOwnerName,
+  updateOutreachReady,
   updateSiteGenerated,
   updateWalkthroughReady,
   upsertScrapedLeads,
@@ -21,13 +23,14 @@ import { extractNamesForLeads } from "./extract/owner-name.js";
 import { generateSitesForLeads } from "./generate/site.js";
 import { generateFaceCamVideo } from "./generate/video.js";
 import { downloadToFile, generateLipsyncVideo } from "./generate/lipsync.js";
+import { prepareOutreach } from "./outreach/prepare.js";
 import { scrapeAll } from "./scrape/maps-scraper.js";
 import { qualifyPlace } from "./scrape/qualifier.js";
 import type { ScrapedPlace } from "./types/index.js";
 import { generateClaimPagesForLeads } from "./walkthrough/claim-page.js";
 import { log } from "./utils/logger.js";
 import { pagesSetupInstructions } from "./host/github-pages.js";
-import { copyFileSync, existsSync } from "node:fs";
+import { copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { dataDir, publicDir } from "./utils/paths.js";
 
@@ -343,6 +346,52 @@ program
   });
 
 program
+  .command("outreach")
+  .description(
+    "Step 7 — personalized email + postcard copy → CSV/JSON (one message per business)",
+  )
+  .option("-c, --config <path>", "Path to niche.config.json")
+  .option("--limit <n>", "Max leads", (v) => parseInt(v, 10))
+  .option("--force", "Include leads already outreach_ready / site_generated", false)
+  .option("--slug <slug>", "Only this slug")
+  .action((opts: {
+    config?: string;
+    limit?: number;
+    force?: boolean;
+    slug?: string;
+  }) => {
+    const config = loadConfig(opts.config);
+    log.step(7, "Outreach (email + postcard)");
+    const leads = listLeadsForOutreach(Boolean(opts.force), opts.slug);
+    if (!leads.length) {
+      log.warn(
+        "No hay leads listos. Corre claim-pages primero (status walkthrough_ready).",
+      );
+      return;
+    }
+
+    const { messages, csvPath, jsonPath } = prepareOutreach(leads, config, {
+      limit: opts.limit,
+    });
+
+    for (const msg of messages) {
+      updateOutreachReady(msg.leadId, {
+        claimUrl: msg.claimUrl,
+        siteUrl: msg.siteUrl,
+        outreachQuote: msg.reviewQuote,
+      });
+    }
+
+    log.ok(`Mensajes: ${messages.length}`);
+    log.ok(`CSV:  ${csvPath}`);
+    log.ok(`JSON: ${jsonPath}`);
+    log.info("Un mensaje por negocio — sin escasez falsa.");
+    for (const [status, n] of Object.entries(statusCounts()).sort()) {
+      console.log(`  ${status.padEnd(18)} ${n}`);
+    }
+  });
+
+program
   .command("status")
   .description("Show lead counts by pipeline status")
   .action(() => {
@@ -385,19 +434,34 @@ program
         );
       }
     }
+
+    const ready = leads.filter((l) => l.status === "outreach_ready");
+    if (ready.length) {
+      console.log("\nOutreach listo:");
+      for (const l of ready.slice(0, 20)) {
+        console.log(
+          `  · ${l.place.name} → ${l.claimUrl ?? `(claim/${l.slug}/)`}`,
+        );
+      }
+    }
     console.log();
   });
 
 program
   .command("pipeline")
-  .description("scrape → qualify → extract-names → generate-sites → claim-pages")
+  .description(
+    "scrape → qualify → extract-names → generate-sites → claim-pages → outreach",
+  )
   .option("-c, --config <path>", "Path to niche.config.json")
   .option("-m, --metro <ids>", "Comma-separated metro ids")
   .option("--from-file <path>", "Skip Apify; use raw scrape JSON")
   .option("--skip-names", "Stop after qualify", false)
   .option("--skip-sites", "Stop after extract-names", false)
   .option("--skip-claims", "Stop after generate-sites", false)
-  .option("--limit <n>", "Limit for names/sites/claims", (v) => parseInt(v, 10))
+  .option("--skip-outreach", "Stop after claim-pages", false)
+  .option("--limit <n>", "Limit for names/sites/claims/outreach", (v) =>
+    parseInt(v, 10),
+  )
   .action(async (opts: {
     config?: string;
     metro?: string;
@@ -405,10 +469,11 @@ program
     skipNames?: boolean;
     skipSites?: boolean;
     skipClaims?: boolean;
+    skipOutreach?: boolean;
     limit?: number;
   }) => {
     log.info(
-      "Pipeline: scrape → qualify → extract-names → generate-sites → claim-pages",
+      "Pipeline: scrape → qualify → extract-names → generate-sites → claim-pages → outreach",
     );
     await program.parseAsync(
       [
@@ -421,7 +486,10 @@ program
     );
     if (opts.skipNames) return;
     await program.parseAsync(
-      ["extract-names", ...(opts.limit != null ? ["--limit", String(opts.limit)] : [])],
+      [
+        "extract-names",
+        ...(opts.limit != null ? ["--limit", String(opts.limit)] : []),
+      ],
       { from: "user" },
     );
     if (opts.skipSites) return;
@@ -437,6 +505,15 @@ program
     await program.parseAsync(
       [
         "claim-pages",
+        ...(opts.config ? ["--config", opts.config] : []),
+        ...(opts.limit != null ? ["--limit", String(opts.limit)] : []),
+      ],
+      { from: "user" },
+    );
+    if (opts.skipOutreach) return;
+    await program.parseAsync(
+      [
+        "outreach",
         ...(opts.config ? ["--config", opts.config] : []),
         ...(opts.limit != null ? ["--limit", String(opts.limit)] : []),
       ],

@@ -16,7 +16,7 @@ Pipeline para encontrar negocios locales en RD **sin sitio web**, generarles un 
 | 4 | Generación de sitios HTML | ✅ |
 | 5 | Video face-cam reutilizable | ✅ |
 | 6 | Claim pages + deploy GitHub Pages | ✅ |
-| 7 | Outreach email / postcard | ⏳ templates listos |
+| 7 | Outreach email / postcard | ✅ |
 
 Nicho inicial: **talleres mecánicos** en Santo Domingo + Santiago (configurable).
 
@@ -143,6 +143,21 @@ Cada claim page incluye:
 - link al HTML completo
 
 Tras push a `main`, Actions publica `public/`.
+
+### Step 7 — outreach (email + postcard)
+
+```bash
+npm run outreach
+npm run outreach -- --force --slug taller-el-rayo
+```
+
+Salidas (un mensaje por negocio, tono amistoso, sin escasez falsa):
+
+- `data/outreach/outreach-*.csv` — columnas listas para enviar / imprimir
+- `data/outreach/outreach-*.json`
+- `data/outreach/<slug>/email.txt` + `postcard.txt` — copy/paste
+
+Templates editables: `prompts/outreach-email.md`, `prompts/outreach-postcard.md`.
 
 ### Gates de calificación
 
