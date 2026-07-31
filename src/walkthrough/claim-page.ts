@@ -218,6 +218,20 @@ h1 {
   height: 100%;
   object-fit: cover;
 }
+.bubble-unmute {
+  position: absolute;
+  inset: auto 8% 10%;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(16,22,18,0.82);
+  color: var(--ink);
+  cursor: pointer;
+}
+.bubble-unmute.hidden { display: none; }
 .bubble-placeholder {
   width: 100%;
   height: 100%;
@@ -292,10 +306,11 @@ h1 {
 
   <section class="stage" aria-label="Vista previa del sitio">
     <iframe id="site-frame" title="${escapeAttr(lead.place.name)}" src="${escapeAttr(siteHref)}" loading="eager"></iframe>
-    <div class="bubble" aria-hidden="${videoHref ? "false" : "true"}">
+    <div class="bubble" id="face-bubble" aria-hidden="${videoHref ? "false" : "true"}" title="Toca para activar el audio">
       ${
         videoHref
-          ? `<video src="${escapeAttr(videoHref)}" autoplay muted loop playsinline></video>`
+          ? `<video id="face-video" src="${escapeAttr(videoHref)}" autoplay muted loop playsinline></video>
+             <button type="button" class="bubble-unmute" id="unmute-btn">Toca para oír</button>`
           : `<div class="bubble-placeholder">Video face-cam<br/>próximamente</div>`
       }
     </div>
@@ -360,6 +375,18 @@ h1 {
   frame.addEventListener("load", function () {
     setTimeout(startScroll, 700);
   });
+
+  var vid = document.getElementById("face-video");
+  var unmute = document.getElementById("unmute-btn");
+  function enableAudio() {
+    if (!vid) return;
+    vid.muted = false;
+    vid.play().catch(function () {});
+    if (unmute) unmute.classList.add("hidden");
+  }
+  if (unmute) unmute.addEventListener("click", enableAudio);
+  var bubble = document.getElementById("face-bubble");
+  if (bubble) bubble.addEventListener("click", enableAudio);
 })();
 </script>
 </body>
