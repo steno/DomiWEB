@@ -69,7 +69,7 @@
   ],
   "qualification": {
     "minRating": 4,
-    "minReviews": 20,
+    "minReviews": 8,
     "minPhotos": 5,
     "recentReviewDays": 90,
     "allowSocialOnlyWebsite": true,
@@ -95,6 +95,14 @@
   },
   "pricing": {
     "onceLabel": "RD$2,000",
-    "hostingNote": "si lo necesitas, lo hablamos aparte"
+    "hostingNote": "si lo necesitas, lo hablamos aparte",
+    "reviewKitOnceLabel": "RD$800"
+  },
+
+  "products": {
+    "reviewKit": {
+      "enabled": true,
+      "maxReplies": 8
+    }
   }
 }

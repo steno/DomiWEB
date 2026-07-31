@@ -103,14 +103,44 @@ export interface NicheConfig {
     baseUrl: string;
     sitesPath: string;
     claimPath: string;
+    /** Review-reply kits under public/kits/ */
+    kitsPath?: string;
+    /** Digital menus under public/menus/ */
+    menusPath?: string;
   };
   pricing: {
-    /** One-time transfer / claim fee */
+    /** One-time transfer / claim fee (full site) */
     onceLabel: string;
     /** How to describe optional hosting (not bundled) */
     hostingNote: string;
+    /** One-time fee for Google review-reply kit */
+    reviewKitOnceLabel?: string;
+    /** One-time fee for digital menu + QR */
+    menuOnceLabel?: string;
+  };
+  /** Optional product tunables */
+  products?: {
+    reviewKit?: {
+      enabled?: boolean;
+      maxReplies?: number;
+    };
+    menu?: {
+      enabled?: boolean;
+      categories?: Array<{
+        id: string;
+        label: string;
+        items?: Array<{
+          name: string;
+          note?: string;
+          priceHint?: string;
+        }>;
+      }>;
+    };
   };
 }
+
+/** Demo asset embedded in claim + used for outreach copy/price. */
+export type PipelineProduct = "site" | "reviewKit" | "menu";
 
 export interface CityConfig {
   id: string;

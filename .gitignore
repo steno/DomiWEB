@@ -9,14 +9,18 @@ dist/
 data/leads/*.json
 data/leads/*.csv
 data/sites/**
+data/kits/**
+data/menus/**
 data/videos/**
 data/walkthroughs/**
 data/outreach/**
 data/db/*.sqlite
 data/db/*.sqlite-*
+data/dashboard/**
+!data/dashboard/.gitkeep
 !data/**/.gitkeep
 
-# public/sites + public/claim are published to GitHub Pages — track them
+# public/sites + public/claim + public/kits are published to GitHub Pages — track them
 !public/index.html
 !public/assets/**
 !public/assets/**/*

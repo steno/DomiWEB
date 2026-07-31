@@ -1,0 +1,122 @@
+{
+  "language": "es-DO",
+  "country": "DO",
+  "countryName": "República Dominicana",
+
+  "niche": {
+    "id": "restaurantes",
+    "label": "Restaurantes y cafés",
+    "labelSingular": "restaurante",
+    "keywords": [
+      "restaurante",
+      "cafetería",
+      "café",
+      "comedor",
+      "parrillada",
+      "pizzería",
+      "food truck",
+      "comida criolla"
+    ],
+    "categoryHints": [
+      "Restaurant",
+      "Cafe",
+      "Coffee shop",
+      "Dominican restaurant",
+      "Pizza restaurant",
+      "Fast food restaurant",
+      "Bar",
+      "Food court"
+    ],
+    "chainBlocklist": [
+      "McDonald",
+      "Burger King",
+      "KFC",
+      "Wendy",
+      "Pizza Hut",
+      "Domino",
+      "Subway",
+      "Starbucks",
+      "P.F. Chang",
+      "Applebee",
+      "TGI Friday",
+      "Popeyes",
+      "Little Caesars"
+    ],
+    "illustrativeImages": [
+      "assets/illustrative/restaurantes/hero.jpg",
+      "assets/illustrative/restaurantes/g1.jpg",
+      "assets/illustrative/restaurantes/g2.jpg",
+      "assets/illustrative/restaurantes/g3.jpg"
+    ]
+  },
+
+  "cities": [
+    {
+      "id": "santo-domingo",
+      "name": "Santo Domingo",
+      "searchQueries": [
+        "restaurante Santo Domingo República Dominicana",
+        "cafetería Santo Domingo RD",
+        "comida criolla Santo Domingo"
+      ],
+      "maxResults": 60
+    },
+    {
+      "id": "puerto-plata",
+      "name": "Puerto Plata",
+      "searchQueries": [
+        "restaurante Puerto Plata República Dominicana",
+        "café Puerto Plata RD"
+      ],
+      "maxResults": 35
+    }
+  ],
+
+  "qualification": {
+    "minRating": 4.0,
+    "minReviews": 8,
+    "minPhotos": 4,
+    "recentReviewDays": 120,
+    "allowSocialOnlyWebsite": true,
+    "socialWebsiteHosts": [
+      "facebook.com",
+      "fb.com",
+      "fb.me",
+      "instagram.com",
+      "instagr.am",
+      "m.facebook.com"
+    ]
+  },
+
+  "scrape": {
+    "reviewsPerPlace": 30,
+    "language": "es",
+    "maxConcurrency": 5
+  },
+
+  "hosting": {
+    "provider": "github-pages",
+    "baseUrl": "https://steno.github.io/DomiWEB",
+    "sitesPath": "sites",
+    "claimPath": "claim",
+    "kitsPath": "kits",
+    "menusPath": "menus"
+  },
+
+  "pricing": {
+    "onceLabel": "RD$2,000",
+    "hostingNote": "si lo necesitas, lo hablamos aparte",
+    "reviewKitOnceLabel": "RD$800",
+    "menuOnceLabel": "RD$1,500"
+  },
+
+  "products": {
+    "reviewKit": {
+      "enabled": false,
+      "maxReplies": 8
+    },
+    "menu": {
+      "enabled": true
+    }
+  }
+}

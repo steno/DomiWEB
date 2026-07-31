@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DomiWEB · Pipeline dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,550;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0c1612;
+        --bg-elev: #132019;
+        --fg: #eef3ef;
+        --muted: #8fa399;
+        --line: rgba(238, 243, 239, 0.1);
+        --accent: #4ea37e;
+        --accent-dim: rgba(78, 163, 126, 0.16);
+        --warn: #c9a227;
+        --danger: #c45c4a;
+        --ok: #4ea37e;
+        --named: #6bb8d6;
+        --site: #8b9cf0;
+        --claim: #4ea37e;
+        --outreach: #d4a574;
+        --rejected: #6b736e;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Sans", system-ui, sans-serif;
+        color: var(--fg);
+        background:
+          radial-gradient(ellipse 80% 50% at 10% -10%, #1a3d30 0%, transparent 55%),
+          radial-gradient(ellipse 60% 40% at 100% 0%, #243528 0%, transparent 50%),
+          var(--bg);
+        line-height: 1.45;
+      }
+      .wrap {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 1.75rem 1.25rem 3rem;
+      }
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+        animation: rise 0.55s ease-out both;
+      }
+      .brand {
+        font-family: Fraunces, Georgia, serif;
+        font-size: clamp(1.85rem, 3.5vw, 2.45rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 1.1;
+      }
+      .brand span { color: var(--accent); }
+      .meta {
+        color: var(--muted);
+        font-size: 0.875rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.35rem;
+      }
+      .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-weight: 500;
+        color: var(--fg);
+      }
+      .live-dot {
+        width: 0.55rem;
+        height: 0.55rem;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+      .live.on .live-dot {
+        background: var(--accent);
+        box-shadow: 0 0 0 0 rgba(78, 163, 126, 0.55);
+        animation: pulse 1.8s ease-out infinite;
+      }
+      .live.err .live-dot { background: var(--danger); animation: none; }
+      .counts {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+        gap: 0.65rem;
+        margin-bottom: 1.25rem;
+        animation: rise 0.55s ease-out 0.08s both;
+      }
+      .count {
+        background: var(--bg-elev);
+        border: 1px solid var(--line);
+        padding: 0.75rem 0.85rem;
+        cursor: pointer;
+        text-align: left;
+        color: inherit;
+        font: inherit;
+        transition: border-color 0.2s, background 0.2s, transform 0.2s;
+      }
+      .count:hover { border-color: rgba(78, 163, 126, 0.45); }
+      .count.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+      }
+      .count .n {
+        font-family: Fraunces, Georgia, serif;
+        font-size: 1.55rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        display: block;
+        line-height: 1.1;
+      }
+      .count .l {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+        margin-bottom: 0.85rem;
+        animation: rise 0.55s ease-out 0.12s both;
+      }
+      .search {
+        flex: 1 1 14rem;
+        min-width: 12rem;
+        background: var(--bg-elev);
+        border: 1px solid var(--line);
+        color: var(--fg);
+        padding: 0.65rem 0.85rem;
+        font: inherit;
+        font-size: 0.92rem;
+      }
+      .search:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .search::placeholder { color: var(--muted); }
+      .hint {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+      .table-wrap {
+        border: 1px solid var(--line);
+        background: rgba(19, 32, 25, 0.72);
+        overflow: auto;
+        animation: rise 0.55s ease-out 0.16s both;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+      th {
+        text-align: left;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--muted);
+        font-weight: 600;
+        padding: 0.75rem 0.9rem;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+        background: #132019;
+      }
+      td {
+        padding: 0.8rem 0.9rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+      }
+      tr:last-child td { border-bottom: none; }
+      tr.flash td {
+        animation: flash 0.85s ease-out;
+      }
+      .name {
+        font-weight: 550;
+        display: block;
+      }
+      .slug {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        padding: 0.22rem 0.45rem;
+        background: rgba(255,255,255,0.06);
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .badge.qualified { color: #b7dcc8; background: rgba(78,163,126,0.15); }
+      .badge.named { color: #b8dff0; background: rgba(107,184,214,0.15); }
+      .badge.site_generated { color: #c5cef8; background: rgba(139,156,240,0.15); }
+      .badge.walkthrough_ready { color: #b7dcc8; background: rgba(78,163,126,0.2); }
+      .badge.outreach_ready { color: #f0d4b8; background: rgba(212,165,116,0.18); }
+      .badge.rejected { color: #a8aea9; background: rgba(107,115,110,0.2); }
+      .badge.error { color: #f0b8ae; background: rgba(196,92,74,0.18); }
+      .badge.scraped { color: #cfd6d1; background: rgba(255,255,255,0.06); }
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+      }
+      .links a {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 0.82rem;
+        font-weight: 500;
+      }
+      .links a:hover { text-decoration: underline; }
+      .links .muted { color: var(--muted); pointer-events: none; }
+      .empty {
+        padding: 2.5rem 1rem;
+        text-align: center;
+        color: var(--muted);
+      }
+      .time {
+        color: var(--muted);
+        font-size: 0.8rem;
+        white-space: nowrap;
+      }
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(78, 163, 126, 0.5); }
+        70% { box-shadow: 0 0 0 8px rgba(78, 163, 126, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(78, 163, 126, 0); }
+      }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes flash {
+        0% { background: rgba(78, 163, 126, 0.22); }
+        100% { background: transparent; }
+      }
+      @media (max-width: 720px) {
+        .meta { align-items: flex-start; }
+        th:nth-child(4), td:nth-child(4),
+        th:nth-child(5), td:nth-child(5) { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1 class="brand">DomiWEB <span>dashboard</span></h1>
+        <div class="meta">
+          <div class="live" id="live"><span class="live-dot"></span><span id="live-label">Connecting…</span></div>
+          <div id="generated">—</div>
+        </div>
+      </header>
+
+      <div class="counts" id="counts"></div>
+
+      <div class="toolbar">
+        <input
+          class="search"
+          id="search"
+          type="search"
+          placeholder="Filter by name, slug, phone, owner…"
+          autocomplete="off"
+        />
+        <div class="hint" id="shown">—</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Business</th>
+              <th>Status</th>
+              <th>Links</th>
+              <th>Metro</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>No leads match this filter.</div>
+      </div>
+    </div>
+
+    <script>
+      const STATUS_ORDER = [
+        "scraped",
+        "qualified",
+        "named",
+        "site_generated",
+        "walkthrough_ready",
+        "outreach_ready",
+        "rejected",
+        "error",
+      ];
+      const STATUS_LABELS = {
+        scraped: "Scraped",
+        qualified: "Qualified",
+        named: "Named",
+        site_generated: "Site generated",
+        walkthrough_ready: "Claim ready",
+        outreach_ready: "Outreach ready",
+        rejected: "Rejected",
+        error: "Error",
+      };
+
+      let state = { generatedAt: null, total: 0, counts: {}, leads: [] };
+      let filterStatus = "all";
+      let query = "";
+      let prevById = new Map();
+
+      const el = {
+        counts: document.getElementById("counts"),
+        rows: document.getElementById("rows"),
+        empty: document.getElementById("empty"),
+        shown: document.getElementById("shown"),
+        generated: document.getElementById("generated"),
+        live: document.getElementById("live"),
+        liveLabel: document.getElementById("live-label"),
+        search: document.getElementById("search"),
+      };
+
+      function fmtTime(iso) {
+        if (!iso) return "—";
+        const d = new Date(iso);
+        return d.toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+      }
+
+      function setLive(mode, label) {
+        el.live.classList.remove("on", "err");
+        if (mode) el.live.classList.add(mode);
+        el.liveLabel.textContent = label;
+      }
+
+      function filteredLeads() {
+        const q = query.trim().toLowerCase();
+        return state.leads.filter((l) => {
+          if (filterStatus !== "all" && l.status !== filterStatus) return false;
+          if (!q) return true;
+          const hay = [l.name, l.slug, l.phone, l.ownerFirstName, l.metro, l.city]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          return hay.includes(q);
+        });
+      }
+
+      function renderCounts() {
+        const items = [
+          { key: "all", label: "Total", n: state.total },
+          ...STATUS_ORDER.map((key) => ({
+            key,
+            label: STATUS_LABELS[key],
+            n: state.counts[key] || 0,
+          })).filter((x) => x.n > 0 || x.key === filterStatus),
+        ];
+        el.counts.innerHTML = items
+          .map(
+            (c) => `
+          <button type="button" class="count ${filterStatus === c.key ? "active" : ""}" data-status="${c.key}">
+            <span class="n">${c.n}</span>
+            <span class="l">${c.label}</span>
+          </button>`,
+          )
+          .join("");
+      }
+
+      function renderRows() {
+        const leads = filteredLeads();
+        el.shown.textContent = `${leads.length} shown · ${state.total} total`;
+        el.empty.hidden = leads.length > 0;
+        el.rows.innerHTML = leads
+          .map((l) => {
+            const changed =
+              prevById.has(l.id) &&
+              (prevById.get(l.id).status !== l.status ||
+                prevById.get(l.id).updatedAt !== l.updatedAt);
+            const site = l.siteUrl
+              ? `<a href="${escapeAttr(l.siteUrl)}" target="_blank" rel="noopener">Site</a>`
+              : `<span class="muted">Site</span>`;
+            const claim = l.claimUrl
+              ? `<a href="${escapeAttr(l.claimUrl)}" target="_blank" rel="noopener">Claim</a>`
+              : `<span class="muted">Claim</span>`;
+            const owner = l.ownerFirstName
+              ? `<span class="slug">Owner: ${escapeHtml(l.ownerFirstName)}</span>`
+              : "";
+            return `
+            <tr class="${changed ? "flash" : ""}" data-id="${escapeAttr(l.id)}">
+              <td>
+                <span class="name">${escapeHtml(l.name)}</span>
+                <span class="slug">${escapeHtml(l.slug)}</span>
+                ${owner}
+              </td>
+              <td><span class="badge ${escapeAttr(l.status)}">${escapeHtml(l.statusLabel || STATUS_LABELS[l.status] || l.status)}</span></td>
+              <td><div class="links">${site}${claim}</div></td>
+              <td>${escapeHtml(l.city || l.metro || "—")}</td>
+              <td class="time">${fmtTime(l.updatedAt)}</td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      function applyState(next) {
+        const nextMap = new Map(next.leads.map((l) => [l.id, l]));
+        prevById = new Map(state.leads.map((l) => [l.id, l]));
+        state = next;
+        el.generated.textContent = `Updated ${fmtTime(next.generatedAt)}`;
+        renderCounts();
+        renderRows();
+        prevById = nextMap;
+      }
+
+      function escapeHtml(s) {
+        return String(s ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+      function escapeAttr(s) {
+        return escapeHtml(s).replace(/'/g, "&#39;");
+      }
+
+      el.counts.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-status]");
+        if (!btn) return;
+        filterStatus = btn.getAttribute("data-status");
+        renderCounts();
+        renderRows();
+      });
+
+      el.search.addEventListener("input", () => {
+        query = el.search.value;
+        renderRows();
+      });
+
+      async function fetchState() {
+        const res = await fetch("/api/state", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      }
+
+      function connectStream() {
+        const es = new EventSource("/api/stream");
+        es.addEventListener("update", (ev) => {
+          try {
+            applyState(JSON.parse(ev.data));
+            setLive("on", "Live");
+          } catch (err) {
+            console.error(err);
+          }
+        });
+        es.onopen = () => setLive("on", "Live");
+        es.onerror = () => {
+          setLive("err", "Reconnecting…");
+          es.close();
+          setTimeout(connectStream, 1500);
+        };
+      }
+
+      fetchState()
+        .then((data) => {
+          applyState(data);
+          setLive("on", "Live");
+          connectStream();
+        })
+        .catch(async (err) => {
+          console.error(err);
+          setLive("err", "API unavailable");
+          // Fallback: static snapshot if present beside this page
+          try {
+            const res = await fetch("./data.json", { cache: "no-store" });
+            if (res.ok) applyState(await res.json());
+          } catch (_) {}
+        });
+    </script>
+  </body>
+</html>

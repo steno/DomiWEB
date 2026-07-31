@@ -1,8 +1,11 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { stringify } from "csv-stringify/sync";
-import type { Lead, NicheConfig } from "../types/index.js";
-import { resolveGithubPagesUrls } from "../config/load.js";
+import type { Lead, NicheConfig, PipelineProduct } from "../types/index.js";
+import {
+  priceOnceForProduct,
+  resolveGithubPagesUrls,
+} from "../config/load.js";
 import { pickOutreachQuote } from "../generate/site.js";
 import { dataDir, promptsDir } from "../utils/paths.js";
 import { log } from "../utils/logger.js";
@@ -32,6 +35,7 @@ export interface OutreachMessage {
   whatsappCloseUrl: string | null;
   priceOnce: string;
   hostingNote: string;
+  product: PipelineProduct;
   /** Primary channel for DR local businesses */
   channelHint: "whatsapp" | "email_or_postcard" | "postcard";
 }
@@ -46,6 +50,8 @@ const BAD_OWNER_NAMES = new Set([
   "n/a",
   "na",
   "unknown",
+  "null",
+  "undefined",
   "?",
   "-",
 ]);
@@ -132,11 +138,49 @@ function resolveClaimUrl(lead: Lead, config: NicheConfig): string {
   return `https://steno.github.io/DomiWEB/claim/${lead.slug}/`;
 }
 
-function resolveSiteUrl(lead: Lead, config: NicheConfig): string {
-  if (lead.siteUrl) return lead.siteUrl;
+function resolveAssetUrl(
+  lead: Lead,
+  config: NicheConfig,
+  product: PipelineProduct,
+): string {
   const urls = resolveGithubPagesUrls(config, lead.slug);
+  if (product === "reviewKit") {
+    if (urls.kitUrl) return urls.kitUrl;
+    return `https://steno.github.io/DomiWEB/kits/${lead.slug}/`;
+  }
+  if (product === "menu") {
+    if (urls.menuUrl) return urls.menuUrl;
+    return `https://steno.github.io/DomiWEB/menus/${lead.slug}/`;
+  }
+  if (lead.siteUrl) return lead.siteUrl;
   if (urls.siteUrl) return urls.siteUrl;
   return `https://steno.github.io/DomiWEB/sites/${lead.slug}/`;
+}
+
+function whatsappPromptFiles(product: PipelineProduct): {
+  first: string;
+  price: string;
+  close: string;
+} {
+  if (product === "reviewKit") {
+    return {
+      first: "outreach-whatsapp-review-kit.md",
+      price: "outreach-whatsapp-review-kit-price.md",
+      close: "outreach-whatsapp-review-kit-close.md",
+    };
+  }
+  if (product === "menu") {
+    return {
+      first: "outreach-whatsapp-menu.md",
+      price: "outreach-whatsapp-menu-price.md",
+      close: "outreach-whatsapp-menu-close.md",
+    };
+  }
+  return {
+    first: "outreach-whatsapp.md",
+    price: "outreach-whatsapp-price.md",
+    close: "outreach-whatsapp-close.md",
+  };
 }
 
 /** Swap active WhatsApp copy to the price follow-up (for send --price). */
@@ -160,7 +204,10 @@ export function useCloseFollowUp(messages: OutreachMessage[]): OutreachMessage[]
 export function buildOutreachForLead(
   lead: Lead,
   config: NicheConfig,
+  opts: { product?: PipelineProduct } = {},
 ): OutreachMessage {
+  const product = opts.product ?? "site";
+  const prompts = whatsappPromptFiles(product);
   const emailTpl = parseEmailTemplate(
     readFileSync(promptsDir("outreach-email.md"), "utf8"),
   );
@@ -168,13 +215,13 @@ export function buildOutreachForLead(
     readFileSync(promptsDir("outreach-postcard.md"), "utf8"),
   );
   const waTpl = parseWhatsAppTemplate(
-    readFileSync(promptsDir("outreach-whatsapp.md"), "utf8"),
+    readFileSync(promptsDir(prompts.first), "utf8"),
   );
   const waPriceTpl = parseWhatsAppTemplate(
-    readFileSync(promptsDir("outreach-whatsapp-price.md"), "utf8"),
+    readFileSync(promptsDir(prompts.price), "utf8"),
   );
   const waCloseTpl = parseWhatsAppTemplate(
-    readFileSync(promptsDir("outreach-whatsapp-close.md"), "utf8"),
+    readFileSync(promptsDir(prompts.close), "utf8"),
   );
 
   // Prefer a Spanish quote; never ship English tourist text in cold outreach.
@@ -200,7 +247,7 @@ export function buildOutreachForLead(
     });
 
   const owner = greetingName(lead);
-  const priceOnce = config.pricing?.onceLabel ?? "RD$2,000";
+  const priceOnce = priceOnceForProduct(config, product);
   const hostingNote =
     config.pricing?.hostingNote ?? "si lo necesitas, lo hablamos aparte";
   const transfer = transferVars();
@@ -237,7 +284,7 @@ export function buildOutreachForLead(
     address: lead.place.address ?? "",
     reviewQuote: finalQuote ?? "",
     claimUrl: vars.CLAIM_URL,
-    siteUrl: resolveSiteUrl(lead, config),
+    siteUrl: resolveAssetUrl(lead, config, product),
     emailSubject: fill(emailTpl.subject, vars),
     emailBody: fill(emailTpl.body, vars),
     postcardFront: fill(postcardTpl.front, vars),
@@ -250,6 +297,7 @@ export function buildOutreachForLead(
     whatsappCloseUrl,
     priceOnce,
     hostingNote,
+    product,
     channelHint: whatsappUrl ? "whatsapp" : "postcard",
   };
 }
@@ -265,6 +313,7 @@ export function exportOutreachBundle(
   const rows = messages.map((m) => ({
     id: m.leadId,
     slug: m.slug,
+    product: m.product,
     businessName: m.businessName,
     ownerFirstName: m.ownerFirstName,
     phone: m.phone,
@@ -326,8 +375,9 @@ export function exportOutreachBundle(
 export function prepareOutreach(
   leads: Lead[],
   config: NicheConfig,
-  opts: { limit?: number; write?: boolean } = {},
+  opts: { limit?: number; write?: boolean; product?: PipelineProduct } = {},
 ): { messages: OutreachMessage[]; csvPath?: string; jsonPath?: string } {
+  const product = opts.product ?? "site";
   const transfer = transferVars();
   if (transfer.missing.length) {
     log.warn(
@@ -337,8 +387,8 @@ export function prepareOutreach(
 
   const batch = opts.limit ? leads.slice(0, opts.limit) : leads;
   const messages = batch.map((lead) => {
-    log.info(`Outreach · ${lead.place.name}`);
-    const msg = buildOutreachForLead(lead, config);
+    log.info(`Outreach · ${product} · ${lead.place.name}`);
+    const msg = buildOutreachForLead(lead, config, { product });
     const wa = msg.whatsappUrl ? "WhatsApp OK" : "sin WA";
     const name = msg.ownerFirstName || "(sin nombre)";
     log.ok(

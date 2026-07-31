@@ -27,7 +27,7 @@ const ConfigSchema = z.object({
   cities: z.array(CitySchema).min(1),
   qualification: z.object({
     minRating: z.number().min(0).max(5).default(4.0),
-    minReviews: z.number().int().positive().default(20),
+    minReviews: z.number().int().positive().default(8),
     minPhotos: z.number().int().nonnegative().default(5),
     recentReviewDays: z.number().int().positive().default(90),
     allowSocialOnlyWebsite: z.boolean().default(true),
@@ -46,6 +46,8 @@ const ConfigSchema = z.object({
     baseUrl: z.string().default(""),
     sitesPath: z.string().default("sites"),
     claimPath: z.string().default("claim"),
+    kitsPath: z.string().default("kits"),
+    menusPath: z.string().default("menus"),
   }),
   pricing: z
     .object({
@@ -53,10 +55,49 @@ const ConfigSchema = z.object({
       hostingNote: z
         .string()
         .default("si lo necesitas, lo hablamos aparte"),
+      reviewKitOnceLabel: z.string().default("RD$800"),
+      menuOnceLabel: z.string().default("RD$1,500"),
     })
     .default({
       onceLabel: "RD$2,000",
       hostingNote: "si lo necesitas, lo hablamos aparte",
+      reviewKitOnceLabel: "RD$800",
+      menuOnceLabel: "RD$1,500",
+    }),
+  products: z
+    .object({
+      reviewKit: z
+        .object({
+          enabled: z.boolean().default(true),
+          maxReplies: z.number().int().positive().default(8),
+        })
+        .default({ enabled: true, maxReplies: 8 }),
+      menu: z
+        .object({
+          enabled: z.boolean().default(true),
+          categories: z
+            .array(
+              z.object({
+                id: z.string().min(1),
+                label: z.string().min(1),
+                items: z
+                  .array(
+                    z.object({
+                      name: z.string().min(1),
+                      note: z.string().optional(),
+                      priceHint: z.string().optional(),
+                    }),
+                  )
+                  .optional(),
+              }),
+            )
+            .optional(),
+        })
+        .default({ enabled: true }),
+    })
+    .default({
+      reviewKit: { enabled: true, maxReplies: 8 },
+      menu: { enabled: true },
     }),
 });
 
@@ -79,13 +120,35 @@ export function loadConfig(configPath?: string): NicheConfig {
 export function resolveGithubPagesUrls(
   config: NicheConfig,
   slug: string,
-): { siteUrl: string | null; claimUrl: string | null } {
+): {
+  siteUrl: string | null;
+  claimUrl: string | null;
+  kitUrl: string | null;
+  menuUrl: string | null;
+} {
   const base = config.hosting.baseUrl?.replace(/\/$/, "");
   if (!base) {
-    return { siteUrl: null, claimUrl: null };
+    return { siteUrl: null, claimUrl: null, kitUrl: null, menuUrl: null };
   }
+  const kitsPath = config.hosting.kitsPath ?? "kits";
+  const menusPath = config.hosting.menusPath ?? "menus";
   return {
     siteUrl: `${base}/${config.hosting.sitesPath}/${slug}/index.html`,
     claimUrl: `${base}/${config.hosting.claimPath}/${slug}/`,
+    kitUrl: `${base}/${kitsPath}/${slug}/`,
+    menuUrl: `${base}/${menusPath}/${slug}/`,
   };
+}
+
+export function priceOnceForProduct(
+  config: NicheConfig,
+  product: "site" | "reviewKit" | "menu" = "site",
+): string {
+  if (product === "reviewKit") {
+    return config.pricing.reviewKitOnceLabel ?? "RD$800";
+  }
+  if (product === "menu") {
+    return config.pricing.menuOnceLabel ?? "RD$1,500";
+  }
+  return config.pricing.onceLabel ?? "RD$2,000";
 }

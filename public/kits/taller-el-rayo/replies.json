@@ -1,0 +1,32 @@
+[
+  {
+    "reviewIndex": 0,
+    "author": "Pedro V.",
+    "rating": 4,
+    "reviewText": "Arreglaron la transmisión sin vueltas.",
+    "publishedAt": "2026-04-20T09:00:00.000Z",
+    "existingOwnerResponse": null,
+    "tone": "thanks",
+    "reply": "¡Muchas gracias por tu comentario! Nos motiva seguir cuidando cada trabajo. — Taller El Rayo"
+  },
+  {
+    "reviewIndex": 1,
+    "author": "Ana R.",
+    "rating": 5,
+    "reviewText": "Buen precio y rápido. Recomendado en Gazcue.",
+    "publishedAt": "2026-05-01T10:00:00.000Z",
+    "existingOwnerResponse": null,
+    "tone": "soft_cta",
+    "reply": "¡Gracias por tu reseña! Nos alegra saber que saliste contento. Cuando necesites el taller de nuevo, aquí estamos (+1 809-555-0101). — Taller El Rayo"
+  },
+  {
+    "reviewIndex": 2,
+    "author": "Luis M.",
+    "rating": 5,
+    "reviewText": "Excelente trabajo, don Carlos dejó el carro como nuevo. Muy honestos.",
+    "publishedAt": "2026-06-15T14:00:00.000Z",
+    "existingOwnerResponse": "Gracias Luis, aquí estamos para servirle. — Carlos",
+    "tone": "soft_cta",
+    "reply": "¡Gracias por tu reseña! Nos alegra saber que saliste contento. Cuando necesites el taller de nuevo, aquí estamos (+1 809-555-0101). — Taller El Rayo"
+  }
+]

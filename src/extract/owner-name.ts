@@ -81,9 +81,21 @@ export async function extractOwnerFirstName(
   const normalized = firstName
     ? firstName.split(/\s+/)[0]!.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ'-]/g, "")
     : null;
+  const lowered = normalized?.toLowerCase() ?? "";
+  const bogus = new Set([
+    "null",
+    "undefined",
+    "n/a",
+    "na",
+    "unknown",
+    "hola",
+    "dueño",
+    "dueno",
+    "owner",
+  ]);
 
   return {
-    firstName: normalized || null,
+    firstName: normalized && !bogus.has(lowered) ? normalized : null,
     confidence: result.data.confidence,
     evidence: result.data.evidence ?? null,
   };

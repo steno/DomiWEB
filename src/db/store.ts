@@ -4,11 +4,14 @@ import { stringify } from "csv-stringify/sync";
 import type {
   Lead,
   NicheConfig,
+  PipelineProduct,
   QualificationResult,
   ScrapedPlace,
   ScrapeRunSummary,
 } from "../types/index.js";
 import { resolveGithubPagesUrls } from "../config/load.js";
+import { menuExists } from "../generate/menu.js";
+import { kitExists, siteHtmlExists } from "../generate/review-kit.js";
 import { dataDir } from "../utils/paths.js";
 import { leadIdFromPlace, slugify } from "../utils/slug.js";
 
@@ -17,13 +20,26 @@ function ensureDirs() {
     dataDir("leads"),
     dataDir("raw"),
     dataDir("db"),
+    dataDir("dashboard"),
     dataDir("sites"),
+    dataDir("kits"),
     dataDir("videos"),
     dataDir("walkthroughs"),
     dataDir("outreach"),
   ]) {
     mkdirSync(p, { recursive: true });
   }
+}
+
+/** Push a dashboard snapshot after pipeline mutations (breaks import cycle via dynamic import). */
+function notifyDashboard() {
+  queueMicrotask(() => {
+    import("../dashboard/payload.js")
+      .then((m) => m.writeDashboardSnapshot())
+      .catch(() => {
+        /* dashboard is optional while CLI commands run */
+      });
+  });
 }
 
 function dbPath(): string {
@@ -190,6 +206,7 @@ export function upsertScrapedLeads(
 
   tx();
   db.close();
+  notifyDashboard();
   return results;
 }
 
@@ -247,6 +264,7 @@ export function updateOwnerName(
     | Record<string, unknown>
     | undefined;
   db.close();
+  notifyDashboard();
   return row ? rowToLead(row) : null;
 }
 
@@ -296,6 +314,7 @@ export function updateSiteGenerated(
     | Record<string, unknown>
     | undefined;
   db.close();
+  notifyDashboard();
   return row ? rowToLead(row) : null;
 }
 
@@ -339,6 +358,7 @@ export function updateWalkthroughReady(
     | Record<string, unknown>
     | undefined;
   db.close();
+  notifyDashboard();
   return row ? rowToLead(row) : null;
 }
 
@@ -382,10 +402,15 @@ export function updateOutreachReady(
     | Record<string, unknown>
     | undefined;
   db.close();
+  notifyDashboard();
   return row ? rowToLead(row) : null;
 }
 
-export function listLeadsForOutreach(force = false, slug?: string): Lead[] {
+export function listLeadsForOutreach(
+  force = false,
+  slug?: string,
+  product: PipelineProduct = "site",
+): Lead[] {
   let leads = force
     ? [
         ...listLeads("walkthrough_ready"),
@@ -396,16 +421,21 @@ export function listLeadsForOutreach(force = false, slug?: string): Lead[] {
 
   const seen = new Set<string>();
   leads = leads.filter((l) => {
-    if (!l.sitePath) return false;
     if (seen.has(l.id)) return false;
     seen.add(l.id);
-    return true;
+    if (product === "reviewKit") return kitExists(l.slug);
+    if (product === "menu") return menuExists(l.slug);
+    return siteHtmlExists(l.slug) || Boolean(l.sitePath);
   });
   if (slug) leads = leads.filter((l) => l.slug === slug);
   return leads;
 }
 
-export function listLeadsForClaimPages(force = false, slug?: string): Lead[] {
+export function listLeadsForClaimPages(
+  force = false,
+  slug?: string,
+  product: PipelineProduct | "auto" = "auto",
+): Lead[] {
   let leads = force
     ? [
         ...listLeads("site_generated"),
@@ -416,16 +446,21 @@ export function listLeadsForClaimPages(force = false, slug?: string): Lead[] {
 
   const seen = new Set<string>();
   leads = leads.filter((l) => {
-    if (!l.sitePath) return false;
     if (seen.has(l.id)) return false;
     seen.add(l.id);
-    return true;
+    const hasSite = siteHtmlExists(l.slug) || Boolean(l.sitePath);
+    const hasKit = kitExists(l.slug);
+    const hasMenu = menuExists(l.slug);
+    if (product === "reviewKit") return hasKit;
+    if (product === "menu") return hasMenu;
+    if (product === "site") return hasSite && siteHtmlExists(l.slug);
+    return hasSite || hasKit || hasMenu;
   });
   if (slug) leads = leads.filter((l) => l.slug === slug);
   return leads;
 }
 
-/** Leads ready for site generation: named preferred, else qualified. */
+/** Leads ready for site or review-kit generation: named preferred, else qualified. */
 export function listLeadsForSiteGen(force = false, slug?: string): Lead[] {
   let leads: Lead[];
   if (force) {
@@ -450,6 +485,14 @@ export function listLeadsForSiteGen(force = false, slug?: string): Lead[] {
     leads = leads.filter((l) => l.slug === slug);
   }
   return leads;
+}
+
+/** Alias — same pool as site gen (kit can run before or instead of a full site). */
+export function listLeadsForReviewKitGen(
+  force = false,
+  slug?: string,
+): Lead[] {
+  return listLeadsForSiteGen(force, slug);
 }
 
 export function statusCounts(): Record<string, number> {

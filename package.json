@@ -13,9 +13,12 @@
     "qualify": "tsx src/cli.ts qualify",
     "pipeline": "tsx src/cli.ts pipeline",
     "status": "tsx src/cli.ts status",
+    "dashboard": "tsx src/cli.ts dashboard",
     "typecheck": "tsc --noEmit",
     "extract-names": "tsx src/cli.ts extract-names",
     "generate-sites": "tsx src/cli.ts generate-sites",
+    "generate-review-kit": "tsx src/cli.ts generate-review-kit",
+    "generate-menus": "tsx src/cli.ts generate-menus",
     "claim-pages": "tsx src/cli.ts claim-pages",
     "serve:public": "npx --yes serve public -p 4173",
     "generate-video": "tsx src/cli.ts generate-video",
@@ -37,6 +40,7 @@
     "nodemailer": "^9.0.3",
     "openai": "^7.2.0",
     "ora": "^8.2.0",
+    "qrcode": "^1.5.4",
     "resend": "^6.18.1",
     "zod": "^3.24.2"
   },
@@ -44,6 +48,7 @@
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.13.10",
     "@types/nodemailer": "^8.0.1",
+    "@types/qrcode": "^1.5.6",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }

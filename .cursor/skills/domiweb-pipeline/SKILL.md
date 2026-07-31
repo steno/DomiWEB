@@ -2,10 +2,12 @@
 name: domiweb-pipeline
 description: >-
   Runs the DomiWEB Walkthrough Machine for Dominican Republic local businesses
-  (talleres): Apify scrape, qualify, owner names, HTML sites, claim pages,
-  WhatsApp outreach, pricing follow-up, and GitHub Pages deploy. Use when the
-  user mentions DomiWEB, scrape, qualify, generate-sites, claim-pages,
-  outreach, send-whatsapp, wa.me, RD$ pricing, or publishing public/sites.
+  (talleres, restaurants): Apify scrape, qualify, owner names, HTML sites,
+  digital menus + QR, review-reply kits, claim pages, WhatsApp outreach,
+  pricing follow-up, and GitHub Pages deploy. Use when the user mentions DomiWEB,
+  scrape, qualify, generate-sites, generate-menus, generate-review-kit,
+  claim-pages, outreach, send-whatsapp, wa.me, RD$ pricing, or publishing
+  public/sites, public/menus, or public/kits.
 ---
 
 # DomiWEB pipeline
@@ -14,95 +16,117 @@ Repo: Walkthrough Machine for RD businesses (default niche: talleres mecánicos)
 Content language: **es-DO**. Code/docs: English.  
 Pages: `https://steno.github.io/DomiWEB/`
 
+## Product strategy (money)
+
+One repo. Multiple **product types** (templates), not separate projects.  
+No marketing homepage of every service for outbound — the live asset is the pitch.
+
+| Priority | Product | Config | Price field |
+|----------|---------|--------|-------------|
+| Cash now | `site` (talleres) | `niche.config.json` | `onceLabel` RD$2,000 |
+| Ship next | `menu` (restaurants) | `niche.restaurantes.json` | `menuOnceLabel` RD$1,500 |
+| Lighter SKU | `reviewKit` | same scrape | `reviewKitOnceLabel` RD$800 |
+
+Do **not** fragment into new repos. Add templates + niche configs here.
+
 ## When to use
 
-- Live scrape / qualify / sites / claims / WhatsApp
+- Live scrape / qualify / sites / menus / review kits / claims / WhatsApp
 - Pricing or outreach copy changes
-- Pushing `public/sites` + `public/claim` for Pages
+- Pushing `public/sites` + `public/menus` + `public/kits` + `public/claim` for Pages
 
 Read this skill before inventing new CLI flags or re-explaining the funnel.
 
 ## Env (`.env`, never commit)
 
 Required for live work: `APIFY_TOKEN`, `OPENAI_API_KEY`, `GITHUB_PAGES_BASE_URL`, `FAL_KEY` (video).  
-Claim CTA: set `CLAIM_WHATSAPP` (your number) so “Reclamar mi sitio” opens WhatsApp to you. Optional: `CLAIM_INBOX`.  
+Claim CTA: set `CLAIM_WHATSAPP` (your number) so claim CTAs open WhatsApp to you. Optional: `CLAIM_INBOX`.  
 Close kit (after yes): `TRANSFER_BANK`, `TRANSFER_ACCOUNT`, `TRANSFER_NAME` (+ optional `DELIVERY_HOURS`).
 
 ## Commands (run from repo root)
 
 ```bash
 npm run status
-npm run scrape                              # Apify + qualify
-npm run scrape -- -c config/niche.first-batch.json -m santo-domingo
+npm run dashboard
+npm run scrape
+npm run scrape -- -c config/niche.restaurantes.json -m santo-domingo
 npm run extract-names -- --limit 10
 npm run generate-sites -- --limit 10
+npm run generate-menus -- --limit 10
+npm run generate-review-kit -- --limit 10
 npm run claim-pages -- --limit 10
+npm run claim-pages -- --product menu --limit 10
+npm run claim-pages -- --product reviewKit --limit 10
 npm run outreach -- --force
-npm run send-whatsapp                       # first contact (no price)
+npm run outreach -- --product menu --force
+npm run send-whatsapp
 npm run send-whatsapp -- --slug <slug>
-npm run send-whatsapp -- --price --slug <slug>   # AFTER interest only
-npm run send-whatsapp -- --close --slug <slug>   # AFTER they say yes → bank details
-npm run send-whatsapp -- --to +1XXXXXXXXXX  # redirect to a real phone (test)
+npm run send-whatsapp -- --product menu --price --slug <slug>
+npm run send-whatsapp -- --product menu --close --slug <slug>
+npm run send-whatsapp -- --to +1XXXXXXXXXX
 npm run send-whatsapp -- --batch --limit 10
-npm run generate-video -- --lipsync         # optional face-cam
+npm run generate-video -- --lipsync
 ```
 
-`--force` on outreach/sites when status is already past that stage.  
+`--force` on outreach/sites/menus/kits when status is already past that stage.  
 Fixture phones `809-555-…` are **not** on WhatsApp — use scrape or `--to`.
 
 ## Funnel order
 
-1. scrape → qualify (hard gates in `config/niche.config.json`)
-2. extract-names (gpt-4o-mini)
-3. generate-sites (crafted template default; Google photos)
-4. claim-pages → `public/claim/<slug>/` (requires `CLAIM_WHATSAPP`)
-5. outreach → CSV/JSON + `whatsapp.txt` + `whatsapp-price.txt` + `whatsapp-close.txt`
-6. send-whatsapp (user hits Send in WhatsApp)
-7. On interest → `send-whatsapp --price`
-8. On yes → `send-whatsapp --close` (transfer details)
-9. Commit + push `public/` so Pages serves claim URLs **before** first WA
+### Full site (flagship)
 
-Apify calls need `locationQuery` (city + country) — already in `maps-scraper.ts`.
+1. scrape → qualify
+2. extract-names
+3. generate-sites
+4. claim-pages
+5. outreach
+6. send-whatsapp → `--price` → `--close`
+7. Commit + push `public/` before first WA
+
+### Digital menu + QR (restaurants)
+
+1. scrape with `-c config/niche.restaurantes.json`
+2. extract-names
+3. `generate-menus` → `public/menus/<slug>/`
+4. `claim-pages --product menu`
+5. `outreach --product menu`
+6. `send-whatsapp --product menu` → `--price` → `--close`
+
+Placeholder dishes are examples — never invent real prices as facts.
+
+### Review-reply kit (lighter SKU)
+
+1. scrape → qualify → extract-names
+2. `generate-review-kit` → `public/kits/<slug>/`
+3. `claim-pages --product reviewKit`
+4. `outreach --product reviewKit`
+5. `send-whatsapp --product reviewKit` → `--price` → `--close`
 
 ## Pricing (do not put in first WA)
 
-Config: `config/niche.config.json` → `pricing`
-
 | Field | Default |
 |-------|---------|
-| `onceLabel` | `RD$2,000` (pago único — transfer site) |
-| `hostingNote` | `si lo necesitas, lo hablamos aparte` (not in default price WA) |
-
-Templates:
-
-- First: `prompts/outreach-whatsapp.md` — no price; Spanish review quotes only
-- Follow-up: `prompts/outreach-whatsapp-price.md` — only with `--price`
-- Close: `prompts/outreach-whatsapp-close.md` — only with `--close` after yes
+| `onceLabel` | `RD$2,000` (sitio) |
+| `menuOnceLabel` | `RD$1,500` (menú + QR) |
+| `reviewKitOnceLabel` | `RD$800` (kit) |
 
 ## Conversion rules
 
-- Prefer Spanish Google quotes in WA; if none, generic “muy buenas opiniones” (never English tourist quotes)
-- Never greet with fake names (`hola`, empty) — omit name
-- Claim page: one CTA to you (`CLAIM_WHATSAPP`); no “WhatsApp del negocio”
-- One outreach message per business; no fake scarcity
+- Prefer Spanish Google quotes in WA
+- Never greet with fake names
+- Claim CTA only to `CLAIM_WHATSAPP`
+- One outreach message per business
+- Menu: placeholder items + honesty footer
 
 ## Product rules
 
-- Sites: photographic (see `.cursor/rules/site-design-imagery.mdc`)
-- Honesty fences: no invented years, prices, awards, fake reviews
-- Claim audio: muted preview; first click = restart from 0 + sound; labels “Escuchar” / “Silenciar”
-- Track `public/sites/**` and `public/claim/**` in git (Pages); keep `data/**` runtime dumps gitignored
-
-## After generating real sites
-
-1. `git add` sites/claims + code as needed  
-2. Commit when user asks; push `main` → Actions deploys Pages  
-3. Only then send WhatsApp with live claim URLs  
+- Photographic sites/menus (see site-design-imagery rule)
+- No invented years, prices, awards, fake reviews
+- Track `public/sites/**`, `public/menus/**`, `public/kits/**`, `public/claim/**` in git
 
 ## Status check
 
 ```bash
 npm run status
+npm run dashboard
 ```
-
-Leads live in SQLite `data/db/leads.sqlite`. Outreach bundles: `data/outreach/outreach-*.json`.

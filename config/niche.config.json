@@ -80,7 +80,7 @@
 
   "qualification": {
     "minRating": 4.0,
-    "minReviews": 20,
+    "minReviews": 8,
     "minPhotos": 5,
     "recentReviewDays": 90,
     "allowSocialOnlyWebsite": true,
@@ -104,11 +104,25 @@
     "provider": "github-pages",
     "baseUrl": "https://steno.github.io/DomiWEB",
     "sitesPath": "sites",
-    "claimPath": "claim"
+    "claimPath": "claim",
+    "kitsPath": "kits",
+    "menusPath": "menus"
   },
 
   "pricing": {
     "onceLabel": "RD$2,000",
-    "hostingNote": "si lo necesitas, lo hablamos aparte"
+    "hostingNote": "si lo necesitas, lo hablamos aparte",
+    "reviewKitOnceLabel": "RD$800",
+    "menuOnceLabel": "RD$1,500"
+  },
+
+  "products": {
+    "reviewKit": {
+      "enabled": true,
+      "maxReplies": 8
+    },
+    "menu": {
+      "enabled": true
+    }
   }
 }

@@ -1,7 +1,9 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type { Lead, NicheConfig } from "../types/index.js";
+import type { Lead, NicheConfig, PipelineProduct } from "../types/index.js";
 import { resolveGithubPagesUrls } from "../config/load.js";
+import { menuExists } from "../generate/menu.js";
+import { kitExists, siteHtmlExists } from "../generate/review-kit.js";
 import { looksSpanish } from "../generate/site.js";
 import { buildWhatsAppUrl } from "../outreach/phone.js";
 import { dataDir, publicDir } from "../utils/paths.js";
@@ -13,6 +15,11 @@ export interface GeneratedClaimPage {
   claimUrl: string | null;
   siteUrl: string | null;
   hasVideo: boolean;
+  product: PipelineProduct;
+}
+
+export interface ClaimPageOptions {
+  product?: PipelineProduct | "auto";
 }
 
 function escapeHtml(s: string): string {
@@ -30,6 +37,50 @@ function escapeAttr(s: string): string {
 /** Relative URL from claim/<slug>/ to sites/<slug>/ */
 export function relativeSiteHref(slug: string): string {
   return `../../sites/${slug}/index.html`;
+}
+
+/** Relative URL from claim/<slug>/ to kits/<slug>/ */
+export function relativeKitHref(slug: string): string {
+  return `../../kits/${slug}/index.html`;
+}
+
+/** Relative URL from claim/<slug>/ to menus/<slug>/ */
+export function relativeMenuHref(slug: string): string {
+  return `../../menus/${slug}/index.html`;
+}
+
+export function resolveClaimProduct(
+  lead: Lead,
+  preferred: PipelineProduct | "auto" = "auto",
+): PipelineProduct {
+  const hasSite = siteHtmlExists(lead.slug);
+  const hasKit = kitExists(lead.slug);
+  const hasMenu = menuExists(lead.slug);
+  if (preferred === "reviewKit") {
+    if (!hasKit) {
+      throw new Error(
+        `No hay kit de respuestas para ${lead.slug}. Corre generate-review-kit primero.`,
+      );
+    }
+    return "reviewKit";
+  }
+  if (preferred === "menu") {
+    if (!hasMenu) {
+      throw new Error(
+        `No hay menú digital para ${lead.slug}. Corre generate-menus primero.`,
+      );
+    }
+    return "menu";
+  }
+  if (preferred === "site") {
+    if (!hasSite && hasMenu) return "menu";
+    if (!hasSite && hasKit) return "reviewKit";
+    return "site";
+  }
+  if (hasSite) return "site";
+  if (hasMenu) return "menu";
+  if (hasKit) return "reviewKit";
+  return "site";
 }
 
 /** Niche face-cam video under public/videos/ if present. */
@@ -53,15 +104,25 @@ function claimOwnerLabel(lead: Lead): string {
   return n;
 }
 
-function claimMessage(lead: Lead, claimUrl: string | null): string {
+function claimMessage(
+  lead: Lead,
+  claimUrl: string | null,
+  product: PipelineProduct,
+): string {
   const name = claimOwnerLabel(lead);
   const intro = name
     ? `Hola, soy ${name} de ${lead.place.name}.`
     : `Hola, escribo por ${lead.place.name}.`;
+  const want =
+    product === "reviewKit"
+      ? "Vi las respuestas listas para nuestras reseñas de Google y quiero reclamarlas."
+      : product === "menu"
+        ? "Vi el menú digital con QR y quiero reclamarlo."
+        : "Vi la página con nuestras reseñas de Google y quiero reclamarla.";
   return [
     intro,
     "",
-    "Vi la página con nuestras reseñas de Google y quiero reclamarla.",
+    want,
     claimUrl ? `Link: ${claimUrl}` : "",
     lead.place.phone ? `Tel del negocio: ${lead.place.phone}` : "",
     "",
@@ -75,19 +136,27 @@ function claimMessage(lead: Lead, claimUrl: string | null): string {
 function claimActionHref(
   lead: Lead,
   claimUrl: string | null,
+  product: PipelineProduct,
 ): { href: string; kind: "whatsapp" | "mailto" | "fallback" } {
   const waPhone = process.env.CLAIM_WHATSAPP?.trim();
   if (waPhone) {
-    const url = buildWhatsAppUrl(waPhone, claimMessage(lead, claimUrl));
+    const url = buildWhatsAppUrl(
+      waPhone,
+      claimMessage(lead, claimUrl, product),
+    );
     if (url) return { href: url, kind: "whatsapp" };
   }
 
   const inbox = process.env.CLAIM_INBOX?.trim();
   if (inbox) {
     const subject = encodeURIComponent(
-      `Quiero reclamar el sitio de ${lead.place.name}`,
+      product === "reviewKit"
+        ? `Quiero reclamar las respuestas de ${lead.place.name}`
+        : `Quiero reclamar el sitio de ${lead.place.name}`,
     );
-    const body = encodeURIComponent(claimMessage(lead, claimUrl));
+    const body = encodeURIComponent(
+      claimMessage(lead, claimUrl, product),
+    );
     return {
       href: `mailto:${inbox}?subject=${subject}&body=${body}`,
       kind: "mailto",
@@ -111,20 +180,32 @@ export function requireClaimContact(): void {
 
 /**
  * Claim / walkthrough page:
- * - iframe of the generated site with gentle auto-scroll
+ * - iframe of the generated site (or review kit) with gentle auto-scroll
  * - optional circular face-cam video bubble
- * - big "Reclamar mi sitio" CTA
- * - link to open the live HTML site
+ * - big claim CTA
+ * - link to open the live asset
  */
 export function buildClaimPageHtml(
   lead: Lead,
   config: NicheConfig,
+  opts: ClaimPageOptions = {},
 ): string {
+  const product = resolveClaimProduct(lead, opts.product ?? "auto");
   const urls = resolveGithubPagesUrls(config, lead.slug);
-  const siteHref = relativeSiteHref(lead.slug);
-  const absoluteSite = urls.siteUrl ?? siteHref;
+  const previewHref =
+    product === "reviewKit"
+      ? relativeKitHref(lead.slug)
+      : product === "menu"
+        ? relativeMenuHref(lead.slug)
+        : relativeSiteHref(lead.slug);
+  const absolutePreview =
+    product === "reviewKit"
+      ? (urls.kitUrl ?? previewHref)
+      : product === "menu"
+        ? (urls.menuUrl ?? previewHref)
+        : (urls.siteUrl ?? previewHref);
   const videoHref = resolveFaceCamPublicHref(config);
-  const claim = claimActionHref(lead, urls.claimUrl);
+  const claim = claimActionHref(lead, urls.claimUrl, product);
   const owner = claimOwnerLabel(lead);
   const greeting = owner ? `Hola ${escapeHtml(owner)}` : "Hola";
   const rawQuote = lead.outreachQuote?.trim() || "";
@@ -135,19 +216,64 @@ export function buildClaimPageHtml(
 
   const claimHref = claim.href;
   const claimExtra = claim.kind === "fallback" ? `data-fallback="1"` : "";
+  const ctaLabel =
+    product === "reviewKit"
+      ? "Reclamar mis respuestas"
+      : product === "menu"
+        ? "Reclamar mi menú"
+        : "Reclamar mi sitio";
+  const openLabel =
+    product === "reviewKit"
+      ? "Abrir kit completo"
+      : product === "menu"
+        ? "Abrir menú completo"
+        : "Abrir sitio completo";
+  const eyebrow =
+    product === "reviewKit"
+      ? `Respuestas listas · ${escapeHtml(config.niche.labelSingular)}`
+      : product === "menu"
+        ? `Menú digital · ${escapeHtml(config.niche.labelSingular)}`
+        : `Sitio listo · ${escapeHtml(config.niche.labelSingular)}`;
+  const leadCopy =
+    product === "reviewKit"
+      ? `Armamos respuestas en español para tus reseñas públicas de Google.
+      Míralas abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
+      Si te sirven, reclámalas — son tuyas.`
+      : product === "menu"
+        ? `Armamos tu menú digital con categorías, platos de ejemplo y un QR permanente.
+      Míralo abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
+      Si te gusta, reclámalo — es tuyo.`
+        : `Armamos una página con tus reseñas públicas de Google.
+      Mírala abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
+      Si te gusta, reclámala — es tuya.`;
+  const footerAsset =
+    product === "reviewKit"
+      ? "El kit vive en"
+      : product === "menu"
+        ? "El menú vive en"
+        : "El sitio vive en";
   const okHint =
     claim.kind === "whatsapp"
-      ? "Se abre WhatsApp para confirmar — escríbenos ahí y te la pasamos."
+      ? product === "reviewKit"
+        ? "Se abre WhatsApp para confirmar — escríbenos ahí y te las pasamos."
+        : "Se abre WhatsApp para confirmar — escríbenos ahí y te la pasamos."
       : claim.kind === "mailto"
         ? "Revisa tu correo — se abrió un mensaje para confirmar."
         : "Falta configurar CLAIM_WHATSAPP en el servidor. Mientras, escríbenos por el mismo chat de WhatsApp donde te llegó el enlace.";
+
+  const claimTitle =
+    product === "reviewKit"
+      ? "Reclama tus respuestas"
+      : product === "menu"
+        ? "Reclama tu menú"
+        : "Reclama tu sitio";
 
   return `<!DOCTYPE html>
 <html lang="es-DO">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Reclama tu sitio · ${escapeHtml(lead.place.name)}</title>
+<title>${claimTitle} · ${escapeHtml(lead.place.name)}</title>
 <meta name="robots" content="noindex" />
 <style>
 :root {
@@ -354,22 +480,20 @@ h1 {
 <body>
 <div class="shell">
   <header class="top">
-    <p class="eyebrow">Sitio listo · ${escapeHtml(config.niche.labelSingular)}</p>
+    <p class="eyebrow">${eyebrow}</p>
     <h1>${greeting}, esto es para ${escapeHtml(lead.place.name)}</h1>
     <p class="lead">
-      Armamos una página con tus reseñas públicas de Google.
-      Mírala abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
-      Si te gusta, reclámala — es tuya.
+      ${leadCopy}
     </p>
     ${quote ? `<p class="quote">${quote}</p>` : ""}
     <div class="actions">
-      <a class="btn btn-primary" id="btn-claim" href="${escapeAttr(claimHref)}" ${claimExtra}>Reclamar mi sitio</a>
+      <a class="btn btn-primary" id="btn-claim" href="${escapeAttr(claimHref)}" ${claimExtra}>${ctaLabel}</a>
       ${
         videoHref
           ? `<button type="button" class="btn btn-ghost" id="btn-audio-top">Escuchar</button>`
           : ""
       }
-      <a class="btn btn-ghost" href="${escapeAttr(siteHref)}" target="_blank" rel="noopener">Abrir sitio completo</a>
+      <a class="btn btn-ghost" href="${escapeAttr(previewHref)}" target="_blank" rel="noopener">${openLabel}</a>
     </div>
     <div id="panel-ok" role="status">
       Gracias. Anotamos tu interés en <strong>${escapeHtml(lead.place.name)}</strong>.
@@ -377,8 +501,8 @@ h1 {
     </div>
   </header>
 
-  <section class="stage" aria-label="Vista previa del sitio">
-    <iframe id="site-frame" title="${escapeAttr(lead.place.name)}" src="${escapeAttr(siteHref)}" loading="eager"></iframe>
+  <section class="stage" aria-label="Vista previa">
+    <iframe id="site-frame" title="${escapeAttr(lead.place.name)}" src="${escapeAttr(previewHref)}" loading="eager"></iframe>
     ${
       videoHref
         ? `<div class="face-dock">
@@ -394,10 +518,10 @@ h1 {
   <footer class="bottom">
     <p>
       Vista previa honesta a partir de reseñas públicas de Google.
-      No inventamos datos. El sitio vive en
-      <a href="${escapeAttr(absoluteSite)}" style="color:var(--accent)">${escapeHtml(absoluteSite)}</a>
+      No inventamos datos. ${footerAsset}
+      <a href="${escapeAttr(absolutePreview)}" style="color:var(--accent)">${escapeHtml(absolutePreview)}</a>
     </p>
-    <a class="btn btn-primary" href="${escapeAttr(claimHref)}" ${claimExtra}>Reclamar mi sitio</a>
+    <a class="btn btn-primary" href="${escapeAttr(claimHref)}" ${claimExtra}>${ctaLabel}</a>
   </footer>
 </div>
 <script>
@@ -531,8 +655,10 @@ h1 {
 export function writeClaimPage(
   lead: Lead,
   config: NicheConfig,
+  opts: ClaimPageOptions = {},
 ): GeneratedClaimPage {
-  const html = buildClaimPageHtml(lead, config);
+  const product = resolveClaimProduct(lead, opts.product ?? "auto");
+  const html = buildClaimPageHtml(lead, config, { product });
   const claimPath = join(dataDir("walkthroughs"), lead.slug, "index.html");
   const publicPath = join(publicDir("claim"), lead.slug, "index.html");
   mkdirSync(dirname(claimPath), { recursive: true });
@@ -548,15 +674,25 @@ export function writeClaimPage(
     claimPath,
     publicPath,
     claimUrl: urls.claimUrl,
-    siteUrl: urls.siteUrl,
+    siteUrl:
+      product === "reviewKit"
+        ? urls.kitUrl
+        : product === "menu"
+          ? urls.menuUrl
+          : urls.siteUrl,
     hasVideo: Boolean(resolveFaceCamPublicHref(config)),
+    product,
   };
 }
 
 export function generateClaimPagesForLeads(
   leads: Lead[],
   config: NicheConfig,
-  opts: { limit?: number; requireContact?: boolean } = {},
+  opts: {
+    limit?: number;
+    requireContact?: boolean;
+    product?: PipelineProduct | "auto";
+  } = {},
 ): Array<{ lead: Lead; claim: GeneratedClaimPage }> {
   if (opts.requireContact !== false) {
     requireClaimContact();
@@ -565,11 +701,19 @@ export function generateClaimPagesForLeads(
   const out: Array<{ lead: Lead; claim: GeneratedClaimPage }> = [];
   for (const lead of batch) {
     log.info(`Claim · ${lead.place.name} (${lead.slug})`);
-    const claim = writeClaimPage(lead, config);
-    log.ok(
-      `  → ${claim.publicPath}${claim.claimUrl ? ` · ${claim.claimUrl}` : ""}`,
-    );
-    out.push({ lead, claim });
+    try {
+      const claim = writeClaimPage(lead, config, {
+        product: opts.product ?? "auto",
+      });
+      log.ok(
+        `  → ${claim.product} · ${claim.publicPath}${claim.claimUrl ? ` · ${claim.claimUrl}` : ""}`,
+      );
+      out.push({ lead, claim });
+    } catch (err) {
+      log.error(
+        `  ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
   return out;
 }

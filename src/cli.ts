@@ -3,12 +3,13 @@ import "dotenv/config";
 import { Command } from "commander";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { loadConfig, resolveGithubPagesUrls } from "./config/load.js";
+import { loadConfig, priceOnceForProduct, resolveGithubPagesUrls } from "./config/load.js";
 import {
   exportQualifiedJsonCsv,
   listLeads,
   listLeadsForClaimPages,
   listLeadsForOutreach,
+  listLeadsForReviewKitGen,
   listLeadsForSiteGen,
   saveRawScrape,
   saveRunSummary,
@@ -21,6 +22,11 @@ import {
 } from "./db/store.js";
 import { extractNamesForLeads } from "./extract/owner-name.js";
 import { generateSitesForLeads } from "./generate/site.js";
+import {
+  generateReviewKitsForLeads,
+  siteHtmlExists,
+} from "./generate/review-kit.js";
+import { generateMenusForLeads, menuExists } from "./generate/menu.js";
 import { generateFaceCamVideo } from "./generate/video.js";
 import { downloadToFile, generateLipsyncVideo } from "./generate/lipsync.js";
 import {
@@ -35,13 +41,24 @@ import {
 } from "./outreach/send-whatsapp.js";
 import { scrapeAll } from "./scrape/maps-scraper.js";
 import { qualifyPlace } from "./scrape/qualifier.js";
-import type { ScrapedPlace } from "./types/index.js";
+import type { PipelineProduct, ScrapedPlace } from "./types/index.js";
 import { generateClaimPagesForLeads } from "./walkthrough/claim-page.js";
 import { log } from "./utils/logger.js";
 import { pagesSetupInstructions } from "./host/github-pages.js";
 import { copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { dataDir, publicDir } from "./utils/paths.js";
+
+function parseProduct(raw?: string): PipelineProduct {
+  const v = (raw ?? "site").trim().toLowerCase();
+  if (v === "reviewkit" || v === "review-kit" || v === "kit") {
+    return "reviewKit";
+  }
+  if (v === "menu" || v === "menus" || v === "digital-menu") {
+    return "menu";
+  }
+  return "site";
+}
 
 const program = new Command();
 
@@ -239,6 +256,118 @@ program
   });
 
 program
+  .command("generate-review-kit")
+  .description(
+    "Generate Google review-reply kits under public/kits/ (OpenAI drafts + HTML)",
+  )
+  .option("-c, --config <path>", "Path to niche.config.json")
+  .option("--limit <n>", "Max leads to process", (v) => parseInt(v, 10))
+  .option("--force", "Regenerate even if already site_generated+", false)
+  .option("--no-ai", "Use template replies only (no OpenAI)")
+  .option("--slug <slug>", "Only generate for this lead slug")
+  .action(async (opts: {
+    config?: string;
+    limit?: number;
+    force?: boolean;
+    ai?: boolean;
+    slug?: string;
+  }) => {
+    const config = loadConfig(opts.config);
+    if (config.products?.reviewKit?.enabled === false) {
+      log.warn("products.reviewKit.enabled es false en la config.");
+      return;
+    }
+    log.step(4, "Kit de respuestas a reseñas Google");
+    const leads = listLeadsForReviewKitGen(Boolean(opts.force), opts.slug);
+    if (!leads.length) {
+      log.warn("No hay leads qualified/named. Corre scrape + extract-names primero.");
+      return;
+    }
+    const useAi = opts.ai !== false;
+    log.info(
+      `${leads.length} lead(s) · ${useAi ? "OpenAI + HTML" : "plantilla + HTML"}`,
+    );
+
+    const results = await generateReviewKitsForLeads(leads, config, {
+      limit: opts.limit,
+      useAi,
+    });
+
+    for (const { lead, kit } of results) {
+      const urls = resolveGithubPagesUrls(config, lead.slug);
+      const keepSitePath =
+        siteHtmlExists(lead.slug) && lead.sitePath
+          ? lead.sitePath
+          : kit.kitPath;
+      updateSiteGenerated(lead.id, {
+        sitePath: keepSitePath,
+        siteUrl: siteHtmlExists(lead.slug) ? urls.siteUrl : urls.kitUrl,
+        claimUrl: urls.claimUrl,
+        outreachQuote: kit.outreachQuote,
+      });
+    }
+
+    log.ok(`Kits generados: ${results.length}`);
+    log.info("Archivos en public/kits/<slug>/ — luego: claim-pages --product reviewKit");
+    for (const [status, n] of Object.entries(statusCounts()).sort()) {
+      console.log(`  ${status.padEnd(18)} ${n}`);
+    }
+  });
+
+program
+  .command("generate-menus")
+  .description(
+    "Generate mobile digital menus + QR under public/menus/",
+  )
+  .option("-c, --config <path>", "Path to niche.config.json")
+  .option("--limit <n>", "Max leads to process", (v) => parseInt(v, 10))
+  .option("--force", "Regenerate even if already site_generated+", false)
+  .option("--slug <slug>", "Only generate for this lead slug")
+  .action(async (opts: {
+    config?: string;
+    limit?: number;
+    force?: boolean;
+    slug?: string;
+  }) => {
+    const config = loadConfig(opts.config);
+    if (config.products?.menu?.enabled === false) {
+      log.warn("products.menu.enabled es false en la config.");
+      return;
+    }
+    log.step(4, "Menú digital + QR");
+    const leads = listLeadsForSiteGen(Boolean(opts.force), opts.slug);
+    if (!leads.length) {
+      log.warn("No hay leads qualified/named. Corre scrape + extract-names primero.");
+      return;
+    }
+    log.info(`${leads.length} lead(s)`);
+
+    const results = await generateMenusForLeads(leads, config, {
+      limit: opts.limit,
+    });
+
+    for (const { lead, menu } of results) {
+      const urls = resolveGithubPagesUrls(config, lead.slug);
+      const keepSitePath =
+        (siteHtmlExists(lead.slug) || menuExists(lead.slug)) && lead.sitePath
+          ? lead.sitePath
+          : menu.menuPath;
+      updateSiteGenerated(lead.id, {
+        sitePath: keepSitePath,
+        siteUrl: siteHtmlExists(lead.slug) ? urls.siteUrl : urls.menuUrl,
+        claimUrl: urls.claimUrl,
+        outreachQuote: menu.outreachQuote,
+      });
+    }
+
+    log.ok(`Menús generados: ${results.length}`);
+    log.info("Archivos en public/menus/<slug>/ — luego: claim-pages --product menu");
+    for (const [status, n] of Object.entries(statusCounts()).sort()) {
+      console.log(`  ${status.padEnd(18)} ${n}`);
+    }
+  });
+
+program
   .command("generate-video")
   .description(
     "Step 5 — reusable face-cam video (photo + Dominican Spanish TTS + optional lipsync)",
@@ -317,27 +446,48 @@ program
   .option("--limit <n>", "Max leads", (v) => parseInt(v, 10))
   .option("--force", "Regenerate existing walkthrough pages", false)
   .option("--slug <slug>", "Only this slug")
+  .option(
+    "--product <name>",
+    "Asset to preview: site | reviewKit | menu (default: auto)",
+    "auto",
+  )
   .action((opts: {
     config?: string;
     limit?: number;
     force?: boolean;
     slug?: string;
+    product?: string;
   }) => {
     const config = loadConfig(opts.config);
-    log.step(6, "Páginas de reclamo (GitHub Pages)");
+    const productOpt =
+      opts.product === "auto"
+        ? "auto"
+        : parseProduct(opts.product);
+    log.step(6, `Páginas de reclamo (${productOpt})`);
     if (!config.hosting.baseUrl) {
       log.warn("GITHUB_PAGES_BASE_URL vacío — URLs absolutas quedarán pendientes.");
       console.log(pagesSetupInstructions(process.env.GITHUB_REPO));
     }
 
-    const leads = listLeadsForClaimPages(Boolean(opts.force), opts.slug);
+    const leads = listLeadsForClaimPages(
+      Boolean(opts.force),
+      opts.slug,
+      productOpt,
+    );
     if (!leads.length) {
-      log.warn("No hay leads con sitio (`site_generated`). Corre generate-sites primero.");
+      log.warn(
+        productOpt === "reviewKit"
+          ? "No hay leads con kit. Corre generate-review-kit primero."
+          : productOpt === "menu"
+            ? "No hay leads con menú. Corre generate-menus primero."
+            : "No hay leads con sitio (`site_generated`). Corre generate-sites primero.",
+      );
       return;
     }
 
     const results = generateClaimPagesForLeads(leads, config, {
       limit: opts.limit,
+      product: productOpt,
     });
     for (const { lead, claim } of results) {
       updateWalkthroughReady(lead.id, {
@@ -363,24 +513,40 @@ program
   .option("--limit <n>", "Max leads", (v) => parseInt(v, 10))
   .option("--force", "Include leads already outreach_ready / site_generated", false)
   .option("--slug <slug>", "Only this slug")
+  .option(
+    "--product <name>",
+    "site (default) | reviewKit | menu — copy + price",
+    "site",
+  )
   .action((opts: {
     config?: string;
     limit?: number;
     force?: boolean;
     slug?: string;
+    product?: string;
   }) => {
     const config = loadConfig(opts.config);
-    log.step(7, "Outreach (WhatsApp + email/postcard)");
-    const leads = listLeadsForOutreach(Boolean(opts.force), opts.slug);
+    const product = parseProduct(opts.product);
+    log.step(7, `Outreach (${product})`);
+    const leads = listLeadsForOutreach(
+      Boolean(opts.force),
+      opts.slug,
+      product,
+    );
     if (!leads.length) {
       log.warn(
-        "No hay leads listos. Corre claim-pages primero (status walkthrough_ready).",
+        product === "reviewKit"
+          ? "No hay leads con kit + claim. Corre generate-review-kit + claim-pages --product reviewKit."
+          : product === "menu"
+            ? "No hay leads con menú + claim. Corre generate-menus + claim-pages --product menu."
+            : "No hay leads listos. Corre claim-pages primero (status walkthrough_ready).",
       );
       return;
     }
 
     const { messages, csvPath, jsonPath } = prepareOutreach(leads, config, {
       limit: opts.limit,
+      product,
     });
 
     for (const msg of messages) {
@@ -414,12 +580,17 @@ program
   .option("--force", "Rebuild outreach from leads before sending", false)
   .option("--slug <slug>", "Only this slug")
   .option(
+    "--product <name>",
+    "site (default) | reviewKit | menu — when rebuilding outreach",
+    "site",
+  )
+  .option(
     "--to <phone>",
     "Send to this WhatsApp number instead (test fixtures on your phone)",
   )
   .option(
     "--price",
-    "Send price follow-up (RD$2,000 once) — only after interest",
+    "Send price follow-up — only after interest",
     false,
   )
   .option(
@@ -435,11 +606,13 @@ program
     includeSent?: boolean;
     force?: boolean;
     slug?: string;
+    product?: string;
     to?: string;
     price?: boolean;
     close?: boolean;
   }) => {
     const config = loadConfig(opts.config);
+    const product = parseProduct(opts.product);
     if (opts.price && opts.close) {
       log.error("Usa --price o --close, no ambos.");
       return;
@@ -457,12 +630,15 @@ program
     let messages = loadLatestOutreachMessages() ?? [];
 
     if (opts.force || !messages.length) {
-      const leads = listLeadsForOutreach(true);
+      const leads = listLeadsForOutreach(true, undefined, product);
       if (!leads.length) {
         log.warn("No hay leads. Corre outreach / claim-pages primero.");
         return;
       }
-      const prepared = prepareOutreach(leads, config, { limit: opts.limit });
+      const prepared = prepareOutreach(leads, config, {
+        limit: opts.limit,
+        product,
+      });
       messages = prepared.messages;
       for (const msg of messages) {
         updateOutreachReady(msg.leadId, {
@@ -473,34 +649,43 @@ program
       }
     }
 
-    // Rebuild if latest JSON predates price/close fields
+    // Rebuild if latest JSON predates price/close fields or product mismatch
     if (
       (opts.price && messages.some((m) => !m.whatsappPriceMessage)) ||
-      (opts.close && messages.some((m) => !m.whatsappCloseMessage))
+      (opts.close && messages.some((m) => !m.whatsappCloseMessage)) ||
+      (opts.force === false &&
+        messages.some((m) => (m.product ?? "site") !== product) &&
+        (opts.price || opts.close || opts.product === "reviewKit"))
     ) {
-      const leads = listLeadsForOutreach(true, opts.slug);
+      const leads = listLeadsForOutreach(true, opts.slug, product);
       messages = prepareOutreach(leads, config, {
         write: false,
         limit: opts.limit,
+        product,
       }).messages;
     }
 
     if (opts.slug) {
       let filtered = messages.filter((m) => m.slug === opts.slug);
       if (!filtered.length) {
-        const leads = listLeadsForOutreach(true, opts.slug);
+        const leads = listLeadsForOutreach(true, opts.slug, product);
         if (!leads.length) {
           log.warn(`No hay lead con slug ${opts.slug}.`);
           return;
         }
-        filtered = prepareOutreach(leads, config, { write: false }).messages;
+        filtered = prepareOutreach(leads, config, {
+          write: false,
+          product,
+        }).messages;
       }
       messages = filtered;
     }
 
     if (opts.price) {
       messages = usePriceFollowUp(messages);
-      log.info(`Precio: ${config.pricing.onceLabel} único`);
+      log.info(
+        `Precio: ${priceOnceForProduct(config, product)} único (${product})`,
+      );
     }
 
     if (opts.close) {
@@ -603,6 +788,15 @@ program
       }
     }
     console.log();
+  });
+
+program
+  .command("dashboard")
+  .description("Live pipeline dashboard (sites + statuses, auto-refresh)")
+  .option("-p, --port <n>", "Port", (v) => parseInt(v, 10), 4174)
+  .action(async (opts: { port: number }) => {
+    const { startDashboardServer } = await import("./dashboard/server.js");
+    startDashboardServer(opts.port);
   });
 
 program
