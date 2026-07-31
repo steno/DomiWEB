@@ -105,10 +105,19 @@ h1 {
   background: #fff;
   display: block;
 }
-.bubble {
+.face-dock {
   position: absolute;
   right: 1rem;
   bottom: 1rem;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  width: min(34vw, 180px);
+}
+.bubble {
+  position: relative;
   width: min(28vw, 168px);
   height: min(28vw, 168px);
   border-radius: 50%;
@@ -116,27 +125,34 @@ h1 {
   border: 3px solid rgba(238,243,238,0.85);
   box-shadow: 0 12px 40px rgba(0,0,0,0.45);
   background: #1a2420;
-  z-index: 4;
+  cursor: pointer;
 }
 .bubble video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none;
 }
-.bubble-unmute {
-  position: absolute;
-  inset: auto 8% 10%;
+.audio-btn {
+  width: 100%;
   border: 0;
   border-radius: 999px;
-  padding: 0.35rem 0.55rem;
+  padding: 0.7rem 0.85rem;
   font-family: system-ui, sans-serif;
-  font-size: 0.65rem;
-  font-weight: 700;
-  background: rgba(16,22,18,0.82);
-  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: var(--accent);
+  color: var(--accent-ink);
   cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
-.bubble-unmute.hidden { display: none; }
+.audio-btn.hidden { display: none; }
+.audio-btn.is-on {
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
 .bubble-placeholder {
   width: 100%;
   height: 100%;
@@ -177,12 +193,16 @@ h1 {
 }
 #panel-ok.visible { display: block; }
 @media (max-width: 640px) {
+  .face-dock {
+    right: 0.65rem;
+    bottom: 0.65rem;
+    width: 132px;
+  }
   .bubble {
     width: 112px;
     height: 112px;
-    right: 0.65rem;
-    bottom: 0.65rem;
   }
+  .audio-btn { font-size: 0.78rem; padding: 0.65rem 0.7rem; }
   .stage iframe { height: 58vh; }
 }
 </style>
@@ -200,6 +220,7 @@ h1 {
     <p class="quote">“Excelente trabajo, don Carlos dejó el carro como nuevo. Muy honestos.”</p>
     <div class="actions">
       <a class="btn btn-primary" id="btn-claim" href="#reclamar" data-fallback="1">Reclamar mi sitio</a>
+      <button type="button" class="btn btn-ghost" id="btn-audio-top">Activar audio del video</button>
       <a class="btn btn-ghost" href="../../sites/taller-el-rayo/index.html" target="_blank" rel="noopener">Abrir sitio completo</a>
       <a class="btn btn-ghost" href="tel:+18095550101">+1 809-555-0101</a>
     </div>
@@ -211,9 +232,11 @@ h1 {
 
   <section class="stage" aria-label="Vista previa del sitio">
     <iframe id="site-frame" title="Taller El Rayo" src="../../sites/taller-el-rayo/index.html" loading="eager"></iframe>
-    <div class="bubble" id="face-bubble" aria-hidden="false" title="Toca para activar el audio">
-      <video id="face-video" src="../../videos/facecam-talleres-mecanicos.mp4" autoplay muted loop playsinline></video>
-             <button type="button" class="bubble-unmute" id="unmute-btn">Toca para oír</button>
+    <div class="face-dock">
+      <div class="bubble" id="face-bubble" title="Toca para activar el audio" role="button" tabindex="0">
+        <video id="face-video" src="../../videos/facecam-talleres-mecanicos.mp4" autoplay muted loop playsinline preload="auto"></video>
+      </div>
+      <button type="button" class="audio-btn" id="unmute-btn">Toca para oír</button>
     </div>
   </section>
 
@@ -279,15 +302,34 @@ h1 {
 
   var vid = document.getElementById("face-video");
   var unmute = document.getElementById("unmute-btn");
-  function enableAudio() {
-    if (!vid) return;
-    vid.muted = false;
-    vid.play().catch(function () {});
-    if (unmute) unmute.classList.add("hidden");
-  }
-  if (unmute) unmute.addEventListener("click", enableAudio);
+  var topAudio = document.getElementById("btn-audio-top");
   var bubble = document.getElementById("face-bubble");
-  if (bubble) bubble.addEventListener("click", enableAudio);
+  var audioOn = false;
+
+  function enableAudio(ev) {
+    if (ev) ev.preventDefault();
+    if (!vid) return;
+    audioOn = true;
+    vid.muted = false;
+    vid.volume = 1;
+    var p = vid.play();
+    if (p && p.then) p.catch(function () {});
+    if (unmute) {
+      unmute.textContent = "Audio activado";
+      unmute.classList.add("is-on");
+      setTimeout(function () { if (unmute) unmute.classList.add("hidden"); }, 1200);
+    }
+    if (topAudio) topAudio.textContent = "Audio activado";
+  }
+
+  if (unmute) unmute.addEventListener("click", enableAudio);
+  if (topAudio) topAudio.addEventListener("click", enableAudio);
+  if (bubble) {
+    bubble.addEventListener("click", enableAudio);
+    bubble.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" || ev.key === " ") enableAudio(ev);
+    });
+  }
 })();
 </script>
 </body>
