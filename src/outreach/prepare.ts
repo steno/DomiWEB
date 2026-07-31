@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { stringify } from "csv-stringify/sync";
 import type { Lead, NicheConfig } from "../types/index.js";
@@ -6,6 +6,7 @@ import { resolveGithubPagesUrls } from "../config/load.js";
 import { pickOutreachQuote } from "../generate/site.js";
 import { dataDir, promptsDir } from "../utils/paths.js";
 import { log } from "../utils/logger.js";
+import { buildWhatsAppUrl } from "./phone.js";
 
 export interface OutreachMessage {
   leadId: string;
@@ -21,7 +22,10 @@ export interface OutreachMessage {
   emailBody: string;
   postcardFront: string;
   postcardBack: string;
-  channelHint: "email_or_postcard";
+  whatsappMessage: string;
+  whatsappUrl: string | null;
+  /** Primary channel for DR local businesses */
+  channelHint: "whatsapp" | "email_or_postcard" | "postcard";
 }
 
 function fill(template: string, vars: Record<string, string>): string {
@@ -56,10 +60,15 @@ function parsePostcardTemplate(raw: string): {
   };
 }
 
+function parseWhatsAppTemplate(raw: string): string {
+  const match = raw.match(/## Mensaje\s*([\s\S]*?)\n## Reglas/i);
+  return (match?.[1] ?? raw).trim();
+}
+
 function greetingName(lead: Lead): string {
   const n = lead.ownerFirstName?.trim();
   if (n) return n;
-  return "hola";
+  return "";
 }
 
 function resolveClaimUrl(lead: Lead, config: NicheConfig): string {
@@ -86,25 +95,34 @@ export function buildOutreachForLead(
   const postcardTpl = parsePostcardTemplate(
     readFileSync(promptsDir("outreach-postcard.md"), "utf8"),
   );
+  const waTpl = parseWhatsAppTemplate(
+    readFileSync(promptsDir("outreach-whatsapp.md"), "utf8"),
+  );
 
   const quote =
     lead.outreachQuote?.trim() ||
     pickOutreachQuote(lead.place.reviews) ||
     "muy buen servicio";
 
+  const owner = greetingName(lead);
   const vars = {
-    OWNER_FIRST_NAME: greetingName(lead),
+    OWNER_FIRST_NAME: owner || "hola",
+    OWNER_GREETING: owner ? ` ${owner}` : "",
     BUSINESS_NAME: lead.place.name,
     REVIEW_QUOTE: quote,
     CLAIM_URL: resolveClaimUrl(lead, config),
   };
 
+  const whatsappMessage = fill(waTpl, vars);
+  const phone = lead.place.phone ?? "";
+  const whatsappUrl = buildWhatsAppUrl(phone, whatsappMessage);
+
   return {
     leadId: lead.id,
     slug: lead.slug,
     businessName: lead.place.name,
-    ownerFirstName: greetingName(lead),
-    phone: lead.place.phone ?? "",
+    ownerFirstName: owner || "hola",
+    phone,
     address: lead.place.address ?? "",
     reviewQuote: quote,
     claimUrl: vars.CLAIM_URL,
@@ -113,7 +131,9 @@ export function buildOutreachForLead(
     emailBody: fill(emailTpl.body, vars),
     postcardFront: fill(postcardTpl.front, vars),
     postcardBack: fill(postcardTpl.back, vars),
-    channelHint: "email_or_postcard",
+    whatsappMessage,
+    whatsappUrl,
+    channelHint: whatsappUrl ? "whatsapp" : "postcard",
   };
 }
 
@@ -135,21 +155,27 @@ export function exportOutreachBundle(
     reviewQuote: m.reviewQuote,
     claimUrl: m.claimUrl,
     siteUrl: m.siteUrl,
+    channelHint: m.channelHint,
+    whatsappUrl: m.whatsappUrl ?? "",
+    whatsappMessage: m.whatsappMessage.replace(/\n/g, "\\n"),
     emailSubject: m.emailSubject,
     emailBody: m.emailBody.replace(/\n/g, "\\n"),
     postcardFront: m.postcardFront,
     postcardBack: m.postcardBack.replace(/\n/g, "\\n"),
-    channelHint: m.channelHint,
     oneMessageOnly: "true",
   }));
 
   writeFileSync(csvPath, stringify(rows, { header: true }), "utf8");
   writeFileSync(jsonPath, JSON.stringify(messages, null, 2), "utf8");
 
-  // Also write per-lead text files for easy copy/paste
   for (const m of messages) {
     const dir = dataDir("outreach", m.slug);
     mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, "whatsapp.txt"),
+      `${m.whatsappMessage}\n\n${m.whatsappUrl ?? "(sin teléfono WhatsApp)"}\n`,
+      "utf8",
+    );
     writeFileSync(
       join(dir, "email.txt"),
       `Asunto: ${m.emailSubject}\n\n${m.emailBody}\n`,
@@ -168,16 +194,35 @@ export function exportOutreachBundle(
 export function prepareOutreach(
   leads: Lead[],
   config: NicheConfig,
-  opts: { limit?: number } = {},
-): { messages: OutreachMessage[]; csvPath: string; jsonPath: string } {
+  opts: { limit?: number; write?: boolean } = {},
+): { messages: OutreachMessage[]; csvPath?: string; jsonPath?: string } {
   const batch = opts.limit ? leads.slice(0, opts.limit) : leads;
   const messages = batch.map((lead) => {
     log.info(`Outreach · ${lead.place.name}`);
     const msg = buildOutreachForLead(lead, config);
-    log.ok(`  → ${msg.ownerFirstName} · ${msg.claimUrl}`);
+    const wa = msg.whatsappUrl ? "WhatsApp OK" : "sin WA";
+    log.ok(`  → ${msg.ownerFirstName} · ${wa} · ${msg.claimUrl}`);
     return msg;
   });
+  if (opts.write === false) return { messages };
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const paths = exportOutreachBundle(messages, stamp);
   return { messages, ...paths };
+}
+
+/** Load latest outreach JSON bundle. */
+export function loadLatestOutreachMessages(): OutreachMessage[] | null {
+  const dir = dataDir("outreach");
+  try {
+    const files = readdirSync(dir)
+      .filter((f) => f.startsWith("outreach-") && f.endsWith(".json"))
+      .sort()
+      .reverse();
+    if (!files[0]) return null;
+    return JSON.parse(
+      readFileSync(join(dir, files[0]), "utf8"),
+    ) as OutreachMessage[];
+  } catch {
+    return null;
+  }
 }

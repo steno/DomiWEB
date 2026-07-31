@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es-DO">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Centro Automotriz Franklin</title>
+<style>
+:root {
+  --bg: #0c100e;
+  --ink: #f3f6f2;
+  --muted: #a7b6ab;
+  --accent: #c4a35a;
+  --line: rgba(196, 163, 90, 0.28);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  background: var(--bg);
+  line-height: 1.5;
+}
+.hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(1.5rem, 4vh, 2.5rem) 1.25rem 1.75rem;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(8,12,10,0.2) 0%, rgba(8,12,10,0.55) 48%, rgba(8,12,10,0.94) 100%),
+    linear-gradient(135deg, #1a2820, #0e1411 55%, #182218);
+}
+.hero.has-photo {
+  background-image:
+    linear-gradient(180deg, rgba(8,12,10,0.15) 0%, rgba(8,12,10,0.4) 45%, rgba(8,12,10,0.92) 100%),
+    var(--hero-image);
+  background-size: cover, cover;
+  background-position: center, center;
+}
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 920px;
+  width: 100%;
+  margin: 0 auto;
+}
+.kicker {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.brand {
+  margin: 0;
+  font-size: clamp(3rem, 10vw, 5.6rem);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  max-width: 11ch;
+  text-wrap: balance;
+  text-shadow: 0 10px 40px rgba(0,0,0,0.45);
+}
+.sub {
+  margin: 0.9rem 0 0;
+  color: #d5ddd6;
+  font-size: clamp(1.05rem, 2.4vw, 1.28rem);
+  max-width: 30rem;
+}
+.meta {
+  margin: 0.9rem 0 0;
+  color: var(--accent);
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.cta { margin: 1.35rem 0 0; display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #1a1408;
+  text-decoration: none;
+  padding: 0.95rem 1.35rem;
+  font-family: system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  border: 0;
+}
+.phone-hint { font-family: system-ui, sans-serif; color: #c5d0c8; font-size: 0.92rem; }
+.photo-note {
+  margin: 0.85rem 0 0;
+  font-family: system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: rgba(243,246,242,0.7);
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 2.75rem 1.25rem 3.5rem; }
+.photos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+  margin: 0 0 2.5rem;
+}
+.shot { margin: 0; position: relative; overflow: hidden; background: #1c2620; }
+.shot img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.95) contrast(1.04);
+}
+.shot figcaption {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.45rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(0,0,0,0.45);
+  padding: 0.2rem 0.4rem;
+}
+section h2 {
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  letter-spacing: -0.02em;
+}
+.quote {
+  margin: 0 0 1.6rem;
+  padding: 0 0 0 1rem;
+  border-left: 3px solid var(--accent);
+}
+.quote blockquote {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+  line-height: 1.35;
+  max-width: 34rem;
+}
+.quote figcaption {
+  margin-top: 0.55rem;
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.84rem;
+}
+footer {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.78rem;
+}
+@media (max-width: 720px) {
+  .brand { max-width: none; }
+  .photos { grid-template-columns: 1fr; }
+  .shot img { height: 220px; }
+}
+</style>
+</head>
+<body>
+  <header class="hero has-photo" style="--hero-image:url('https://lh3.googleusercontent.com/gps-cs-s/AHRPTWk4L3lvqumWSdl6HFVLJb5FvCSK9t6goZ7FpM3LNbr0tOEdPlq84ZfT2nd3FaJQ4JHAoPlAG4t103Cs0ZLDk3W7aSVfgurVv11tG39peFD9VuhZ5MTYXAchOcTjkW7y3G0W46M=w1920-h1080-k-no')">
+    <div class="hero-inner">
+      <p class="kicker">República Dominicana</p>
+      <h1 class="brand">Centro Automotriz Franklin</h1>
+      <p class="sub">Taller de reparación de automóviles · C. Rafael J Castillo 23, Santo Domingo, República Dominicana</p>
+      <p class="meta">4.1★ en Google · 59 reseñas</p>
+      <p class="cta"><a class="btn" href="tel:+18096160647">Llamar ahora</a>
+       <span class="phone-hint">+1 809-616-0647</span></p>
+      
+    </div>
+  </header>
+  <main class="wrap">
+    <section aria-label="Fotos"><div class="photos"><figure class="shot"><img src="https://lh3.googleusercontent.com/gps-cs-s/AHRPTWlJHuLyxFr3oYldDiuupGii0fEs6M7cLGnDhkfrwJoAf8K6thcrzQ9KWWKDgulVddtpJeEQnQY9F1kAHk5-wIlgH8ThU5S8EZcBaPEZxXy9JqqDRQYYT_nr_49JxAsE_24u3gFZMA=w1920-h1080-k-no" alt="Centro Automotriz Franklin" loading="lazy" width="800" height="500" /></figure>
+<figure class="shot"><img src="https://lh3.googleusercontent.com/gps-cs-s/AHRPTWlflNwylCHQIt8jtTagZZ2LTEaPdqlY-yNdMqxM77-rJifbbIv14M8e27TNpKngPZXDAFcZgx8TBBJb_105X-lfW2sl5MCSjHqcf7JPbnyJVVKhQdVnFh-bLKc6TZcJQoNhx79LDT8moEul=w1920-h1080-k-no" alt="Centro Automotriz Franklin" loading="lazy" width="800" height="500" /></figure>
+<figure class="shot"><img src="https://lh3.googleusercontent.com/gps-cs-s/AHRPTWn30_ji4gUdfW64HlXyqA2oGRou0141nJzeGomtcvQtMwvVWLOD5qvNJtZ7W5TFfYqN6pwQ-rLpdDgA8Vs32qbCV0rsaJ3sAbAU7b5BzHurfSGSJvqXoXo1THf05TJDPFXKYUyzODtP1pdl=w1920-h1080-k-no" alt="Centro Automotriz Franklin" loading="lazy" width="800" height="500" /></figure>
+<figure class="shot"><img src="https://lh3.googleusercontent.com/gps-cs-s/AHRPTWlFOSG6lL18fedZAdxg-64gYBMSEsc3z4mVI19L_5FPWjwg_wMVnGjhtP8X0LczFc1pJju14lHQJD_OFn-ppu4c1VE3_4-J119aXDaoM0L7n_1J7PShssD2VgC-QOosqLhZKptj=w1920-h1080-k-no" alt="Centro Automotriz Franklin" loading="lazy" width="800" height="500" /></figure></div></section>
+    <section>
+      <h2>Lo que dicen en Google</h2>
+      
+      <figure class="quote">
+        <blockquote>“Me resolvieron rápido y con garantía , Excelente servicio.”</blockquote>
+        <figcaption>— Anónimo · 5★</figcaption>
+      </figure>
+
+      <figure class="quote">
+        <blockquote>“Exelente Servicios”</blockquote>
+        <figcaption>— Anónimo · 5★</figcaption>
+      </figure>
+
+      <figure class="quote">
+        <blockquote>“Muy buen servicio.”</blockquote>
+        <figcaption>— Anónimo · 5★</figcaption>
+      </figure>
+
+      <figure class="quote">
+        <blockquote>“Buen sitio de mecánica, un poco lleno por la cantidad de clientes.”</blockquote>
+        <figcaption>— Anónimo · 4★</figcaption>
+      </figure>
+
+      <figure class="quote">
+        <blockquote>“Lleve mi carro por check-in  encendido y los arreglaron muy bien, en tiempo prudente, el precio fue un poco elevado, pero negociable.”</blockquote>
+        <figcaption>— Anónimo · 4★</figcaption>
+      </figure>
+    </section>
+    <footer><p>Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas</p></footer>
+  </main>
+</body>
+</html>

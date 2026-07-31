@@ -144,20 +144,24 @@ Cada claim page incluye:
 
 Tras push a `main`, Actions publica `public/`.
 
-### Step 7 — outreach (email + postcard)
+### Step 7 — outreach (WhatsApp primero)
+
+En RD el canal principal es **WhatsApp** (teléfono público del negocio). Email y postal quedan como respaldo.
 
 ```bash
 npm run outreach
 npm run outreach -- --force --slug taller-el-rayo
+
+# Abre wa.me con el texto listo — tú pulsas Enviar
+npm run send-whatsapp
+npm run send-whatsapp -- --slug taller-el-rayo
+npm run send-whatsapp -- --batch --limit 10
+npm run send-whatsapp -- --slug taller-el-rayo --to +1809XXXXXXX
 ```
 
-Salidas (un mensaje por negocio, tono amistoso, sin escasez falsa):
+(`--to` manda el texto de Carlos a **tu** WhatsApp para probar; el 555 del fixture no existe.)
 
-- `data/outreach/outreach-*.csv` — columnas listas para enviar / imprimir
-- `data/outreach/outreach-*.json`
-- `data/outreach/<slug>/email.txt` + `postcard.txt` — copy/paste
-
-Templates editables: `prompts/outreach-email.md`, `prompts/outreach-postcard.md`.
+Los teléfonos del fixture (`809-555-…`) **no existen en WhatsApp** — solo prueban el flujo. Para chats reales: scrape con Apify y vuelve a correr `outreach` → `send-whatsapp`.
 
 ### Gates de calificación
 

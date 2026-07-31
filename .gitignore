@@ -16,16 +16,7 @@ data/db/*.sqlite
 data/db/*.sqlite-*
 !data/**/.gitkeep
 
-# Generated GitHub Pages content (sites/claim pages are published from public/)
-# Keep demo fixture pages tracked so Pages works out of the box.
-public/sites/**
-public/claim/**
-!public/sites/.gitkeep
-!public/claim/.gitkeep
-!public/sites/taller-el-rayo/**
-!public/sites/taller-los-hermanos/**
-!public/claim/taller-el-rayo/**
-!public/claim/taller-los-hermanos/**
+# public/sites + public/claim are published to GitHub Pages — track them
 !public/index.html
 !public/assets/**
 !public/assets/**/*

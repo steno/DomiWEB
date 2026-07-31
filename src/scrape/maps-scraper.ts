@@ -117,6 +117,7 @@ export async function scrapeCity(
     const run = await client.actor(DEFAULT_ACTOR).call(
       {
         searchStringsArray: [searchQuery],
+        locationQuery: `${metro.name}, ${config.countryName}`,
         maxCrawledPlacesPerSearch: metro.maxResults,
         language: config.scrape.language,
         maxReviews: config.scrape.reviewsPerPlace,

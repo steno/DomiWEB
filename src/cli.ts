@@ -23,7 +23,14 @@ import { extractNamesForLeads } from "./extract/owner-name.js";
 import { generateSitesForLeads } from "./generate/site.js";
 import { generateFaceCamVideo } from "./generate/video.js";
 import { downloadToFile, generateLipsyncVideo } from "./generate/lipsync.js";
-import { prepareOutreach } from "./outreach/prepare.js";
+import {
+  loadLatestOutreachMessages,
+  prepareOutreach,
+} from "./outreach/prepare.js";
+import {
+  redirectWhatsAppTo,
+  sendWhatsAppSemiAuto,
+} from "./outreach/send-whatsapp.js";
 import { scrapeAll } from "./scrape/maps-scraper.js";
 import { qualifyPlace } from "./scrape/qualifier.js";
 import type { ScrapedPlace } from "./types/index.js";
@@ -348,7 +355,7 @@ program
 program
   .command("outreach")
   .description(
-    "Step 7 — personalized email + postcard copy → CSV/JSON (one message per business)",
+    "Step 7 — WhatsApp (primary) + email/postcard fallback → CSV/JSON",
   )
   .option("-c, --config <path>", "Path to niche.config.json")
   .option("--limit <n>", "Max leads", (v) => parseInt(v, 10))
@@ -361,7 +368,7 @@ program
     slug?: string;
   }) => {
     const config = loadConfig(opts.config);
-    log.step(7, "Outreach (email + postcard)");
+    log.step(7, "Outreach (WhatsApp + email/postcard)");
     const leads = listLeadsForOutreach(Boolean(opts.force), opts.slug);
     if (!leads.length) {
       log.warn(
@@ -382,13 +389,97 @@ program
       });
     }
 
-    log.ok(`Mensajes: ${messages.length}`);
+    const withWa = messages.filter((m) => m.whatsappUrl).length;
+    log.ok(`Mensajes: ${messages.length} (${withWa} con WhatsApp)`);
     log.ok(`CSV:  ${csvPath}`);
     log.ok(`JSON: ${jsonPath}`);
-    log.info("Un mensaje por negocio — sin escasez falsa.");
+    log.info("Canal principal: WhatsApp. Luego: npm run send-whatsapp");
     for (const [status, n] of Object.entries(statusCounts()).sort()) {
       console.log(`  ${status.padEnd(18)} ${n}`);
     }
+  });
+
+program
+  .command("send-whatsapp")
+  .description(
+    "Open wa.me chats with prefilled text (you hit Send). Approve each or --batch.",
+  )
+  .option("-c, --config <path>", "Path to niche.config.json")
+  .option("--limit <n>", "Max chats to open", (v) => parseInt(v, 10))
+  .option("--batch", "Confirm once, then open all", false)
+  .option("--no-open", "Only print/write links — do not open browser")
+  .option("--include-sent", "Re-open leads already logged as sent", false)
+  .option("--force", "Rebuild outreach from leads before sending", false)
+  .option("--slug <slug>", "Only this slug")
+  .option(
+    "--to <phone>",
+    "Send to this WhatsApp number instead (test fixtures on your phone)",
+  )
+  .action(async (opts: {
+    config?: string;
+    limit?: number;
+    batch?: boolean;
+    open?: boolean;
+    includeSent?: boolean;
+    force?: boolean;
+    slug?: string;
+    to?: string;
+  }) => {
+    const config = loadConfig(opts.config);
+    log.step(7, "Send WhatsApp (semi-auto)");
+
+    let messages = loadLatestOutreachMessages() ?? [];
+
+    if (opts.force || !messages.length) {
+      const leads = listLeadsForOutreach(true);
+      if (!leads.length) {
+        log.warn("No hay leads. Corre outreach / claim-pages primero.");
+        return;
+      }
+      const prepared = prepareOutreach(leads, config, { limit: opts.limit });
+      messages = prepared.messages;
+      for (const msg of messages) {
+        updateOutreachReady(msg.leadId, {
+          claimUrl: msg.claimUrl,
+          siteUrl: msg.siteUrl,
+          outreachQuote: msg.reviewQuote,
+        });
+      }
+    }
+
+    if (opts.slug) {
+      let filtered = messages.filter((m) => m.slug === opts.slug);
+      if (!filtered.length) {
+        const leads = listLeadsForOutreach(true, opts.slug);
+        if (!leads.length) {
+          log.warn(`No hay lead con slug ${opts.slug}.`);
+          return;
+        }
+        filtered = prepareOutreach(leads, config, { write: false }).messages;
+      }
+      messages = filtered;
+    }
+
+    if (opts.to) {
+      try {
+        messages = redirectWhatsAppTo(messages, opts.to);
+        log.info(`Redirigido a ${opts.to} (texto del lead intacto).`);
+      } catch (err) {
+        log.error(err instanceof Error ? err.message : String(err));
+        return;
+      }
+    }
+
+    const result = await sendWhatsAppSemiAuto(messages, {
+      batch: Boolean(opts.batch),
+      open: opts.open !== false,
+      skipSent: opts.to ? false : !opts.includeSent,
+      limit: opts.limit,
+    });
+
+    log.ok(
+      `Abiertos: ${result.opened} · saltados: ${result.skipped} · fallos: ${result.failed}`,
+    );
   });
 
 program
