@@ -123,25 +123,48 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function escapeAttr(s: string): string {
+  return escapeHtml(s).replace(/'/g, "&#39;");
+}
+
 function telHref(phone: string): string {
   const cleaned = phone.replace(/[^\d+]/g, "");
   return `tel:${cleaned}`;
 }
 
+function isUsablePhotoUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (!/^https?:$/i.test(u.protocol)) return false;
+    const host = u.hostname.toLowerCase();
+    if (host === "example.com" || host.endsWith(".example.com")) return false;
+    if (host === "localhost" || host === "127.0.0.1") return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Deterministic honest template — used if the model fails validation.
- * Only real facts + verbatim quotes.
+ * Crafted honest template — primary generator (better than gpt-4o-mini for local DR shops).
+ * Only real facts + verbatim quotes. No invented services/years/awards.
  */
 export function fallbackSiteHtml(lead: Lead, config: NicheConfig): string {
   const p = lead.place;
   const quotes = p.reviews
     .filter((r) => r.text.trim().length > 15)
     .slice(0, 5);
-  const photos = p.photos.slice(0, 4).map((ph) => ph.url);
+  const photos = p.photos
+    .map((ph) => ph.url)
+    .filter(isUsablePhotoUrl)
+    .slice(0, 5);
   const hasRealPhotos = photos.length > 0;
   const footer = hasRealPhotos
     ? "Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas"
     : "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas";
+
+  const heroPhoto = photos[0] ?? null;
+  const gallery = photos.slice(1);
 
   const quoteBlocks = quotes
     .map(
@@ -153,7 +176,7 @@ export function fallbackSiteHtml(lead: Lead, config: NicheConfig): string {
     )
     .join("\n");
 
-  const photoBlocks = photos
+  const galleryBlocks = gallery
     .map(
       (url) =>
         `<img src="${escapeHtml(url)}" alt="${escapeHtml(p.name)}" loading="lazy" width="800" height="500" />`,
@@ -161,13 +184,25 @@ export function fallbackSiteHtml(lead: Lead, config: NicheConfig): string {
     .join("\n");
 
   const phoneBlock = p.phone
-    ? `<p class="cta"><a class="btn" href="${telHref(p.phone)}">Llamar ${escapeHtml(p.phone)}</a></p>`
+    ? `<p class="cta"><a class="btn" href="${telHref(p.phone)}">Llamar ahora</a>
+       <span class="phone-hint">${escapeHtml(p.phone)}</span></p>`
     : "";
 
-  const ratingLine =
-    p.rating != null
-      ? `<p class="meta">${p.rating}★ en Google${p.reviewCount != null ? ` · ${p.reviewCount} reseñas` : ""}</p>`
-      : "";
+  const ratingBits: string[] = [];
+  if (p.rating != null) ratingBits.push(`${p.rating}★ en Google`);
+  if (p.reviewCount != null) ratingBits.push(`${p.reviewCount} reseñas`);
+  const ratingLine = ratingBits.length
+    ? `<p class="meta">${escapeHtml(ratingBits.join(" · "))}</p>`
+    : "";
+
+  const placeLine = [p.category ?? config.niche.labelSingular, p.address ?? p.city]
+    .filter(Boolean)
+    .map((s) => escapeHtml(String(s)))
+    .join(" · ");
+
+  const heroStyle = heroPhoto
+    ? `style="--hero-image:url('${escapeAttr(heroPhoto)}')"`
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="es-DO">
@@ -177,82 +212,164 @@ export function fallbackSiteHtml(lead: Lead, config: NicheConfig): string {
 <title>${escapeHtml(p.name)}</title>
 <style>
 :root {
-  --bg: #141a16;
-  --ink: #eef3ee;
-  --muted: #9aab9e;
-  --accent: #6fa87a;
-  --panel: #1c2620;
-  --line: #2c3a31;
+  --bg: #0e1411;
+  --ink: #f3f6f2;
+  --muted: #a7b6ab;
+  --accent: #c4a35a;
+  --accent-2: #3f7a55;
+  --panel: rgba(18, 28, 22, 0.78);
+  --line: rgba(196, 163, 90, 0.28);
 }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0;
-  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   color: var(--ink);
-  background:
-    radial-gradient(ellipse at 15% 0%, #24352a 0%, transparent 50%),
-    radial-gradient(ellipse at 90% 70%, #1a2820 0%, transparent 40%),
-    var(--bg);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  background: var(--bg);
   line-height: 1.5;
 }
-.wrap { max-width: 920px; margin: 0 auto; padding: 1.25rem 1.25rem 3rem; }
-header.hero {
-  min-height: 72vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 2.5rem 0 1.5rem;
-  border-bottom: 1px solid var(--line);
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  align-items: end;
+  padding: 1.25rem;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(8,12,10,0.25) 0%, rgba(8,12,10,0.55) 45%, rgba(8,12,10,0.92) 100%),
+    radial-gradient(ellipse at 20% 10%, rgba(63,122,85,0.35), transparent 50%),
+    radial-gradient(ellipse at 85% 30%, rgba(196,163,90,0.18), transparent 45%),
+    linear-gradient(135deg, #1a2820, #0e1411 55%, #182218);
+}
+.hero.has-photo {
+  background-image:
+    linear-gradient(180deg, rgba(8,12,10,0.2) 0%, rgba(8,12,10,0.62) 48%, rgba(8,12,10,0.94) 100%),
+    var(--hero-image),
+    linear-gradient(135deg, #1a2820, #0e1411);
+  background-size: cover, cover, auto;
+  background-position: center, center, center;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -18deg,
+    transparent 0 11px,
+    rgba(255,255,255,0.015) 11px 12px
+  );
+  pointer-events: none;
+}
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 920px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem 0 2rem;
+}
+.kicker {
+  display: inline-block;
+  margin: 0 0 0.85rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 .brand {
-  font-size: clamp(2.4rem, 7vw, 4rem);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  margin: 0 0 0.75rem;
+  margin: 0;
+  font-size: clamp(2.8rem, 9vw, 5.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
   font-weight: 700;
+  max-width: 12ch;
+  text-wrap: balance;
 }
-.sub { margin: 0; color: var(--muted); max-width: 34rem; font-size: 1.1rem; }
-.meta { color: var(--accent); font-weight: 600; margin: 1rem 0 0; }
-.btn {
-  display: inline-block;
-  margin-top: 1.25rem;
-  background: var(--accent);
-  color: #102016;
-  text-decoration: none;
-  padding: 0.85rem 1.25rem;
+.sub {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+  max-width: 28rem;
+}
+.meta {
+  margin: 1rem 0 0;
+  color: var(--ink);
   font-family: system-ui, sans-serif;
   font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+.cta { margin: 1.5rem 0 0; display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #1a1408;
+  text-decoration: none;
+  padding: 0.95rem 1.35rem;
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
   letter-spacing: 0.01em;
+  border: 0;
 }
-.photos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.6rem;
-  margin: 2rem 0;
+.phone-hint {
+  font-family: system-ui, sans-serif;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
-.photos img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-  background: #cfd6c8;
+.scroll-cue {
+  margin-top: 2.25rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 3.5rem;
 }
 section h2 {
-  font-size: 1.35rem;
-  margin: 2rem 0 1rem;
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
   letter-spacing: -0.02em;
 }
 .quote {
-  margin: 0 0 1.1rem;
-  padding: 1rem 1.1rem;
-  background: var(--panel);
-  border-left: 3px solid var(--accent);
+  margin: 0 0 1.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
-.quote blockquote { margin: 0; font-size: 1.05rem; }
+.quote blockquote {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  max-width: 34rem;
+}
 .quote figcaption {
   margin-top: 0.55rem;
   color: var(--muted);
   font-family: system-ui, sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.84rem;
+}
+.photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.55rem;
+  margin: 2.5rem 0 0;
+}
+.photos img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: #1c2620;
+  filter: saturate(0.92) contrast(1.05);
 }
 footer {
   margin-top: 3rem;
@@ -260,25 +377,33 @@ footer {
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-family: system-ui, sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+}
+@media (max-width: 640px) {
+  .brand { max-width: none; }
+  .hero-inner { padding-bottom: 1.5rem; }
 }
 </style>
 </head>
 <body>
-<main class="wrap">
-  <header class="hero">
-    <h1 class="brand">${escapeHtml(p.name)}</h1>
-    <p class="sub">${escapeHtml(p.category ?? config.niche.labelSingular)}${p.address ? ` · ${escapeHtml(p.address)}` : p.city ? ` · ${escapeHtml(p.city)}` : ""}</p>
-    ${ratingLine}
-    ${phoneBlock}
+  <header class="hero${heroPhoto ? " has-photo" : ""}" ${heroStyle}>
+    <div class="hero-inner">
+      <p class="kicker">${escapeHtml(config.countryName)}</p>
+      <h1 class="brand">${escapeHtml(p.name)}</h1>
+      <p class="sub">${placeLine}</p>
+      ${ratingLine}
+      ${phoneBlock}
+      <p class="scroll-cue">Reseñas reales de Google ↓</p>
+    </div>
   </header>
-  ${hasRealPhotos ? `<div class="photos">${photoBlocks}</div>` : ""}
-  <section>
-    <h2>Lo que dicen en Google</h2>
-    ${quoteBlocks || "<p>Consulta nuestras reseñas en Google.</p>"}
-  </section>
-  <footer><p>${escapeHtml(footer)}</p></footer>
-</main>
+  <main class="wrap">
+    <section>
+      <h2>Lo que dicen en Google</h2>
+      ${quoteBlocks || "<p>Consulta nuestras reseñas en Google.</p>"}
+    </section>
+    ${gallery.length ? `<div class="photos">${galleryBlocks}</div>` : ""}
+    <footer><p>${escapeHtml(footer)}</p></footer>
+  </main>
 </body>
 </html>`;
 }
@@ -327,24 +452,26 @@ function writeSiteFiles(slug: string, html: string): {
 export async function generateSiteForLead(
   lead: Lead,
   config: NicheConfig,
-  opts: { preferFallback?: boolean } = {},
+  opts: { preferFallback?: boolean; useAi?: boolean } = {},
 ): Promise<GeneratedSite> {
   const quote = pickOutreachQuote(lead.place.reviews);
+  // Crafted template is default — gpt-4o-mini designs were too generic.
+  const useAi = Boolean(opts.useAi) && !opts.preferFallback;
   let html = "";
-  let usedFallback = Boolean(opts.preferFallback);
+  let usedFallback = !useAi;
 
-  if (!opts.preferFallback) {
+  if (useAi) {
     try {
       html = await generateHtmlWithAi(lead, config);
       const errors = validateGeneratedHtml(html, lead.place);
       if (errors.length) {
-        log.warn(`  HTML AI rechazado: ${errors.join("; ")} → fallback`);
+        log.warn(`  HTML AI rechazado: ${errors.join("; ")} → template`);
         usedFallback = true;
         html = fallbackSiteHtml(lead, config);
       }
     } catch (err) {
       log.warn(
-        `  OpenAI falló: ${err instanceof Error ? err.message : String(err)} → fallback`,
+        `  OpenAI falló: ${err instanceof Error ? err.message : String(err)} → template`,
       );
       usedFallback = true;
       html = fallbackSiteHtml(lead, config);
@@ -366,7 +493,7 @@ export async function generateSiteForLead(
 export async function generateSitesForLeads(
   leads: Lead[],
   config: NicheConfig,
-  opts: { limit?: number; preferFallback?: boolean } = {},
+  opts: { limit?: number; preferFallback?: boolean; useAi?: boolean } = {},
 ): Promise<Array<{ lead: Lead; site: GeneratedSite }>> {
   const batch = opts.limit ? leads.slice(0, opts.limit) : leads;
   const out: Array<{ lead: Lead; site: GeneratedSite }> = [];
@@ -375,10 +502,11 @@ export async function generateSitesForLeads(
     log.info(`Sitio · ${lead.place.name} (${lead.slug})`);
     const site = await generateSiteForLead(lead, config, {
       preferFallback: opts.preferFallback,
+      useAi: opts.useAi,
     });
     const urls = resolveGithubPagesUrls(config, lead.slug);
     log.ok(
-      `  → ${site.usedFallback ? "fallback" : "AI"} · ${site.publicPath}${urls.siteUrl ? ` · ${urls.siteUrl}` : ""}`,
+      `  → ${site.usedFallback ? "template" : "AI"} · ${site.publicPath}${urls.siteUrl ? ` · ${urls.siteUrl}` : ""}`,
     );
     out.push({ lead, site });
   }

@@ -20,12 +20,16 @@ import {
 import { extractNamesForLeads } from "./extract/owner-name.js";
 import { generateSitesForLeads } from "./generate/site.js";
 import { generateFaceCamVideo } from "./generate/video.js";
+import { downloadToFile, generateLipsyncVideo } from "./generate/lipsync.js";
 import { scrapeAll } from "./scrape/maps-scraper.js";
 import { qualifyPlace } from "./scrape/qualifier.js";
 import type { ScrapedPlace } from "./types/index.js";
 import { generateClaimPagesForLeads } from "./walkthrough/claim-page.js";
 import { log } from "./utils/logger.js";
 import { pagesSetupInstructions } from "./host/github-pages.js";
+import { copyFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { dataDir, publicDir } from "./utils/paths.js";
 
 const program = new Command();
 
@@ -174,17 +178,19 @@ program
 
 program
   .command("generate-sites")
-  .description("Step 4 — generate single-file HTML sites (OpenAI + honesty fences)")
+  .description("Step 4 — generate single-file HTML sites (crafted template by default)")
   .option("-c, --config <path>", "Path to niche.config.json")
   .option("--limit <n>", "Max leads to process", (v) => parseInt(v, 10))
   .option("--force", "Regenerate even if status is site_generated", false)
-  .option("--fallback", "Skip AI; use honest deterministic template", false)
+  .option("--ai", "Use OpenAI for HTML instead of crafted template", false)
+  .option("--fallback", "Force crafted template (default)", false)
   .option("--slug <slug>", "Only generate for this lead slug")
   .action(async (opts: {
     config?: string;
     limit?: number;
     force?: boolean;
     fallback?: boolean;
+    ai?: boolean;
     slug?: string;
   }) => {
     const config = loadConfig(opts.config);
@@ -194,11 +200,13 @@ program
       log.warn("No hay leads qualified/named. Corre scrape + extract-names primero.");
       return;
     }
-    log.info(`${leads.length} lead(s) · modelo sitio: ${process.env.OPENAI_SITE_MODEL || process.env.OPENAI_MODEL || "gpt-4o-mini"}`);
+    const useAi = Boolean(opts.ai) && !opts.fallback;
+    log.info(`${leads.length} lead(s) · ${useAi ? "OpenAI" : "crafted template"}`);
 
     const results = await generateSitesForLeads(leads, config, {
       limit: opts.limit,
-      preferFallback: opts.fallback,
+      preferFallback: !useAi,
+      useAi,
     });
 
     for (const { lead, site } of results) {
@@ -221,20 +229,54 @@ program
 program
   .command("generate-video")
   .description(
-    "Step 5 — reusable face-cam video (your photo + Dominican Spanish TTS)",
+    "Step 5 — reusable face-cam video (photo + Dominican Spanish TTS + optional lipsync)",
   )
   .option("-c, --config <path>", "Path to niche.config.json")
+  .option("--lipsync", "Run fal.ai sync-3 lipsync (requires FAL_KEY)", false)
   .option("--refresh-claims", "Regenerate claim pages so the bubble picks up the mp4", false)
-  .action(async (opts: { config?: string; refreshClaims?: boolean }) => {
+  .action(async (opts: {
+    config?: string;
+    lipsync?: boolean;
+    refreshClaims?: boolean;
+  }) => {
     const config = loadConfig(opts.config);
     log.step(5, "Video face-cam reutilizable");
     const result = await generateFaceCamVideo(config);
+
+    if (opts.lipsync) {
+      try {
+        const { videoUrl, requestId } = await generateLipsyncVideo({
+          imagePath: result.sourceImage,
+          audioPath: result.audioPath,
+        });
+        log.ok(`fal lipsync ready · ${requestId}`);
+        const lipsyncPath = join(
+          dataDir("videos"),
+          `facecam-${config.niche.id}-lipsync.mp4`,
+        );
+        await downloadToFile(videoUrl, lipsyncPath);
+        copyFileSync(lipsyncPath, result.publicVideoPath);
+        copyFileSync(
+          lipsyncPath,
+          join(publicDir("videos"), `facecam-${config.niche.id}-lipsync.mp4`),
+        );
+        log.ok(`Lipsync video → ${result.publicVideoPath}`);
+      } catch (err) {
+        log.error(
+          `Lipsync falló: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        log.warn("Se mantiene el video still+audio anterior.");
+      }
+    }
+
     console.log(
       JSON.stringify(
         {
           script: result.script,
           video: result.publicVideoPath,
           audio: result.audioPath,
+          lipsyncRequested: Boolean(opts.lipsync),
+          hasFalKey: Boolean(process.env.FAL_KEY?.trim()),
         },
         null,
         2,

@@ -370,6 +370,8 @@ export function listLeadsForSiteGen(force = false, slug?: string): Lead[] {
       ...listLeads("qualified"),
       ...listLeads("named"),
       ...listLeads("site_generated"),
+      ...listLeads("walkthrough_ready"),
+      ...listLeads("outreach_ready"),
     ];
   } else {
     leads = [...listLeads("named"), ...listLeads("qualified")];
