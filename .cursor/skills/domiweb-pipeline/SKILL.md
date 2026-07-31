@@ -90,7 +90,7 @@ Templates:
 
 - Sites: photographic (see `.cursor/rules/site-design-imagery.mdc`)
 - Honesty fences: no invented years, prices, awards, fake reviews
-- Claim audio: muted preview; first click = restart from 0 + sound; labels “Click to listen” / “Mute”
+- Claim audio: muted preview; first click = restart from 0 + sound; labels “Escuchar” / “Silenciar”
 - Track `public/sites/**` and `public/claim/**` in git (Pages); keep `data/**` runtime dumps gitignored
 
 ## After generating real sites

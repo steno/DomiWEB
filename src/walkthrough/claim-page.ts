@@ -366,7 +366,7 @@ h1 {
       <a class="btn btn-primary" id="btn-claim" href="${escapeAttr(claimHref)}" ${claimExtra}>Reclamar mi sitio</a>
       ${
         videoHref
-          ? `<button type="button" class="btn btn-ghost" id="btn-audio-top">Click to listen</button>`
+          ? `<button type="button" class="btn btn-ghost" id="btn-audio-top">Escuchar</button>`
           : ""
       }
       <a class="btn btn-ghost" href="${escapeAttr(siteHref)}" target="_blank" rel="noopener">Abrir sitio completo</a>
@@ -382,10 +382,10 @@ h1 {
     ${
       videoHref
         ? `<div class="face-dock">
-      <div class="bubble" id="face-bubble" title="Click to listen" role="button" tabindex="0">
+      <div class="bubble" id="face-bubble" title="Escuchar" role="button" tabindex="0">
         <video id="face-video" src="${escapeAttr(videoHref)}" autoplay muted loop playsinline preload="auto"></video>
       </div>
-      <button type="button" class="audio-btn" id="unmute-btn">Click to listen</button>
+      <button type="button" class="audio-btn" id="unmute-btn">Escuchar</button>
     </div>`
         : `<div class="face-dock"><div class="bubble"><div class="bubble-placeholder">Video face-cam<br/>próximamente</div></div></div>`
     }
