@@ -153,6 +153,38 @@ h1 {
   color: var(--ink);
   border: 1px solid var(--line);
 }
+.audio-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(8, 12, 10, 0.55);
+  backdrop-filter: blur(2px);
+  border: 0;
+  cursor: pointer;
+}
+.audio-gate.visible { display: flex; }
+.audio-gate-card {
+  max-width: 22rem;
+  text-align: center;
+  background: rgba(16, 22, 18, 0.92);
+  border: 1px solid var(--line);
+  padding: 1.25rem 1.35rem;
+  pointer-events: none;
+}
+.audio-gate-card strong {
+  display: block;
+  font-size: 1.15rem;
+  margin-bottom: 0.35rem;
+}
+.audio-gate-card span {
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.88rem;
+}
 .bubble-placeholder {
   width: 100%;
   height: 100%;
@@ -232,6 +264,12 @@ h1 {
 
   <section class="stage" aria-label="Vista previa del sitio">
     <iframe id="site-frame" title="Taller El Rayo" src="../../sites/taller-el-rayo/index.html" loading="eager"></iframe>
+    <button type="button" class="audio-gate" id="audio-gate" aria-label="Activar audio">
+      <span class="audio-gate-card">
+        <strong>Toca para oír el mensaje</strong>
+        <span>Los navegadores bloquean el audio automático — un toque lo activa</span>
+      </span>
+    </button>
     <div class="face-dock">
       <div class="bubble" id="face-bubble" title="Toca para activar el audio" role="button" tabindex="0">
         <video id="face-video" src="../../videos/facecam-talleres-mecanicos.mp4" autoplay muted loop playsinline preload="auto"></video>
@@ -304,31 +342,70 @@ h1 {
   var unmute = document.getElementById("unmute-btn");
   var topAudio = document.getElementById("btn-audio-top");
   var bubble = document.getElementById("face-bubble");
+  var gate = document.getElementById("audio-gate");
   var audioOn = false;
 
-  function enableAudio(ev) {
-    if (ev) ev.preventDefault();
-    if (!vid) return;
+  function markAudioOn() {
     audioOn = true;
-    vid.muted = false;
-    vid.volume = 1;
-    var p = vid.play();
-    if (p && p.then) p.catch(function () {});
+    if (gate) gate.classList.remove("visible");
     if (unmute) {
       unmute.textContent = "Audio activado";
       unmute.classList.add("is-on");
-      setTimeout(function () { if (unmute) unmute.classList.add("hidden"); }, 1200);
+      setTimeout(function () { if (unmute) unmute.classList.add("hidden"); }, 900);
     }
-    if (topAudio) topAudio.textContent = "Audio activado";
+    if (topAudio) {
+      topAudio.textContent = "Audio activado";
+      topAudio.style.opacity = "0.7";
+    }
+  }
+
+  function enableAudio(ev) {
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+    if (!vid || audioOn) return;
+    vid.muted = false;
+    vid.volume = 1;
+    var p = vid.play();
+    if (p && p.then) {
+      p.then(markAudioOn).catch(function () {
+        vid.muted = true;
+        if (gate) gate.classList.add("visible");
+      });
+    } else {
+      markAudioOn();
+    }
+  }
+
+  function tryAutoSound() {
+    if (!vid) return;
+    // Browsers usually block this; we try anyway, then fall back to one-tap gate.
+    vid.muted = false;
+    vid.volume = 1;
+    var p = vid.play();
+    if (p && p.then) {
+      p.then(markAudioOn).catch(function () {
+        vid.muted = true;
+        vid.play().catch(function () {});
+        if (gate) gate.classList.add("visible");
+      });
+    }
   }
 
   if (unmute) unmute.addEventListener("click", enableAudio);
   if (topAudio) topAudio.addEventListener("click", enableAudio);
+  if (gate) gate.addEventListener("click", enableAudio);
   if (bubble) {
     bubble.addEventListener("click", enableAudio);
     bubble.addEventListener("keydown", function (ev) {
       if (ev.key === "Enter" || ev.key === " ") enableAudio(ev);
     });
+  }
+
+  if (vid) {
+    if (vid.readyState >= 2) tryAutoSound();
+    else vid.addEventListener("loadeddata", tryAutoSound, { once: true });
   }
 })();
 </script>
