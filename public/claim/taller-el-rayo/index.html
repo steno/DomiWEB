@@ -153,38 +153,6 @@ h1 {
   color: var(--ink);
   border: 1px solid var(--line);
 }
-.audio-gate {
-  position: absolute;
-  inset: 0;
-  z-index: 8;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 1.25rem;
-  background: rgba(8, 12, 10, 0.55);
-  backdrop-filter: blur(2px);
-  border: 0;
-  cursor: pointer;
-}
-.audio-gate.visible { display: flex; }
-.audio-gate-card {
-  max-width: 22rem;
-  text-align: center;
-  background: rgba(16, 22, 18, 0.92);
-  border: 1px solid var(--line);
-  padding: 1.25rem 1.35rem;
-  pointer-events: none;
-}
-.audio-gate-card strong {
-  display: block;
-  font-size: 1.15rem;
-  margin-bottom: 0.35rem;
-}
-.audio-gate-card span {
-  color: var(--muted);
-  font-family: system-ui, sans-serif;
-  font-size: 0.88rem;
-}
 .bubble-placeholder {
   width: 100%;
   height: 100%;
@@ -252,7 +220,7 @@ h1 {
     <p class="quote">“Excelente trabajo, don Carlos dejó el carro como nuevo. Muy honestos.”</p>
     <div class="actions">
       <a class="btn btn-primary" id="btn-claim" href="#reclamar" data-fallback="1">Reclamar mi sitio</a>
-      <button type="button" class="btn btn-ghost" id="btn-audio-top">Activar / silenciar audio</button>
+      <button type="button" class="btn btn-ghost" id="btn-audio-top">Oír mensaje</button>
       <a class="btn btn-ghost" href="../../sites/taller-el-rayo/index.html" target="_blank" rel="noopener">Abrir sitio completo</a>
       <a class="btn btn-ghost" href="tel:+18095550101">+1 809-555-0101</a>
     </div>
@@ -264,14 +232,8 @@ h1 {
 
   <section class="stage" aria-label="Vista previa del sitio">
     <iframe id="site-frame" title="Taller El Rayo" src="../../sites/taller-el-rayo/index.html" loading="eager"></iframe>
-    <button type="button" class="audio-gate" id="audio-gate" aria-label="Activar audio">
-      <span class="audio-gate-card">
-        <strong>Toca para oír el mensaje</strong>
-        <span>Los navegadores bloquean el audio automático — un toque lo activa</span>
-      </span>
-    </button>
     <div class="face-dock">
-      <div class="bubble" id="face-bubble" title="Toca para activar el audio" role="button" tabindex="0">
+      <div class="bubble" id="face-bubble" title="Toca para oír desde el inicio" role="button" tabindex="0">
         <video id="face-video" src="../../videos/facecam-talleres-mecanicos.mp4" autoplay muted loop playsinline preload="auto"></video>
       </div>
       <button type="button" class="audio-btn" id="unmute-btn">Toca para oír</button>
@@ -342,79 +304,60 @@ h1 {
   var unmute = document.getElementById("unmute-btn");
   var topAudio = document.getElementById("btn-audio-top");
   var bubble = document.getElementById("face-bubble");
-  var gate = document.getElementById("audio-gate");
   var audioOn = false;
+  var startedWithSound = false;
 
   function syncLabels() {
-    if (gate) gate.classList.toggle("visible", !audioOn);
     if (unmute) {
       unmute.classList.remove("hidden");
       unmute.textContent = audioOn ? "Silenciar" : "Toca para oír";
       unmute.classList.toggle("is-on", audioOn);
     }
     if (topAudio) {
-      topAudio.textContent = audioOn ? "Silenciar audio" : "Activar audio";
-      topAudio.style.opacity = "1";
+      topAudio.textContent = audioOn ? "Silenciar" : "Oír mensaje";
     }
     if (bubble) {
-      bubble.title = audioOn ? "Toca para silenciar" : "Toca para activar el audio";
+      bubble.title = audioOn
+        ? "Toca para silenciar"
+        : "Toca para oír desde el inicio";
     }
   }
 
-  function setAudioOn(on) {
+  function playFromStartWithSound() {
     if (!vid) return;
-    audioOn = !!on;
-    vid.muted = !audioOn;
+    startedWithSound = true;
+    audioOn = true;
+    vid.muted = false;
     vid.volume = 1;
-    if (audioOn) {
-      var p = vid.play();
-      if (p && p.then) p.catch(function () {});
-    }
+    vid.loop = false;
+    try { vid.currentTime = 0; } catch (e) {}
+    var p = vid.play();
+    if (p && p.then) p.catch(function () {});
     syncLabels();
   }
 
-  function enableAudio(ev) {
-    if (ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-    }
-    setAudioOn(true);
-  }
-
-  function muteAudio(ev) {
-    if (ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-    }
-    setAudioOn(false);
+  function muteAudio() {
+    if (!vid) return;
+    audioOn = false;
+    vid.muted = true;
+    syncLabels();
   }
 
   function toggleAudio(ev) {
-    if (audioOn) muteAudio(ev);
-    else enableAudio(ev);
-  }
-
-  function tryAutoSound() {
-    if (!vid) return;
-    // Browsers usually block unmuted autoplay; fall back to one-tap gate.
-    vid.muted = false;
-    vid.volume = 1;
-    var p = vid.play();
-    if (p && p.then) {
-      p.then(function () {
-        setAudioOn(true);
-      }).catch(function () {
-        vid.muted = true;
-        vid.play().catch(function () {});
-        setAudioOn(false);
-        if (gate) gate.classList.add("visible");
-      });
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
     }
+    if (audioOn) {
+      muteAudio();
+      return;
+    }
+    // Best practice for a pitch clip: first listen starts at 0 with sound.
+    playFromStartWithSound();
   }
 
   if (unmute) unmute.addEventListener("click", toggleAudio);
   if (topAudio) topAudio.addEventListener("click", toggleAudio);
-  if (gate) gate.addEventListener("click", enableAudio);
   if (bubble) {
     bubble.addEventListener("click", toggleAudio);
     bubble.addEventListener("keydown", function (ev) {
@@ -422,11 +365,13 @@ h1 {
     });
   }
 
-  syncLabels();
+  // Muted autoplay preview only — browsers block sound without a click.
   if (vid) {
-    if (vid.readyState >= 2) tryAutoSound();
-    else vid.addEventListener("loadeddata", tryAutoSound, { once: true });
+    vid.muted = true;
+    vid.loop = true;
+    vid.play().catch(function () {});
   }
+  syncLabels();
 })();
 </script>
 </body>
