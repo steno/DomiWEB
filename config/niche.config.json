@@ -90,5 +90,10 @@
     "baseUrl": "https://steno.github.io/DomiWEB",
     "sitesPath": "sites",
     "claimPath": "claim"
+  },
+
+  "pricing": {
+    "onceLabel": "RD$2,000",
+    "hostingNote": "al precio estándar del proveedor"
   }
 }

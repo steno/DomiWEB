@@ -27,28 +27,39 @@ export function redirectWhatsAppTo(
 ): OutreachMessage[] {
   return messages.map((m) => {
     const whatsappUrl = buildWhatsAppUrl(phone, m.whatsappMessage);
+    const whatsappPriceUrl = buildWhatsAppUrl(phone, m.whatsappPriceMessage);
     if (!whatsappUrl) {
       throw new Error(`Número inválido para WhatsApp: ${phone}`);
     }
-    return { ...m, phone, whatsappUrl };
+    return { ...m, phone, whatsappUrl, whatsappPriceUrl };
   });
 }
 
-function sentLogPath(): string {
+function sentLogPath(kind: "whatsapp" | "whatsapp-price" = "whatsapp"): string {
   mkdirSync(dataDir("outreach"), { recursive: true });
-  return dataDir("outreach", "whatsapp-sent.log");
+  return dataDir(
+    "outreach",
+    kind === "whatsapp-price" ? "whatsapp-price-sent.log" : "whatsapp-sent.log",
+  );
 }
 
-function alreadySent(leadId: string): boolean {
-  const path = sentLogPath();
+function alreadySent(
+  leadId: string,
+  kind: "whatsapp" | "whatsapp-price" = "whatsapp",
+): boolean {
+  const path = sentLogPath(kind);
   if (!existsSync(path)) return false;
   return readFileSync(path, "utf8").includes(`\t${leadId}\t`);
 }
 
-function markSent(leadId: string, slug: string) {
+function markSent(
+  leadId: string,
+  slug: string,
+  kind: "whatsapp" | "whatsapp-price" = "whatsapp",
+) {
   appendFileSync(
-    sentLogPath(),
-    `${new Date().toISOString()}\t${leadId}\t${slug}\twhatsapp\n`,
+    sentLogPath(kind),
+    `${new Date().toISOString()}\t${leadId}\t${slug}\t${kind}\n`,
     "utf8",
   );
 }
@@ -88,12 +99,14 @@ export async function sendWhatsAppSemiAuto(
     open?: boolean;
     skipSent?: boolean;
     limit?: number;
+    kind?: "whatsapp" | "whatsapp-price";
   } = {},
 ): Promise<{ opened: number; skipped: number; failed: number }> {
+  const kind = opts.kind ?? "whatsapp";
   let batch = messages.filter((m) => m.whatsappUrl);
   const missingPhone = messages.filter((m) => !m.whatsappUrl).length;
   if (opts.skipSent !== false) {
-    batch = batch.filter((m) => !alreadySent(m.leadId));
+    batch = batch.filter((m) => !alreadySent(m.leadId, kind));
   }
   if (opts.limit != null) batch = batch.slice(0, opts.limit);
 
@@ -102,10 +115,11 @@ export async function sendWhatsAppSemiAuto(
   }
   if (!batch.length) {
     const sentOnly =
-      messages.filter((m) => m.whatsappUrl && alreadySent(m.leadId)).length > 0;
+      messages.filter((m) => m.whatsappUrl && alreadySent(m.leadId, kind))
+        .length > 0;
     if (sentOnly) {
       log.warn(
-        "Todos ya están en whatsapp-sent.log. Usa --include-sent para reabrir.",
+        `Todos ya están en ${kind === "whatsapp-price" ? "whatsapp-price-sent.log" : "whatsapp-sent.log"}. Usa --include-sent para reabrir.`,
       );
     } else {
       log.warn("Nada que abrir (sin números WhatsApp en el bundle).");
@@ -114,7 +128,7 @@ export async function sendWhatsAppSemiAuto(
   }
 
   log.info(
-    `${batch.length} mensaje(s) · modo ${opts.batch ? "batch" : "aprobar uno a uno"}`,
+    `${batch.length} mensaje(s) · ${kind === "whatsapp-price" ? "precio (follow-up)" : "primer contacto"} · modo ${opts.batch ? "batch" : "aprobar uno a uno"}`,
   );
   log.info("Se abre WhatsApp con el texto listo — tú pulsas Enviar.");
   const demoCount = batch.filter((m) => isDemoPhone(m.phone)).length;
@@ -132,7 +146,7 @@ export async function sendWhatsAppSemiAuto(
     if (!msg.whatsappUrl) return;
     if (opts.open !== false) {
       openUrl(msg.whatsappUrl);
-      markSent(msg.leadId, msg.slug);
+      markSent(msg.leadId, msg.slug, kind);
       log.ok(`Abierto · ${msg.businessName}`);
     } else {
       log.ok(`Link listo · ${msg.businessName}`);

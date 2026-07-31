@@ -47,6 +47,17 @@ const ConfigSchema = z.object({
     sitesPath: z.string().default("sites"),
     claimPath: z.string().default("claim"),
   }),
+  pricing: z
+    .object({
+      onceLabel: z.string().default("RD$2,000"),
+      hostingNote: z
+        .string()
+        .default("al precio estándar del proveedor"),
+    })
+    .default({
+      onceLabel: "RD$2,000",
+      hostingNote: "al precio estándar del proveedor",
+    }),
 });
 
 export function loadConfig(configPath?: string): NicheConfig {

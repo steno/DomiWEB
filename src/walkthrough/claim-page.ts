@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { Lead, NicheConfig } from "../types/index.js";
 import { resolveGithubPagesUrls } from "../config/load.js";
+import { buildWhatsAppUrl } from "../outreach/phone.js";
 import { dataDir, publicDir } from "../utils/paths.js";
 import { log } from "../utils/logger.js";
 
@@ -41,27 +42,45 @@ export function resolveFaceCamPublicHref(config: NicheConfig): string | null {
   return null;
 }
 
-function claimMailto(lead: Lead, claimUrl: string | null): string | null {
+function claimMessage(lead: Lead, claimUrl: string | null): string {
+  const name = lead.ownerFirstName?.trim() || "hola";
+  return [
+    `Hola, soy ${name} de ${lead.place.name}.`,
+    "",
+    "Vi la página con nuestras reseñas de Google y quiero reclamarla.",
+    claimUrl ? `Link: ${claimUrl}` : "",
+    lead.place.phone ? `Tel del negocio: ${lead.place.phone}` : "",
+    "",
+    "¿Cómo seguimos?",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/** Prefer WhatsApp to CLAIM_WHATSAPP; else mailto CLAIM_INBOX. */
+function claimActionHref(
+  lead: Lead,
+  claimUrl: string | null,
+): { href: string; kind: "whatsapp" | "mailto" | "fallback" } {
+  const waPhone = process.env.CLAIM_WHATSAPP?.trim();
+  if (waPhone) {
+    const url = buildWhatsAppUrl(waPhone, claimMessage(lead, claimUrl));
+    if (url) return { href: url, kind: "whatsapp" };
+  }
+
   const inbox = process.env.CLAIM_INBOX?.trim();
-  if (!inbox) return null;
-  const name = lead.ownerFirstName || "hola";
-  const subject = encodeURIComponent(
-    `Quiero reclamar el sitio de ${lead.place.name}`,
-  );
-  const body = encodeURIComponent(
-    [
-      `Hola, soy ${name} de ${lead.place.name}.`,
-      "",
-      "Vi la página que armaron con nuestras reseñas de Google y quiero reclamarla.",
-      claimUrl ? `Link: ${claimUrl}` : "",
-      lead.place.phone ? `Teléfono del negocio: ${lead.place.phone}` : "",
-      "",
-      "Gracias.",
-    ]
-      .filter(Boolean)
-      .join("\n"),
-  );
-  return `mailto:${inbox}?subject=${subject}&body=${body}`;
+  if (inbox) {
+    const subject = encodeURIComponent(
+      `Quiero reclamar el sitio de ${lead.place.name}`,
+    );
+    const body = encodeURIComponent(claimMessage(lead, claimUrl));
+    return {
+      href: `mailto:${inbox}?subject=${subject}&body=${body}`,
+      kind: "mailto",
+    };
+  }
+
+  return { href: "#reclamar", kind: "fallback" };
 }
 
 /**
@@ -79,7 +98,7 @@ export function buildClaimPageHtml(
   const siteHref = relativeSiteHref(lead.slug);
   const absoluteSite = urls.siteUrl ?? siteHref;
   const videoHref = resolveFaceCamPublicHref(config);
-  const mailto = claimMailto(lead, urls.claimUrl);
+  const claim = claimActionHref(lead, urls.claimUrl);
   const greeting = lead.ownerFirstName
     ? `Hola ${escapeHtml(lead.ownerFirstName)}`
     : "Hola";
@@ -88,10 +107,14 @@ export function buildClaimPageHtml(
     : null;
   const phone = lead.place.phone;
 
-  const claimHref = mailto ?? "#reclamar";
-  const claimExtra = mailto
-    ? ""
-    : `data-fallback="1"`;
+  const claimHref = claim.href;
+  const claimExtra = claim.kind === "fallback" ? `data-fallback="1"` : "";
+  const okHint =
+    claim.kind === "whatsapp"
+      ? "Se abre WhatsApp para confirmar — escríbenos ahí y te la pasamos."
+      : claim.kind === "mailto"
+        ? "Revisa tu correo — se abrió un mensaje para confirmar."
+        : "Falta configurar CLAIM_WHATSAPP en el servidor. Mientras, escríbenos por el mismo chat de WhatsApp donde te llegó el enlace.";
 
   return `<!DOCTYPE html>
 <html lang="es-DO">
@@ -325,7 +348,7 @@ h1 {
     </div>
     <div id="panel-ok" role="status">
       Gracias. Anotamos tu interés en <strong>${escapeHtml(lead.place.name)}</strong>.
-      ${mailto ? "Revisa tu correo — se abrió un mensaje para confirmar." : "Te contactaremos usando el teléfono público del negocio en Google."}
+      ${okHint}
     </div>
   </header>
 

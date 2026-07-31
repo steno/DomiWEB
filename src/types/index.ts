@@ -104,6 +104,12 @@ export interface NicheConfig {
     sitesPath: string;
     claimPath: string;
   };
+  pricing: {
+    /** One-time transfer / claim fee */
+    onceLabel: string;
+    /** How to describe optional hosting (not bundled) */
+    hostingNote: string;
+  };
 }
 
 export interface CityConfig {

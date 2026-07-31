@@ -139,7 +139,7 @@ npm run serve:public
 Cada claim page incluye:
 - iframe del sitio con auto-scroll suave
 - burbuja face-cam (cuando exista `public/videos/facecam-<nicho>.mp4`)
-- botón grande **Reclamar mi sitio** (`mailto:` si defines `CLAIM_INBOX` en `.env`)
+- botón grande **Reclamar mi sitio** → abre WhatsApp a `CLAIM_WHATSAPP` (tu número) con texto listo; si no, `mailto:` a `CLAIM_INBOX`
 - link al HTML completo
 
 Tras push a `main`, Actions publica `public/`.
@@ -157,11 +157,13 @@ npm run send-whatsapp
 npm run send-whatsapp -- --slug taller-el-rayo
 npm run send-whatsapp -- --batch --limit 10
 npm run send-whatsapp -- --slug taller-el-rayo --to +1809XXXXXXX
+# Después de que digan que les gusta:
+npm run send-whatsapp -- --price --slug car-tech-oa-srl
 ```
 
-(`--to` manda el texto de Carlos a **tu** WhatsApp para probar; el 555 del fixture no existe.)
+(`--to` manda el texto a **tu** WhatsApp para probar. `--price` = follow-up: **RD$2,000** pago único; hosting aparte al precio estándar.)
 
-Los teléfonos del fixture (`809-555-…`) **no existen en WhatsApp** — solo prueban el flujo. Para chats reales: scrape con Apify y vuelve a correr `outreach` → `send-whatsapp`.
+Templates: `prompts/outreach-whatsapp.md`, `outreach-whatsapp-price.md`. Precios en `config/niche.config.json` → `pricing`.
 
 ### Gates de calificación
 

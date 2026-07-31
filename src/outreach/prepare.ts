@@ -24,6 +24,11 @@ export interface OutreachMessage {
   postcardBack: string;
   whatsappMessage: string;
   whatsappUrl: string | null;
+  /** Follow-up after they like / open the claim */
+  whatsappPriceMessage: string;
+  whatsappPriceUrl: string | null;
+  priceOnce: string;
+  hostingNote: string;
   /** Primary channel for DR local businesses */
   channelHint: "whatsapp" | "email_or_postcard" | "postcard";
 }
@@ -85,6 +90,15 @@ function resolveSiteUrl(lead: Lead, config: NicheConfig): string {
   return `https://steno.github.io/DomiWEB/sites/${lead.slug}/`;
 }
 
+/** Swap active WhatsApp copy to the price follow-up (for send --price). */
+export function usePriceFollowUp(messages: OutreachMessage[]): OutreachMessage[] {
+  return messages.map((m) => ({
+    ...m,
+    whatsappMessage: m.whatsappPriceMessage,
+    whatsappUrl: m.whatsappPriceUrl,
+  }));
+}
+
 export function buildOutreachForLead(
   lead: Lead,
   config: NicheConfig,
@@ -98,6 +112,9 @@ export function buildOutreachForLead(
   const waTpl = parseWhatsAppTemplate(
     readFileSync(promptsDir("outreach-whatsapp.md"), "utf8"),
   );
+  const waPriceTpl = parseWhatsAppTemplate(
+    readFileSync(promptsDir("outreach-whatsapp-price.md"), "utf8"),
+  );
 
   const quote =
     lead.outreachQuote?.trim() ||
@@ -105,17 +122,25 @@ export function buildOutreachForLead(
     "muy buen servicio";
 
   const owner = greetingName(lead);
+  const priceOnce = config.pricing?.onceLabel ?? "RD$2,000";
+  const hostingNote =
+    config.pricing?.hostingNote ?? "al precio estándar del proveedor";
+
   const vars = {
     OWNER_FIRST_NAME: owner || "hola",
     OWNER_GREETING: owner ? ` ${owner}` : "",
     BUSINESS_NAME: lead.place.name,
     REVIEW_QUOTE: quote,
     CLAIM_URL: resolveClaimUrl(lead, config),
+    PRICE_ONCE: priceOnce,
+    HOSTING_NOTE: hostingNote,
   };
 
   const whatsappMessage = fill(waTpl, vars);
+  const whatsappPriceMessage = fill(waPriceTpl, vars);
   const phone = lead.place.phone ?? "";
   const whatsappUrl = buildWhatsAppUrl(phone, whatsappMessage);
+  const whatsappPriceUrl = buildWhatsAppUrl(phone, whatsappPriceMessage);
 
   return {
     leadId: lead.id,
@@ -133,6 +158,10 @@ export function buildOutreachForLead(
     postcardBack: fill(postcardTpl.back, vars),
     whatsappMessage,
     whatsappUrl,
+    whatsappPriceMessage,
+    whatsappPriceUrl,
+    priceOnce,
+    hostingNote,
     channelHint: whatsappUrl ? "whatsapp" : "postcard",
   };
 }
@@ -156,13 +185,16 @@ export function exportOutreachBundle(
     claimUrl: m.claimUrl,
     siteUrl: m.siteUrl,
     channelHint: m.channelHint,
+    priceOnce: m.priceOnce,
+    hostingNote: m.hostingNote,
     whatsappUrl: m.whatsappUrl ?? "",
     whatsappMessage: m.whatsappMessage.replace(/\n/g, "\\n"),
+    whatsappPriceUrl: m.whatsappPriceUrl ?? "",
+    whatsappPriceMessage: m.whatsappPriceMessage.replace(/\n/g, "\\n"),
     emailSubject: m.emailSubject,
     emailBody: m.emailBody.replace(/\n/g, "\\n"),
     postcardFront: m.postcardFront,
     postcardBack: m.postcardBack.replace(/\n/g, "\\n"),
-    oneMessageOnly: "true",
   }));
 
   writeFileSync(csvPath, stringify(rows, { header: true }), "utf8");
@@ -174,6 +206,11 @@ export function exportOutreachBundle(
     writeFileSync(
       join(dir, "whatsapp.txt"),
       `${m.whatsappMessage}\n\n${m.whatsappUrl ?? "(sin teléfono WhatsApp)"}\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(dir, "whatsapp-price.txt"),
+      `${m.whatsappPriceMessage}\n\n${m.whatsappPriceUrl ?? "(sin teléfono WhatsApp)"}\n`,
       "utf8",
     );
     writeFileSync(
@@ -201,7 +238,9 @@ export function prepareOutreach(
     log.info(`Outreach · ${lead.place.name}`);
     const msg = buildOutreachForLead(lead, config);
     const wa = msg.whatsappUrl ? "WhatsApp OK" : "sin WA";
-    log.ok(`  → ${msg.ownerFirstName} · ${wa} · ${msg.claimUrl}`);
+    log.ok(
+      `  → ${msg.ownerFirstName} · ${wa} · ${msg.priceOnce} único · ${msg.claimUrl}`,
+    );
     return msg;
   });
   if (opts.write === false) return { messages };

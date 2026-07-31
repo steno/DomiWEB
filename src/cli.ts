@@ -26,6 +26,7 @@ import { downloadToFile, generateLipsyncVideo } from "./generate/lipsync.js";
 import {
   loadLatestOutreachMessages,
   prepareOutreach,
+  usePriceFollowUp,
 } from "./outreach/prepare.js";
 import {
   redirectWhatsAppTo,
@@ -415,6 +416,11 @@ program
     "--to <phone>",
     "Send to this WhatsApp number instead (test fixtures on your phone)",
   )
+  .option(
+    "--price",
+    "Send price follow-up (RD$2,000 once + hosting optional) — only after interest",
+    false,
+  )
   .action(async (opts: {
     config?: string;
     limit?: number;
@@ -424,9 +430,10 @@ program
     force?: boolean;
     slug?: string;
     to?: string;
+    price?: boolean;
   }) => {
     const config = loadConfig(opts.config);
-    log.step(7, "Send WhatsApp (semi-auto)");
+    log.step(7, opts.price ? "Send WhatsApp precio (follow-up)" : "Send WhatsApp (semi-auto)");
 
     let messages = loadLatestOutreachMessages() ?? [];
 
@@ -447,6 +454,18 @@ program
       }
     }
 
+    // Rebuild if latest JSON predates price fields
+    if (
+      opts.price &&
+      messages.some((m) => !m.whatsappPriceMessage)
+    ) {
+      const leads = listLeadsForOutreach(true, opts.slug);
+      messages = prepareOutreach(leads, config, {
+        write: false,
+        limit: opts.limit,
+      }).messages;
+    }
+
     if (opts.slug) {
       let filtered = messages.filter((m) => m.slug === opts.slug);
       if (!filtered.length) {
@@ -458,6 +477,13 @@ program
         filtered = prepareOutreach(leads, config, { write: false }).messages;
       }
       messages = filtered;
+    }
+
+    if (opts.price) {
+      messages = usePriceFollowUp(messages);
+      log.info(
+        `Precio: ${config.pricing.onceLabel} único · hosting ${config.pricing.hostingNote}`,
+      );
     }
 
     if (opts.to) {
@@ -475,6 +501,7 @@ program
       open: opts.open !== false,
       skipSent: opts.to ? false : !opts.includeSent,
       limit: opts.limit,
+      kind: opts.price ? "whatsapp-price" : "whatsapp",
     });
 
     log.ok(
