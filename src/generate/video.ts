@@ -24,8 +24,10 @@ export interface FaceCamResult {
   voiceProvider: string;
 }
 
-function loadVideoPrompt(): string {
-  return readFileSync(promptsDir("face-cam-video.md"), "utf8");
+function loadVideoPrompt(product: "site" | "menu" = "site"): string {
+  const file =
+    product === "menu" ? "face-cam-video-menu.md" : "face-cam-video.md";
+  return readFileSync(promptsDir(file), "utf8");
 }
 
 export function resolveFaceSourceImage(): string {
@@ -33,14 +35,31 @@ export function resolveFaceSourceImage(): string {
   if (existsSync(preferred)) return preferred;
   const jpg = join(projectRoot(), "assets", "facecam-source.jpg");
   if (existsSync(jpg)) return jpg;
+  const fromPublic = join(publicDir("videos"), "facecam-source.png");
+  if (existsSync(fromPublic)) return fromPublic;
   throw new Error(
     "Missing assets/facecam-source.png — drop your face photo there.",
   );
 }
 
+function resolveVideoProduct(config: NicheConfig): "site" | "menu" {
+  if (config.products?.menu?.enabled && config.products?.reviewKit?.enabled === false) {
+    return "menu";
+  }
+  if (config.niche.id.includes("restaurant") || config.niche.id.includes("restaurante")) {
+    return "menu";
+  }
+  return "site";
+}
+
 export function buildSpokenScript(config: NicheConfig): string {
-  const prompt = loadVideoPrompt();
+  const product = resolveVideoProduct(config);
+  const prompt = loadVideoPrompt(product);
   const match = prompt.match(/>\s*([\s\S]*?)\n\n## Rules/);
+  const fallback =
+    product === "menu"
+      ? "oye, esto puede sonar un poco random, pero encontré tu {{NICHE_SINGULAR}} en Google, las reseñas están buenísimas de verdad, y noté que todavía usaban menú en papel. así que te armé un menú digital con un QR listo para imprimir. aquí te dejo un vistazo rápido, y si te gusta, es tuyo."
+      : "oye, esto puede sonar un poco random, pero encontré tu negocio de {{NICHE_SINGULAR}} en Google, las reseñas están buenísimas de verdad, y noté que no tenías página web. así que te armé una con tus propias reseñas. aquí te dejo un vistazo rápido, y si te gusta, es tuya.";
   let script =
     match?.[1]
       ?.split("\n")
@@ -48,8 +67,7 @@ export function buildSpokenScript(config: NicheConfig): string {
       .filter(Boolean)
       .join(" ")
       .replace(/\s+/g, " ")
-      .trim() ??
-    "oye, esto puede sonar un poco random, pero encontré tu negocio de {{NICHE_SINGULAR}} en Google, las reseñas están buenísimas de verdad, y noté que no tenías página web. así que te armé una con tus propias reseñas. aquí te dejo un vistazo rápido, y si te gusta, es tuya.";
+      .trim() ?? fallback;
 
   return script.replace(/\{\{NICHE_SINGULAR\}\}/g, config.niche.labelSingular);
 }

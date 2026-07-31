@@ -211,16 +211,16 @@ h1 {
 <div class="shell">
   <header class="top">
     <p class="eyebrow">Menú digital · restaurante</p>
-    <h1>Hola null, esto es para Willy Pica Pollo</h1>
+    <h1>Hola, esto es para Willy Pica Pollo</h1>
     <p class="lead">
       Armamos tu menú digital con categorías, platos de ejemplo y un QR permanente.
-      Míralo abajo.
+      Míralo abajo (con un vistazo rápido en el video).
       Si te gusta, reclámalo — es tuyo.
     </p>
     <p class="quote">“Lo mejor picapollo de la parte alta de la ciudad, una referencia en calidad, siempre caliente, y la…”</p>
     <div class="actions">
-      <a class="btn btn-primary" id="btn-claim" href="https://wa.me/17542133764?text=Hola%2C%20soy%20null%20de%20Willy%20Pica%20Pollo.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Fwilly-pica-pollo%2F%0ATel%20del%20negocio%3A%20%2B1%20809-681-9289%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
-      
+      <a class="btn btn-primary" id="btn-claim" href="https://wa.me/17542133764?text=Hola%2C%20escribo%20por%20Willy%20Pica%20Pollo.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Fwilly-pica-pollo%2F%0ATel%20del%20negocio%3A%20%2B1%20809-681-9289%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
+      <button type="button" class="btn btn-ghost" id="btn-audio-top">Escuchar</button>
       <a class="btn btn-ghost" href="../../menus/willy-pica-pollo/index.html" target="_blank" rel="noopener">Abrir menú completo</a>
     </div>
     <div id="panel-ok" role="status">
@@ -231,7 +231,12 @@ h1 {
 
   <section class="stage" aria-label="Vista previa">
     <iframe id="site-frame" title="Willy Pica Pollo" src="../../menus/willy-pica-pollo/index.html" loading="eager"></iframe>
-    <div class="face-dock"><div class="bubble"><div class="bubble-placeholder">Video face-cam<br/>próximamente</div></div></div>
+    <div class="face-dock">
+      <div class="bubble" id="face-bubble" title="Escuchar" role="button" tabindex="0">
+        <video id="face-video" src="../../videos/facecam-restaurantes.mp4" autoplay muted loop playsinline preload="auto"></video>
+      </div>
+      <button type="button" class="audio-btn" id="unmute-btn">Escuchar</button>
+    </div>
   </section>
 
   <footer class="bottom">
@@ -240,7 +245,7 @@ h1 {
       No inventamos datos. El menú vive en
       <a href="https://steno.github.io/DomiWEB/menus/willy-pica-pollo/" style="color:var(--accent)">https://steno.github.io/DomiWEB/menus/willy-pica-pollo/</a>
     </p>
-    <a class="btn btn-primary" href="https://wa.me/17542133764?text=Hola%2C%20soy%20null%20de%20Willy%20Pica%20Pollo.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Fwilly-pica-pollo%2F%0ATel%20del%20negocio%3A%20%2B1%20809-681-9289%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
+    <a class="btn btn-primary" href="https://wa.me/17542133764?text=Hola%2C%20escribo%20por%20Willy%20Pica%20Pollo.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Fwilly-pica-pollo%2F%0ATel%20del%20negocio%3A%20%2B1%20809-681-9289%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
   </footer>
 </div>
 <script>
