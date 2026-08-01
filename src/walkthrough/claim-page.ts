@@ -417,7 +417,26 @@ export function buildClaimPageHtml(
 <meta name="robots" content="noindex" />
 ${ogMeta}
 <style>
-:root {
+${
+  product === "menu"
+    ? `:root {
+  --bg: #fffdf8;
+  --panel: #f3fffd;
+  --ink: #10312e;
+  --muted: #3d5c58;
+  --accent: #0a8f8a;
+  --accent-ink: #fffdf8;
+  --line: rgba(10, 143, 138, 0.22);
+  --danger: #c97858;
+  --cta: #ffb703;
+  --cta-ink: #10312e;
+  --top-bg: rgba(255, 253, 248, 0.94);
+  --stage-bg: #e8f7f5;
+  --ok-bg: #e8f7f5;
+  --body-glow-a: #b8f0ea;
+  --body-glow-b: #ffe7a8;
+}`
+    : `:root {
   --bg: #101612;
   --panel: #18211b;
   --ink: #eef3ee;
@@ -426,6 +445,14 @@ ${ogMeta}
   --accent-ink: #0f1a12;
   --line: #2a3830;
   --danger: #c97858;
+  --cta: #7eb887;
+  --cta-ink: #0f1a12;
+  --top-bg: rgba(16,22,18,0.88);
+  --stage-bg: #0a0e0b;
+  --ok-bg: #1e2e24;
+  --body-glow-a: #1e3228;
+  --body-glow-b: #1a2a22;
+}`
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -433,8 +460,8 @@ body {
   font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   color: var(--ink);
   background:
-    radial-gradient(ellipse at 10% 0%, #1e3228 0%, transparent 45%),
-    radial-gradient(ellipse at 100% 100%, #1a2a22 0%, transparent 40%),
+    radial-gradient(ellipse at 10% 0%, var(--body-glow-a) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 100%, var(--body-glow-b) 0%, transparent 40%),
     var(--bg);
 }
 .shell {
@@ -445,7 +472,7 @@ body {
 .top {
   padding: 1rem 1.15rem 0.75rem;
   border-bottom: 1px solid var(--line);
-  background: rgba(16,22,18,0.88);
+  background: var(--top-bg);
   backdrop-filter: blur(8px);
   position: sticky;
   top: 0;
@@ -496,8 +523,8 @@ h1 {
   cursor: pointer;
 }
 .btn-primary {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--cta);
+  color: var(--cta-ink);
 }
 .btn-ghost {
   background: transparent;
@@ -507,7 +534,7 @@ h1 {
 .stage {
   position: relative;
   min-height: 62vh;
-  background: #0a0e0b;
+  background: var(--stage-bg);
 }
 .stage iframe {
   width: 100%;
@@ -597,7 +624,7 @@ h1 {
   display: none;
   margin-top: 0.75rem;
   padding: 0.85rem 1rem;
-  background: #1e2e24;
+  background: var(--ok-bg);
   border: 1px solid var(--line);
   font-family: system-ui, sans-serif;
   font-size: 0.92rem;

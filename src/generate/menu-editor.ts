@@ -58,7 +58,7 @@ body.menu-editing .item input {
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(226,164,90,0.28);
+  border-bottom: 1px solid rgba(10, 143, 138, 0.28);
   color: inherit;
   font: inherit;
   padding: 0.35rem 0.25rem;
@@ -67,21 +67,21 @@ body.menu-editing .item input {
   transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 body.menu-editing .item input::placeholder {
-  color: rgba(183, 168, 148, 0.75);
+  color: rgba(61, 92, 88, 0.65);
   font-weight: 400;
 }
 body.menu-editing .item input:hover {
-  border-bottom-color: rgba(226,164,90,0.75);
-  background: rgba(226,164,90,0.07);
+  border-bottom-color: rgba(10, 143, 138, 0.7);
+  background: rgba(10, 143, 138, 0.06);
 }
 body.menu-editing .item input:focus {
   outline: none;
   border-bottom-color: var(--accent);
-  background: rgba(226,164,90,0.12);
+  background: rgba(10, 143, 138, 0.1);
   box-shadow: 0 1px 0 0 var(--accent);
 }
 body.menu-editing .item input:focus-visible {
-  outline: 2px solid rgba(226,164,90,0.45);
+  outline: 2px solid rgba(10, 143, 138, 0.4);
   outline-offset: 2px;
 }
 body.menu-editing .item input.item-name {
@@ -145,7 +145,7 @@ body.menu-editing .item-rm:focus-visible {
   width: 100%;
   background: none;
   border: none;
-  border-top: 1px dashed rgba(226,164,90,0.35);
+  border-top: 1px dashed rgba(10, 143, 138, 0.35);
   color: var(--accent);
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
@@ -155,11 +155,11 @@ body.menu-editing .item-rm:focus-visible {
 }
 body.menu-editing .add-line { display: block; }
 body.menu-editing .add-line:hover {
-  color: #f0c080;
-  border-top-color: rgba(226,164,90,0.7);
+  color: #066661;
+  border-top-color: rgba(10, 143, 138, 0.7);
 }
 body.menu-editing .add-line:focus-visible {
-  outline: 2px solid rgba(226,164,90,0.45);
+  outline: 2px solid rgba(10, 143, 138, 0.4);
   outline-offset: 2px;
 }
 .add-cat {
@@ -168,7 +168,7 @@ body.menu-editing .add-line:focus-visible {
   padding: 0.75rem 0;
   width: 100%;
   background: none;
-  border: 1px dashed rgba(226,164,90,0.4);
+  border: 1px dashed rgba(10, 143, 138, 0.4);
   color: var(--muted);
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
@@ -179,11 +179,11 @@ body.menu-editing .add-line:focus-visible {
 body.menu-editing .add-cat { display: block; }
 body.menu-editing .add-cat:hover {
   color: var(--accent);
-  border-color: rgba(226,164,90,0.75);
-  background: rgba(226,164,90,0.06);
+  border-color: rgba(10, 143, 138, 0.75);
+  background: rgba(10, 143, 138, 0.06);
 }
 body.menu-editing .add-cat:focus-visible {
-  outline: 2px solid rgba(226,164,90,0.45);
+  outline: 2px solid rgba(10, 143, 138, 0.4);
   outline-offset: 2px;
 }
 body.menu-editing .cat h2[contenteditable="true"] {
@@ -195,19 +195,19 @@ body.menu-editing .cat h2[contenteditable="true"] {
   transition: color 0.15s ease, background-color 0.15s ease;
 }
 body.menu-editing .cat h2[contenteditable="true"]:hover {
-  background: rgba(226,164,90,0.07);
-  color: #f3e7d4;
+  background: rgba(10, 143, 138, 0.07);
+  color: var(--ink);
 }
 body.menu-editing .cat h2[contenteditable="true"]:focus {
   color: var(--accent);
-  background: rgba(226,164,90,0.12);
+  background: rgba(10, 143, 138, 0.12);
 }
 .edit-bar {
   display: none;
   position: fixed;
   left: 0; right: 0; bottom: 0;
   padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
-  background: rgba(20,15,10,0.94);
+  background: color-mix(in srgb, var(--bg, #fffdf8) 94%, transparent);
   border-top: 1px solid var(--line);
   gap: 0.65rem;
   justify-content: center;
@@ -241,18 +241,18 @@ body.menu-editing .edit-bar { display: flex; }
   align-items: flex-end;
   justify-content: center;
   padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
-  background: rgba(8, 10, 9, 0.72);
+  background: rgba(16, 49, 46, 0.45);
   backdrop-filter: blur(6px);
 }
 .send-modal.open { display: flex; }
 .send-modal-card {
   width: min(26rem, 100%);
-  background: #18211b;
-  border: 1px solid var(--line, #2a3830);
+  background: var(--panel, #f3fffd);
+  border: 1px solid var(--line, rgba(10, 143, 138, 0.22));
   border-radius: 1rem;
   padding: 1.15rem 1.15rem 1.25rem;
-  color: var(--ink, #eef3ee);
-  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+  color: var(--ink, #10312e);
+  box-shadow: 0 18px 40px rgba(6, 80, 76, 0.18);
 }
 .send-modal-card h2 {
   margin: 0 0 0.45rem;
@@ -263,7 +263,7 @@ body.menu-editing .edit-bar { display: flex; }
   margin: 0 0 1rem;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.92rem;
-  color: var(--muted, #9aab9e);
+  color: var(--muted, #3d5c58);
   line-height: 1.4;
 }
 .send-modal-actions {
@@ -279,8 +279,8 @@ body.menu-editing .edit-bar { display: flex; }
 }
 .send-modal-actions .btn-ghost {
   background: transparent;
-  color: var(--ink, #eef3ee);
-  border: 1px solid var(--line, #2a3830);
+  color: var(--ink, #10312e);
+  border: 1px solid var(--line, rgba(10, 143, 138, 0.22));
 }
 @media (max-width: 520px) {
   body.menu-editing .item {
@@ -308,7 +308,7 @@ export function buildInlineMenuEditBarHtml(): string {
   return `<div class="edit-bar" id="edit-bar" hidden>
   <p class="edit-status" id="edit-status" role="status"></p>
   <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Cancelar</button>
-  <button type="button" class="btn" id="btn-finish-edit">Listo</button>
+  <button type="button" class="btn btn-primary" id="btn-finish-edit">Listo</button>
 </div>
 <div class="send-modal" id="send-modal" hidden aria-hidden="true">
   <div class="send-modal-card" role="dialog" aria-modal="true" aria-labelledby="send-modal-title">
@@ -316,7 +316,7 @@ export function buildInlineMenuEditBarHtml(): string {
     <p>Te abrimos WhatsApp para mandarnos tu carta. Cuando la envíes, te mostramos el QR para imprimir.</p>
     <div class="send-modal-actions">
       <button type="button" class="btn btn-ghost" id="btn-keep-editing">Seguir editando</button>
-      <button type="button" class="btn" id="btn-send-draft">Enviar por WhatsApp</button>
+      <button type="button" class="btn btn-primary" id="btn-send-draft">Enviar por WhatsApp</button>
     </div>
   </div>
 </div>`;
@@ -938,7 +938,7 @@ body.menu-editing .quote { display: none; }
   gap: 0.55rem;
   align-items: start;
   padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(126, 184, 135, 0.18);
+  border-bottom: 1px solid rgba(10, 143, 138, 0.14);
 }
 </style>
 <section id="editar-menu" hidden aria-label="Editar menú">
