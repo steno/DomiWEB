@@ -258,7 +258,6 @@ body.menu-editing .qr-print { display: none; }
     <div class="actions">
       <a class="btn btn-primary" id="btn-claim" href="https://wa.me/17542133764?text=Hola%2C%20escribo%20por%20T%C3%ADpico%20Dominicano.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Ftipico-dominicano%2F%0ATel%20del%20negocio%3A%20%2B1%20809-682-9551%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
       <a class="btn btn-ghost" href="#editar-menu">Editar mis platos</a>
-      <button type="button" class="btn btn-ghost" id="btn-audio-top">Escuchar</button>
       <a class="btn btn-ghost" href="../../menus/tipico-dominicano/index.html" target="_blank" rel="noopener">Abrir menú completo</a>
     </div>
     <div id="panel-ok" role="status">
@@ -1099,7 +1098,6 @@ body.menu-editing .quote { display: none; }
 
   var vid = document.getElementById("face-video");
   var unmute = document.getElementById("unmute-btn");
-  var topAudio = document.getElementById("btn-audio-top");
   var bubble = document.getElementById("face-bubble");
   var audioOn = false;
   var startedWithSound = false;
@@ -1109,10 +1107,6 @@ body.menu-editing .quote { display: none; }
       unmute.classList.remove("hidden");
       unmute.textContent = audioOn ? "Silenciar" : "Escuchar";
       unmute.classList.toggle("is-on", audioOn);
-    }
-    if (topAudio) {
-      topAudio.textContent = audioOn ? "Silenciar" : "Escuchar";
-      topAudio.classList.toggle("is-on", audioOn);
     }
     if (bubble) {
       bubble.title = audioOn ? "Silenciar" : "Escuchar";
@@ -1153,7 +1147,6 @@ body.menu-editing .quote { display: none; }
   }
 
   if (unmute) unmute.addEventListener("click", toggleAudio);
-  if (topAudio) topAudio.addEventListener("click", toggleAudio);
   if (bubble) {
     bubble.addEventListener("click", toggleAudio);
     bubble.addEventListener("keydown", function (ev) {

@@ -552,11 +552,6 @@ body.menu-editing .qr-print { display: none; }
           ? `<a class="btn btn-ghost" href="${escapeAttr(relativeEditMenuHref(lead.slug))}">Editar mis platos</a>`
           : ""
       }
-      ${
-        videoHref
-          ? `<button type="button" class="btn btn-ghost" id="btn-audio-top">Escuchar</button>`
-          : ""
-      }
       <a class="btn btn-ghost" href="${escapeAttr(previewHref)}" target="_blank" rel="noopener">${openLabel}</a>
     </div>
     <div id="panel-ok" role="status">
@@ -644,7 +639,6 @@ ${menuEditorMarkup}
 
   var vid = document.getElementById("face-video");
   var unmute = document.getElementById("unmute-btn");
-  var topAudio = document.getElementById("btn-audio-top");
   var bubble = document.getElementById("face-bubble");
   var audioOn = false;
   var startedWithSound = false;
@@ -654,10 +648,6 @@ ${menuEditorMarkup}
       unmute.classList.remove("hidden");
       unmute.textContent = audioOn ? "Silenciar" : "Escuchar";
       unmute.classList.toggle("is-on", audioOn);
-    }
-    if (topAudio) {
-      topAudio.textContent = audioOn ? "Silenciar" : "Escuchar";
-      topAudio.classList.toggle("is-on", audioOn);
     }
     if (bubble) {
       bubble.title = audioOn ? "Silenciar" : "Escuchar";
@@ -698,7 +688,6 @@ ${menuEditorMarkup}
   }
 
   if (unmute) unmute.addEventListener("click", toggleAudio);
-  if (topAudio) topAudio.addEventListener("click", toggleAudio);
   if (bubble) {
     bubble.addEventListener("click", toggleAudio);
     bubble.addEventListener("keydown", function (ev) {

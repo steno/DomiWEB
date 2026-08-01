@@ -205,6 +205,43 @@ h1 {
   .audio-btn { font-size: 0.78rem; padding: 0.65rem 0.7rem; }
   .stage iframe { height: 58vh; }
 }
+.qr-print {
+  margin: 0;
+  padding: 1.5rem 1.15rem;
+  border-top: 1px solid var(--line);
+  background: #eef3ee;
+  color: #0f1a12;
+  text-align: center;
+}
+.qr-print h2 {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.35rem, 3.5vw, 1.65rem);
+  letter-spacing: -0.02em;
+}
+.qr-print > p {
+  margin: 0 0 1rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  color: #3a4a3e;
+  max-width: 28rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.qr-print .qr-frame {
+  display: inline-flex;
+  padding: 0.65rem;
+  background: #fff;
+  border: 1px solid #c5d4c8;
+}
+.qr-print .qr-frame svg { display: block; width: 180px; height: 180px; }
+.qr-print .qr-url {
+  margin: 0.85rem 0 0;
+  font-family: system-ui, sans-serif;
+  font-size: 0.72rem;
+  word-break: break-all;
+  color: #4a5c50;
+}
+body.menu-editing .qr-print { display: none; }
 </style>
 </head>
 <body>
@@ -221,7 +258,6 @@ h1 {
     <div class="actions">
       <a class="btn btn-primary" id="btn-claim" href="https://wa.me/17542133764?text=Hola%2C%20escribo%20por%20Centro%20Automotriz%20996.%0AVi%20la%20p%C3%A1gina%20con%20nuestras%20rese%C3%B1as%20de%20Google%20y%20quiero%20reclamarla.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Fcentro-automotriz-996%2F%0ATel%20del%20negocio%3A%20%2B1%20809-575-4646%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi sitio</a>
       
-      <button type="button" class="btn btn-ghost" id="btn-audio-top">Escuchar</button>
       <a class="btn btn-ghost" href="../../sites/centro-automotriz-996/index.html" target="_blank" rel="noopener">Abrir sitio completo</a>
     </div>
     <div id="panel-ok" role="status">
@@ -239,6 +275,8 @@ h1 {
       <button type="button" class="audio-btn" id="unmute-btn">Escuchar</button>
     </div>
   </section>
+
+  
 
   <footer class="bottom">
     <p>
@@ -303,7 +341,6 @@ h1 {
 
   var vid = document.getElementById("face-video");
   var unmute = document.getElementById("unmute-btn");
-  var topAudio = document.getElementById("btn-audio-top");
   var bubble = document.getElementById("face-bubble");
   var audioOn = false;
   var startedWithSound = false;
@@ -313,10 +350,6 @@ h1 {
       unmute.classList.remove("hidden");
       unmute.textContent = audioOn ? "Silenciar" : "Escuchar";
       unmute.classList.toggle("is-on", audioOn);
-    }
-    if (topAudio) {
-      topAudio.textContent = audioOn ? "Silenciar" : "Escuchar";
-      topAudio.classList.toggle("is-on", audioOn);
     }
     if (bubble) {
       bubble.title = audioOn ? "Silenciar" : "Escuchar";
@@ -357,7 +390,6 @@ h1 {
   }
 
   if (unmute) unmute.addEventListener("click", toggleAudio);
-  if (topAudio) topAudio.addEventListener("click", toggleAudio);
   if (bubble) {
     bubble.addEventListener("click", toggleAudio);
     bubble.addEventListener("keydown", function (ev) {
