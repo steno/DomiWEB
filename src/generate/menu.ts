@@ -310,9 +310,24 @@ export function buildMenuHtml(
       ? `<a class="btn" href="tel:${escapeAttr(p.phone.replace(/[^\d+]/g, ""))}">Llamar</a>`
       : "";
 
+  const claimWa = process.env.CLAIM_WHATSAPP?.trim() ?? "";
+  const sendCartaWa = claimWa
+    ? buildWhatsAppUrl(
+        claimWa,
+        [
+          `Hola — soy de ${p.name}.`,
+          "",
+          "Te mando mi carta real para el menú digital.",
+          `Slug: ${lead.slug}`,
+        ].join("\n"),
+      )
+    : null;
+
   const banner = owned
     ? ""
-    : `<p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — <a class="banner-link" href="?edit=1">edítalos aquí</a> o envíanos tu carta real.</p>`;
+    : sendCartaWa
+      ? `<p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — <a class="banner-link" href="?edit=1">edítalos aquí</a> o <a class="banner-link" href="${escapeAttr(sendCartaWa)}" target="_blank" rel="noopener">envíanos tu carta real</a>.</p>`
+      : `<p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — <a class="banner-link" href="?edit=1">edítalos aquí</a> o envíanos tu carta real.</p>`;
 
   return `<!DOCTYPE html>
 <html lang="es-DO">
