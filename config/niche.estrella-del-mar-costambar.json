@@ -1,0 +1,108 @@
+{
+  "language": "es-DO",
+  "country": "DO",
+  "countryName": "República Dominicana",
+
+  "niche": {
+    "id": "restaurantes",
+    "label": "Restaurantes y cafés",
+    "labelSingular": "restaurante",
+    "keywords": [
+      "restaurante",
+      "cafetería",
+      "café",
+      "comedor",
+      "parrillada",
+      "pizzería",
+      "food truck",
+      "comida criolla",
+      "mariscos",
+      "pescado"
+    ],
+    "categoryHints": [
+      "Restaurant",
+      "Cafe",
+      "Coffee shop",
+      "Dominican restaurant",
+      "Seafood restaurant",
+      "Bar",
+      "Beach"
+    ],
+    "chainBlocklist": [
+      "McDonald",
+      "Burger King",
+      "KFC",
+      "Wendy",
+      "Pizza Hut",
+      "Domino",
+      "Subway",
+      "Starbucks"
+    ],
+    "illustrativeImages": [
+      "assets/illustrative/restaurantes/hero.jpg",
+      "assets/illustrative/restaurantes/g1.jpg",
+      "assets/illustrative/restaurantes/g2.jpg",
+      "assets/illustrative/restaurantes/g3.jpg"
+    ]
+  },
+
+  "cities": [
+    {
+      "id": "costambar",
+      "name": "Costambar, Puerto Plata",
+      "searchQueries": [
+        "Estrella del Mar Costambar",
+        "Estrella del Mar restaurante Costambar Puerto Plata"
+      ],
+      "maxResults": 8
+    }
+  ],
+
+  "qualification": {
+    "minRating": 3.5,
+    "minReviews": 5,
+    "minPhotos": 2,
+    "recentReviewDays": 365,
+    "allowSocialOnlyWebsite": true,
+    "socialWebsiteHosts": [
+      "facebook.com",
+      "fb.com",
+      "fb.me",
+      "instagram.com",
+      "instagr.am",
+      "m.facebook.com"
+    ]
+  },
+
+  "scrape": {
+    "reviewsPerPlace": 30,
+    "language": "es",
+    "maxConcurrency": 5
+  },
+
+  "hosting": {
+    "provider": "github-pages",
+    "baseUrl": "https://steno.github.io/DomiWEB",
+    "sitesPath": "sites",
+    "claimPath": "claim",
+    "kitsPath": "kits",
+    "menusPath": "menus"
+  },
+
+  "pricing": {
+    "onceLabel": "RD$2,000",
+    "hostingNote": "si lo necesitas, lo hablamos aparte",
+    "reviewKitOnceLabel": "RD$800",
+    "menuOnceLabel": "RD$1,500"
+  },
+
+  "products": {
+    "reviewKit": {
+      "enabled": false,
+      "maxReplies": 8
+    },
+    "menu": {
+      "enabled": true
+    }
+  }
+}
