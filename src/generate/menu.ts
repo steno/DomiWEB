@@ -266,12 +266,12 @@ export function buildMenuHtml(
       data-cat="${escapeAttr(cat.label)}"
       aria-label="Agregar ${escapeAttr(label)}" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">${escapeHtml(it.name)}</span>
+      ${it.note ? `<span class="item-note">${escapeHtml(it.note)}</span>` : ""}
+    </span>
+    <span class="item-price">${escapeHtml(it.priceHint)}</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">${escapeHtml(it.name)}</p>
-    ${it.note ? `<p class="item-note">${escapeHtml(it.note)}</p>` : ""}
-  </div>
-  <p class="item-price">${escapeHtml(it.priceHint)}</p>
 </li>`;
         })
         .join("\n");
@@ -410,29 +410,33 @@ body {
 }
 .items { list-style: none; margin: 0; padding: 0; }
 .item {
+  padding: 0;
+  border-bottom: 1px solid rgba(226,164,90,0.12);
+}
+.pick {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 0.75rem;
   align-items: start;
   padding: 0.85rem 0;
-  border-bottom: 1px solid rgba(226,164,90,0.12);
-}
-.pick {
-  display: flex;
-  align-items: flex-start;
-  padding-top: 0.2rem;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pick:active {
+  background: rgba(226,164,90,0.06);
 }
 .pick-cb {
   position: absolute;
   opacity: 0;
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1px;
+  height: 1px;
   margin: 0;
+  pointer-events: none;
 }
 .pick-box {
   width: 1.15rem;
   height: 1.15rem;
+  margin-top: 0.2rem;
   border: 1.5px solid rgba(226,164,90,0.55);
   display: block;
   flex-shrink: 0;
@@ -444,19 +448,26 @@ body {
   border-color: var(--accent);
   box-shadow: inset 0 0 0 2px #140f0a;
 }
-.pick-cb:focus-visible + .pick-box {
+.pick:has(.pick-cb:focus-visible) .pick-box {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-.item-name { margin: 0; font-size: 1.08rem; font-weight: 650; }
+.item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.item-name {
+  font-size: 1.08rem;
+  font-weight: 650;
+}
 .item-note {
-  margin: 0.2rem 0 0;
   color: var(--muted);
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.82rem;
 }
 .item-price {
-  margin: 0;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
   color: var(--accent);

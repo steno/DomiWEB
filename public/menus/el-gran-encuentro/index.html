@@ -108,29 +108,33 @@ body {
 }
 .items { list-style: none; margin: 0; padding: 0; }
 .item {
+  padding: 0;
+  border-bottom: 1px solid rgba(226,164,90,0.12);
+}
+.pick {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 0.75rem;
   align-items: start;
   padding: 0.85rem 0;
-  border-bottom: 1px solid rgba(226,164,90,0.12);
-}
-.pick {
-  display: flex;
-  align-items: flex-start;
-  padding-top: 0.2rem;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pick:active {
+  background: rgba(226,164,90,0.06);
 }
 .pick-cb {
   position: absolute;
   opacity: 0;
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1px;
+  height: 1px;
   margin: 0;
+  pointer-events: none;
 }
 .pick-box {
   width: 1.15rem;
   height: 1.15rem;
+  margin-top: 0.2rem;
   border: 1.5px solid rgba(226,164,90,0.55);
   display: block;
   flex-shrink: 0;
@@ -142,19 +146,26 @@ body {
   border-color: var(--accent);
   box-shadow: inset 0 0 0 2px #140f0a;
 }
-.pick-cb:focus-visible + .pick-box {
+.pick:has(.pick-cb:focus-visible) .pick-box {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-.item-name { margin: 0; font-size: 1.08rem; font-weight: 650; }
+.item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.item-name {
+  font-size: 1.08rem;
+  font-weight: 650;
+}
 .item-note {
-  margin: 0.2rem 0 0;
   color: var(--muted);
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.82rem;
 }
 .item-price {
-  margin: 0;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
   color: var(--accent);
@@ -234,12 +245,12 @@ footer {
       data-cat="Entradas"
       aria-label="Agregar Tostones — Con salsa de ajo" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Tostones</span>
+      <span class="item-note">Con salsa de ajo</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Tostones</p>
-    <p class="item-note">Con salsa de ajo</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
   <label class="pick">
@@ -250,12 +261,12 @@ footer {
       data-cat="Entradas"
       aria-label="Agregar Empanaditas — Pollo o queso" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Empanaditas</span>
+      <span class="item-note">Pollo o queso</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Empanaditas</p>
-    <p class="item-note">Pollo o queso</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
   <label class="pick">
@@ -266,12 +277,12 @@ footer {
       data-cat="Entradas"
       aria-label="Agregar Ensalada de la casa — Fresca del día" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Ensalada de la casa</span>
+      <span class="item-note">Fresca del día</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Ensalada de la casa</p>
-    <p class="item-note">Fresca del día</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li></ul>
 </section>
 <section class="cat" id="fuertes">
@@ -285,12 +296,12 @@ footer {
       data-cat="Platos fuertes"
       aria-label="Agregar Bandera dominicana — Arroz, habichuelas y carne" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Bandera dominicana</span>
+      <span class="item-note">Arroz, habichuelas y carne</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Bandera dominicana</p>
-    <p class="item-note">Arroz, habichuelas y carne</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
   <label class="pick">
@@ -301,12 +312,12 @@ footer {
       data-cat="Platos fuertes"
       aria-label="Agregar Pollo guisado — Con acompañamiento" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Pollo guisado</span>
+      <span class="item-note">Con acompañamiento</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Pollo guisado</p>
-    <p class="item-note">Con acompañamiento</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
   <label class="pick">
@@ -317,12 +328,12 @@ footer {
       data-cat="Platos fuertes"
       aria-label="Agregar Pescado frito — Según disponibilidad" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Pescado frito</span>
+      <span class="item-note">Según disponibilidad</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Pescado frito</p>
-    <p class="item-note">Según disponibilidad</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
   <label class="pick">
@@ -333,12 +344,12 @@ footer {
       data-cat="Platos fuertes"
       aria-label="Agregar Mofongo — Con chicharrón o camarones" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Mofongo</span>
+      <span class="item-note">Con chicharrón o camarones</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Mofongo</p>
-    <p class="item-note">Con chicharrón o camarones</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li></ul>
 </section>
 <section class="cat" id="bebidas">
@@ -352,12 +363,12 @@ footer {
       data-cat="Bebidas"
       aria-label="Agregar Jugo natural — Pregunta el sabor del día" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Jugo natural</span>
+      <span class="item-note">Pregunta el sabor del día</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Jugo natural</p>
-    <p class="item-note">Pregunta el sabor del día</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
   <label class="pick">
@@ -368,12 +379,12 @@ footer {
       data-cat="Bebidas"
       aria-label="Agregar Refresco — Lata o vaso" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Refresco</span>
+      <span class="item-note">Lata o vaso</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Refresco</p>
-    <p class="item-note">Lata o vaso</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
   <label class="pick">
@@ -384,12 +395,12 @@ footer {
       data-cat="Bebidas"
       aria-label="Agregar Cerveza — Nacional" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Cerveza</span>
+      <span class="item-note">Nacional</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Cerveza</p>
-    <p class="item-note">Nacional</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
   <label class="pick">
@@ -400,12 +411,12 @@ footer {
       data-cat="Bebidas"
       aria-label="Agregar Café — Dominicano" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Café</span>
+      <span class="item-note">Dominicano</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Café</p>
-    <p class="item-note">Dominicano</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li></ul>
 </section>
 <section class="cat" id="postres">
@@ -419,12 +430,12 @@ footer {
       data-cat="Postres"
       aria-label="Agregar Flan — Casero" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Flan</span>
+      <span class="item-note">Casero</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Flan</p>
-    <p class="item-note">Casero</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
   <label class="pick">
@@ -435,12 +446,12 @@ footer {
       data-cat="Postres"
       aria-label="Agregar Dulce de leche — Porción" />
     <span class="pick-box" aria-hidden="true"></span>
+    <span class="item-main">
+      <span class="item-name">Dulce de leche</span>
+      <span class="item-note">Porción</span>
+    </span>
+    <span class="item-price">RD$ —</span>
   </label>
-  <div class="item-main">
-    <p class="item-name">Dulce de leche</p>
-    <p class="item-note">Porción</p>
-  </div>
-  <p class="item-price">RD$ —</p>
 </li></ul>
 </section>
     </div>
