@@ -331,6 +331,10 @@ export function buildInlineMenuEditScript(
   function priceAmount(hint) {
     var s = stripRdPrefix(hint);
     if (!s || s === '—' || s === '–' || s === '-' || s === '--' || s === '−') return '';
+    s = s.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+    var parts = s.split('.');
+    if (parts.length > 2) s = parts[0] + '.' + parts.slice(1).join('');
+    if (!s || s === '.') return '';
     return s;
   }
 
@@ -338,6 +342,20 @@ export function buildInlineMenuEditScript(
     var a = priceAmount(amount);
     if (!a) return 'RD$ —';
     return 'RD$ ' + a;
+  }
+
+  function sanitizePriceInput(el) {
+    if (!el || !el.classList.contains('item-price')) return;
+    var start = el.selectionStart;
+    var before = el.value;
+    var next = priceAmount(before);
+    if (next !== before) {
+      el.value = next;
+      if (typeof start === 'number') {
+        var pos = Math.min(start, next.length);
+        try { el.setSelectionRange(pos, pos); } catch (e) {}
+      }
+    }
   }
 
   function loadState() {
@@ -370,7 +388,7 @@ export function buildInlineMenuEditScript(
             '</div>' +
             '<div class="price-wrap">' +
               '<span class="price-prefix" aria-hidden="true">RD$</span>' +
-              '<input class="item-price" data-f="priceHint" inputmode="decimal" aria-label="Precio en pesos" placeholder="—" value="' + escAttr(priceAmount(it.priceHint)) + '" />' +
+              '<input class="item-price" data-f="priceHint" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" aria-label="Precio en pesos" placeholder="—" autocomplete="off" value="' + escAttr(priceAmount(it.priceHint)) + '" />' +
             '</div>' +
             '<button type="button" class="item-rm" data-act="rm" aria-label="Quitar plato">&times;</button>' +
           '</li>'
@@ -531,6 +549,9 @@ export function buildInlineMenuEditScript(
 
   list.addEventListener('input', function (ev) {
     var t = ev.target;
+    if (t && t.classList && t.classList.contains('item-price')) {
+      sanitizePriceInput(t);
+    }
     if (t && t.dataset && t.dataset.session === '1') {
       var raw = t.tagName === 'INPUT' ? t.value : (t.textContent || '');
       t.dataset.edited = String(raw).length > 0 ? '1' : '0';
@@ -538,6 +559,24 @@ export function buildInlineMenuEditScript(
     readDom();
     saveLocal();
     setStatus('Borrador en este teléfono');
+  });
+
+  list.addEventListener('keydown', function (ev) {
+    var t = ev.target;
+    if (!t || t.tagName !== 'INPUT') return;
+    if (ev.key === 'Escape') {
+      t.dataset.edited = '0';
+      t.value = '';
+      t.blur();
+      ev.preventDefault();
+      return;
+    }
+    if (t.classList.contains('item-price')) {
+      var allow = ev.key.length !== 1 || /[0-9.,]/.test(ev.key);
+      if (!allow && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+        ev.preventDefault();
+      }
+    }
   });
 
   list.addEventListener('focusout', function (ev) {
@@ -554,17 +593,6 @@ export function buildInlineMenuEditScript(
       readDom();
       saveLocal();
       render();
-    }
-  });
-
-  list.addEventListener('keydown', function (ev) {
-    var t = ev.target;
-    if (!t || t.tagName !== 'INPUT') return;
-    if (ev.key === 'Escape') {
-      t.dataset.edited = '0';
-      t.value = '';
-      t.blur();
-      ev.preventDefault();
     }
   });
 
