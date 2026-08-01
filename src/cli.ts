@@ -458,7 +458,7 @@ program
     if (opts.refreshClaims) {
       const leads = listLeadsForClaimPages(true);
       if (leads.length) {
-        const claims = generateClaimPagesForLeads(leads, config);
+        const claims = await generateClaimPagesForLeads(leads, config);
         for (const { lead, claim } of claims) {
           updateWalkthroughReady(lead.id, {
             claimPath: claim.claimPath,
@@ -483,7 +483,7 @@ program
     "Asset to preview: site | reviewKit | menu (default: auto)",
     "auto",
   )
-  .action((opts: {
+  .action(async (opts: {
     config?: string;
     limit?: number;
     force?: boolean;
@@ -517,7 +517,7 @@ program
       return;
     }
 
-    const results = generateClaimPagesForLeads(leads, config, {
+    const results = await generateClaimPagesForLeads(leads, config, {
       limit: opts.limit,
       product: productOpt,
     });

@@ -198,7 +198,7 @@ export function resolveMenuUrl(
   return resolveGithubPagesUrls(config, slug).menuUrl;
 }
 
-async function buildQrSvg(url: string): Promise<string> {
+export async function buildQrSvg(url: string): Promise<string> {
   return QRCode.toString(url, {
     type: "svg",
     margin: 1,
@@ -212,7 +212,6 @@ export function buildMenuHtml(
   config: NicheConfig,
   opts: {
     menuUrl: string;
-    qrSvg: string;
     categories: MenuCategory[];
     owned: boolean;
     menuData: MenuData;
@@ -502,36 +501,6 @@ body {
   cursor: not-allowed;
 }
 body.has-order .wrap { padding-bottom: 5.5rem; }
-.qr-block {
-  margin: 2.25rem 0 0;
-  padding: 1.25rem 1rem;
-  background: #f3e7d4;
-  color: #1a1208;
-  text-align: center;
-}
-.qr-block h2 {
-  margin: 0 0 0.35rem;
-  font-size: 1.35rem;
-}
-.qr-block p {
-  margin: 0 0 1rem;
-  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  font-size: 0.88rem;
-  color: #4a3a28;
-}
-.qr-frame {
-  display: inline-flex;
-  padding: 0.65rem;
-  background: #fff;
-}
-.qr-frame svg { display: block; width: 180px; height: 180px; }
-.qr-url {
-  margin: 0.85rem 0 0;
-  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  font-size: 0.72rem;
-  word-break: break-all;
-  color: #5a4632;
-}
 footer {
   margin-top: 2rem;
   padding-top: 1rem;
@@ -562,12 +531,6 @@ footer {
     <div id="menu-list">
     ${categoryBlocks}
     </div>
-    <section class="qr-block" aria-label="Código QR del menú">
-      <h2>Tu QR permanente</h2>
-      <p>Imprímelo para la mesa o la ventana. Apunta a este menú.</p>
-      <div class="qr-frame">${opts.qrSvg}</div>
-      <p class="qr-url">${escapeHtml(opts.menuUrl)}</p>
-    </section>
     <footer><p>${footerHtml}</p></footer>
   </main>
   <div class="order-bar" id="order-bar" hidden>
@@ -683,10 +646,8 @@ export async function generateMenuForLead(
     `https://steno.github.io/DomiWEB/menus/${lead.slug}/`;
   const menuData = loadOrCreateMenuData(lead.slug, config);
   writeMenuData(menuData);
-  const qrSvg = await buildQrSvg(menuUrl);
   const html = buildMenuHtml(lead, config, {
     menuUrl,
-    qrSvg,
     categories: menuData.categories,
     owned: menuData.owned,
     menuData,

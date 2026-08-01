@@ -36,8 +36,6 @@ body.menu-editing .hero {
   min-height: 28vh;
   min-height: 28svh;
 }
-body.menu-editing .qr-block { display: none; }
-body.menu-editing .banner { display: none; }
 body.menu-editing .order-hint { display: none; }
 body.menu-editing .pick { display: none; }
 body.menu-editing .order-bar { display: none !important; }

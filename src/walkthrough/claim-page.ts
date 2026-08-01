@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { Lead, NicheConfig, PipelineProduct } from "../types/index.js";
 import { resolveGithubPagesUrls } from "../config/load.js";
-import { menuExists, loadOrCreateMenuData } from "../generate/menu.js";
+import { menuExists, loadOrCreateMenuData, buildQrSvg } from "../generate/menu.js";
 import { relativeEditMenuHref, writeMenuEditorPage, buildClaimMenuEditorMarkup } from "../generate/menu-editor.js";
 import { kitExists, siteHtmlExists } from "../generate/review-kit.js";
 import { looksSpanish } from "../generate/site.js";
@@ -22,6 +22,8 @@ export interface GeneratedClaimPage {
 
 export interface ClaimPageOptions {
   product?: PipelineProduct | "auto";
+  /** Pre-rendered QR SVG for menu claims (owner print block). */
+  qrSvg?: string;
 }
 
 function escapeHtml(s: string): string {
@@ -277,6 +279,16 @@ export function buildClaimPageHtml(
   const menuEditorMarkup = menuDataForEdit
     ? buildClaimMenuEditorMarkup(lead, menuDataForEdit)
     : "";
+  const qrSvg = opts.qrSvg?.trim() ?? "";
+  const qrPrintMarkup =
+    product === "menu" && qrSvg
+      ? `<section class="qr-print" id="qr-permanente" aria-label="Código QR del menú">
+  <h2>Tu QR permanente</h2>
+  <p>Imprímelo para la mesa o la ventana. Apunta a tu menú digital.</p>
+  <div class="qr-frame">${qrSvg}</div>
+  <p class="qr-url">${escapeHtml(absolutePreview)}</p>
+</section>`
+      : "";
 
   return `<!DOCTYPE html>
 <html lang="es-DO">
@@ -485,6 +497,43 @@ h1 {
   .audio-btn { font-size: 0.78rem; padding: 0.65rem 0.7rem; }
   .stage iframe { height: 58vh; }
 }
+.qr-print {
+  margin: 0;
+  padding: 1.5rem 1.15rem;
+  border-top: 1px solid var(--line);
+  background: #eef3ee;
+  color: #0f1a12;
+  text-align: center;
+}
+.qr-print h2 {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.35rem, 3.5vw, 1.65rem);
+  letter-spacing: -0.02em;
+}
+.qr-print > p {
+  margin: 0 0 1rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  color: #3a4a3e;
+  max-width: 28rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.qr-print .qr-frame {
+  display: inline-flex;
+  padding: 0.65rem;
+  background: #fff;
+  border: 1px solid #c5d4c8;
+}
+.qr-print .qr-frame svg { display: block; width: 180px; height: 180px; }
+.qr-print .qr-url {
+  margin: 0.85rem 0 0;
+  font-family: system-ui, sans-serif;
+  font-size: 0.72rem;
+  word-break: break-all;
+  color: #4a5c50;
+}
+body.menu-editing .qr-print { display: none; }
 </style>
 </head>
 <body>
@@ -529,6 +578,8 @@ h1 {
         : `<div class="face-dock"><div class="bubble"><div class="bubble-placeholder">Video face-cam<br/>próximamente</div></div></div>`
     }
   </section>
+
+  ${qrPrintMarkup}
 
   <footer class="bottom">
     <p>
@@ -668,13 +719,20 @@ ${menuEditorMarkup}
 </html>`;
 }
 
-export function writeClaimPage(
+export async function writeClaimPage(
   lead: Lead,
   config: NicheConfig,
   opts: ClaimPageOptions = {},
-): GeneratedClaimPage {
+): Promise<GeneratedClaimPage> {
   const product = resolveClaimProduct(lead, opts.product ?? "auto");
-  const html = buildClaimPageHtml(lead, config, { product });
+  const urls = resolveGithubPagesUrls(config, lead.slug);
+  let qrSvg = opts.qrSvg;
+  if (product === "menu" && !qrSvg) {
+    const menuUrl =
+      urls.menuUrl ?? `https://steno.github.io/DomiWEB/menus/${lead.slug}/`;
+    qrSvg = await buildQrSvg(menuUrl);
+  }
+  const html = buildClaimPageHtml(lead, config, { product, qrSvg });
   const claimPath = join(dataDir("walkthroughs"), lead.slug, "index.html");
   const publicPath = join(publicDir("claim"), lead.slug, "index.html");
   mkdirSync(dirname(claimPath), { recursive: true });
@@ -690,7 +748,6 @@ export function writeClaimPage(
   // Ensure videos dir exists on Pages for when face-cam lands
   mkdirSync(publicDir("videos"), { recursive: true });
 
-  const urls = resolveGithubPagesUrls(config, lead.slug);
   return {
     claimPath,
     publicPath,
@@ -706,7 +763,7 @@ export function writeClaimPage(
   };
 }
 
-export function generateClaimPagesForLeads(
+export async function generateClaimPagesForLeads(
   leads: Lead[],
   config: NicheConfig,
   opts: {
@@ -714,7 +771,7 @@ export function generateClaimPagesForLeads(
     requireContact?: boolean;
     product?: PipelineProduct | "auto";
   } = {},
-): Array<{ lead: Lead; claim: GeneratedClaimPage }> {
+): Promise<Array<{ lead: Lead; claim: GeneratedClaimPage }>> {
   if (opts.requireContact !== false) {
     requireClaimContact();
   }
@@ -723,7 +780,7 @@ export function generateClaimPagesForLeads(
   for (const lead of batch) {
     log.info(`Claim · ${lead.place.name} (${lead.slug})`);
     try {
-      const claim = writeClaimPage(lead, config, {
+      const claim = await writeClaimPage(lead, config, {
         product: opts.product ?? "auto",
       });
       log.ok(
