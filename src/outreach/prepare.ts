@@ -259,6 +259,8 @@ export function buildOutreachForLead(
     REVIEW_QUOTE: finalQuote ?? "",
     REVIEW_SNIPPET: reviewSnippet(finalQuote),
     CLAIM_URL: resolveClaimUrl(lead, config),
+    MENU_URL: resolveAssetUrl(lead, config, "menu"),
+    SITE_URL: resolveAssetUrl(lead, config, "site"),
     PRICE_ONCE: priceOnce,
     HOSTING_NOTE: hostingNote,
     TRANSFER_BANK: transfer.TRANSFER_BANK,

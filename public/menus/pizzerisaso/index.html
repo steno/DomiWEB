@@ -278,12 +278,28 @@ body.menu-editing .item input {
   border-bottom: 1px solid rgba(226,164,90,0.28);
   color: inherit;
   font: inherit;
-  padding: 0.15rem 0;
+  padding: 0.35rem 0.25rem;
   border-radius: 0;
+  cursor: text;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+body.menu-editing .item input::placeholder {
+  color: rgba(183, 168, 148, 0.75);
+  font-weight: 400;
+}
+body.menu-editing .item input:hover {
+  border-bottom-color: rgba(226,164,90,0.75);
+  background: rgba(226,164,90,0.07);
 }
 body.menu-editing .item input:focus {
   outline: none;
   border-bottom-color: var(--accent);
+  background: rgba(226,164,90,0.12);
+  box-shadow: 0 1px 0 0 var(--accent);
+}
+body.menu-editing .item input:focus-visible {
+  outline: 2px solid rgba(226,164,90,0.45);
+  outline-offset: 2px;
 }
 body.menu-editing .item input.item-name {
   font-size: 1.08rem;
@@ -311,6 +327,16 @@ body.menu-editing .item-rm {
   line-height: 1;
   padding: 0.2rem 0.35rem;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  border-radius: 2px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+body.menu-editing .item-rm:hover {
+  color: #f0a090;
+  background: rgba(201, 120, 88, 0.12);
+}
+body.menu-editing .item-rm:focus-visible {
+  outline: 2px solid rgba(201, 120, 88, 0.5);
+  outline-offset: 2px;
 }
 .add-line {
   display: none;
@@ -328,6 +354,14 @@ body.menu-editing .item-rm {
   text-align: left;
 }
 body.menu-editing .add-line { display: block; }
+body.menu-editing .add-line:hover {
+  color: #f0c080;
+  border-top-color: rgba(226,164,90,0.7);
+}
+body.menu-editing .add-line:focus-visible {
+  outline: 2px solid rgba(226,164,90,0.45);
+  outline-offset: 2px;
+}
 .add-cat {
   display: none;
   margin: 0.5rem 0 1.5rem;
@@ -340,13 +374,33 @@ body.menu-editing .add-line { display: block; }
   font-weight: 700;
   font-size: 0.88rem;
   cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 body.menu-editing .add-cat { display: block; }
+body.menu-editing .add-cat:hover {
+  color: var(--accent);
+  border-color: rgba(226,164,90,0.75);
+  background: rgba(226,164,90,0.06);
+}
+body.menu-editing .add-cat:focus-visible {
+  outline: 2px solid rgba(226,164,90,0.45);
+  outline-offset: 2px;
+}
 body.menu-editing .cat h2[contenteditable="true"] {
   outline: none;
+  cursor: text;
+  padding: 0.15rem 0.25rem;
+  margin: 0 0 0.85rem;
+  border-radius: 2px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+body.menu-editing .cat h2[contenteditable="true"]:hover {
+  background: rgba(226,164,90,0.07);
+  color: #f3e7d4;
 }
 body.menu-editing .cat h2[contenteditable="true"]:focus {
   color: var(--accent);
+  background: rgba(226,164,90,0.12);
 }
 .edit-bar {
   display: none;
@@ -649,7 +703,7 @@ body.menu-editing .edit-bar { display: flex; }
   <div class="edit-bar" id="edit-bar" hidden>
   <p class="edit-status" id="edit-status" role="status"></p>
   <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Salir</button>
-  <button type="button" class="btn" id="btn-send-draft">Enviar borrador</button>
+  <button type="button" class="btn" id="btn-send-draft">Enviar cambios</button>
 </div>
   <script>
 (function () {
@@ -733,7 +787,7 @@ body.menu-editing .edit-bar { display: flex; }
   var SLUG = 'pizzerisaso';
   var NAME = 'Pizzerísaso';
   var STORAGE_KEY = 'domiweb-menu-draft-' + SLUG;
-  var WA_HREF = 'https://wa.me/17542133764?text=Hola%20%E2%80%94%20soy%20de%20Pizzer%C3%ADsaso.%0A%0ATe%20mando%20el%20JSON%20de%20mi%20men%C3%BA%20(slug%3A%20pizzerisaso).%0AAdjunto%20el%20archivo%20menu-pizzerisaso.json%20que%20descargu%C3%A9%20del%20men%C3%BA.%0A%0A%C2%BFMe%20lo%20publican%20en%20el%20men%C3%BA%20digital%3F';
+  var WA_HREF = 'https://wa.me/17542133764?text=Hola%20%E2%80%94%20soy%20de%20Pizzer%C3%ADsaso.%0A%0ATe%20mando%20mi%20men%C3%BA%20actualizado.%20Adjunto%20el%20archivo%20que%20descargu%C3%A9.%0A%0A%C2%BFMe%20lo%20publican%20en%20el%20men%C3%BA%20digital%3F';
   var WA_DIGITS = '17542133764';
   var seed = {"slug":"pizzerisaso","owned":false,"updatedAt":"2026-08-01T13:47:01.125Z","categories":[{"id":"entradas","label":"Entradas","items":[{"name":"Tostones","note":"Con salsa de ajo","priceHint":"RD$ —"},{"name":"Empanaditas","note":"Pollo o queso","priceHint":"RD$ —"},{"name":"Ensalada de la casa","note":"Fresca del día","priceHint":"RD$ —"}]},{"id":"fuertes","label":"Platos fuertes","items":[{"name":"Bandera dominicana","note":"Arroz, habichuelas y carne","priceHint":"RD$ —"},{"name":"Pollo guisado","note":"Con acompañamiento","priceHint":"RD$ —"},{"name":"Pescado frito","note":"Según disponibilidad","priceHint":"RD$ —"},{"name":"Mofongo","note":"Con chicharrón o camarones","priceHint":"RD$ —"}]},{"id":"bebidas","label":"Bebidas","items":[{"name":"Jugo natural","note":"Pregunta el sabor del día","priceHint":"RD$ —"},{"name":"Refresco","note":"Lata o vaso","priceHint":"RD$ —"},{"name":"Cerveza","note":"Nacional","priceHint":"RD$ —"},{"name":"Café","note":"Dominicano","priceHint":"RD$ —"}]},{"id":"postres","label":"Postres","items":[{"name":"Flan","note":"Casero","priceHint":"RD$ —"},{"name":"Dulce de leche","note":"Porción","priceHint":"RD$ —"}]}],"source":"template"};
   var state = null;
@@ -817,14 +871,23 @@ body.menu-editing .edit-bar { display: flex; }
       if (!state.categories[ci]) return;
       var h = sec.querySelector('h2');
       if (h) {
-        state.categories[ci].label = (h.textContent || '').trim() || state.categories[ci].label;
-        state.categories[ci].id = slugify(state.categories[ci].label, 'cat-' + (ci + 1));
+        if (!(h.dataset.session === '1' && h.dataset.edited !== '1')) {
+          var labelText = (h.textContent || '').trim();
+          if (h.dataset.session === '1' && h.dataset.edited === '1' && labelText) {
+            state.categories[ci].label = labelText;
+          } else if (h.dataset.session !== '1') {
+            state.categories[ci].label = labelText || state.categories[ci].label;
+          }
+          state.categories[ci].id = slugify(state.categories[ci].label, 'cat-' + (ci + 1));
+        }
       }
       sec.querySelectorAll('.item').forEach(function (row) {
         var ii = Number(row.getAttribute('data-ii'));
         if (!state.categories[ci].items[ii]) return;
         row.querySelectorAll('input[data-f]').forEach(function (inp) {
-          state.categories[ci].items[ii][inp.getAttribute('data-f')] = inp.value;
+          if (inp.dataset.session === '1' && inp.dataset.edited !== '1') return;
+          var f = inp.getAttribute('data-f');
+          state.categories[ci].items[ii][f] = inp.value;
         });
       });
     });
@@ -879,18 +942,93 @@ body.menu-editing .edit-bar { display: flex; }
   document.body.classList.add('menu-editing');
   if (bar) { bar.hidden = false; }
 
-  list.addEventListener('input', function () {
+  function defaultPlaceholder(el) {
+    if (el.classList.contains('item-note')) return 'Nota (opcional)';
+    if (el.classList.contains('item-price')) return 'RD$';
+    return '';
+  }
+
+  function beginFieldEdit(el) {
+    if (!el || el.dataset.session === '1') return;
+    var current = el.tagName === 'INPUT' ? el.value : (el.textContent || '');
+    el.dataset.orig = current;
+    el.dataset.edited = '0';
+    el.dataset.session = '1';
+    if (el.tagName === 'INPUT') {
+      el.placeholder = current || defaultPlaceholder(el);
+      el.value = '';
+    } else {
+      el.textContent = '';
+    }
+  }
+
+  function endFieldEdit(el) {
+    if (!el || el.dataset.session !== '1') return;
+    var orig = el.dataset.orig || '';
+    var edited = el.dataset.edited === '1';
+    var raw = el.tagName === 'INPUT' ? el.value : (el.textContent || '');
+    var next = String(raw).trim();
+    if (!edited || !next) {
+      if (el.tagName === 'INPUT') el.value = orig;
+      else el.textContent = orig || 'Categoría';
+    } else if (el.tagName !== 'INPUT') {
+      el.textContent = next;
+    } else {
+      el.value = next;
+    }
+    el.dataset.session = '0';
+    if (el.tagName === 'INPUT') {
+      el.placeholder = defaultPlaceholder(el);
+    }
+    delete el.dataset.orig;
+    delete el.dataset.edited;
+  }
+
+  list.addEventListener('focusin', function (ev) {
+    var t = ev.target;
+    if (!t) return;
+    if (t.tagName === 'INPUT' && t.getAttribute('data-f')) beginFieldEdit(t);
+    if (t.getAttribute && t.getAttribute('data-f') === 'label') beginFieldEdit(t);
+  });
+
+  list.addEventListener('input', function (ev) {
+    var t = ev.target;
+    if (t && t.dataset && t.dataset.session === '1') {
+      var raw = t.tagName === 'INPUT' ? t.value : (t.textContent || '');
+      t.dataset.edited = String(raw).length > 0 ? '1' : '0';
+    }
     readDom();
     saveLocal();
     setStatus('Borrador en este teléfono');
   });
-  list.addEventListener('blur', function (ev) {
-    if (ev.target && ev.target.getAttribute && ev.target.getAttribute('data-f') === 'label') {
+
+  list.addEventListener('focusout', function (ev) {
+    var t = ev.target;
+    if (!t) return;
+    if (t.tagName === 'INPUT' && t.getAttribute('data-f')) {
+      endFieldEdit(t);
+      readDom();
+      saveLocal();
+      return;
+    }
+    if (t.getAttribute && t.getAttribute('data-f') === 'label') {
+      endFieldEdit(t);
       readDom();
       saveLocal();
       render();
     }
-  }, true);
+  });
+
+  list.addEventListener('keydown', function (ev) {
+    var t = ev.target;
+    if (!t || t.tagName !== 'INPUT') return;
+    if (ev.key === 'Escape') {
+      t.dataset.edited = '0';
+      t.value = '';
+      t.blur();
+      ev.preventDefault();
+    }
+  });
 
   list.addEventListener('click', function (ev) {
     var t = ev.target;
@@ -950,10 +1088,10 @@ body.menu-editing .edit-bar { display: flex; }
     }
     saveLocal();
     downloadJson(draft);
-    setStatus('JSON descargado — adjúntalo en WhatsApp.');
+    setStatus('Abriendo WhatsApp — adjunta el archivo descargado.');
     var href = WA_HREF;
     if (!href && WA_DIGITS) {
-      var msg = 'Hola — soy de ' + NAME + '.\n\nTe mando el JSON de mi menú (slug: ' + SLUG + ').\nAdjunto menu-' + SLUG + '.json.\n\n¿Me lo publican?';
+      var msg = 'Hola — soy de ' + NAME + '.\n\nTe mando mi menú actualizado. Adjunto el archivo que descargué.\n\n¿Me lo publican en el menú digital?';
       href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(msg);
     }
     if (href) setTimeout(function () { window.open(href, '_blank', 'noopener'); }, 400);

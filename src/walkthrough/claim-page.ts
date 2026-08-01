@@ -260,7 +260,7 @@ export function buildClaimPageHtml(
         : "Se abre WhatsApp para confirmar — escríbenos ahí y te la pasamos."
       : claim.kind === "mailto"
         ? "Revisa tu correo — se abrió un mensaje para confirmar."
-        : "Falta configurar CLAIM_WHATSAPP en el servidor. Mientras, escríbenos por el mismo chat de WhatsApp donde te llegó el enlace.";
+        : "Escríbenos por el mismo chat de WhatsApp donde te llegó el enlace para confirmar.";
 
   const claimTitle =
     product === "reviewKit"

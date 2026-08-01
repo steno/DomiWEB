@@ -12,7 +12,7 @@ Si lo quieres a tu nombre, te lo paso por *{{PRICE_ONCE}}* (pago único). Incluy
 • menú móvil listo
 • QR para imprimir
 • te lo paso a tu nombre
-• cambios de platos y precios al inicio
+• editas platos y precios desde el mismo menú (y tus clientes piden por WhatsApp)
 
 ¿Te lo paso?
 
