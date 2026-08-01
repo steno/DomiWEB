@@ -2,7 +2,8 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { Lead, NicheConfig, PipelineProduct } from "../types/index.js";
 import { resolveGithubPagesUrls } from "../config/load.js";
-import { menuExists } from "../generate/menu.js";
+import { menuExists, loadOrCreateMenuData } from "../generate/menu.js";
+import { relativeEditMenuHref, writeMenuEditorPage } from "../generate/menu-editor.js";
 import { kitExists, siteHtmlExists } from "../generate/review-kit.js";
 import { looksSpanish } from "../generate/site.js";
 import { buildWhatsAppUrl } from "../outreach/phone.js";
@@ -242,7 +243,7 @@ export function buildClaimPageHtml(
       : product === "menu"
         ? `Armamos tu menú digital con categorías, platos de ejemplo y un QR permanente.
       Míralo abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
-      Si te gusta, reclámalo — es tuyo.`
+      Puedes editar tus platos ahora; al reclamarlo lo publicamos con tu carta real.`
         : `Armamos una página con tus reseñas públicas de Google.
       Mírala abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
       Si te gusta, reclámala — es tuya.`;
@@ -489,6 +490,11 @@ h1 {
     <div class="actions">
       <a class="btn btn-primary" id="btn-claim" href="${escapeAttr(claimHref)}" ${claimExtra}>${ctaLabel}</a>
       ${
+        product === "menu"
+          ? `<a class="btn btn-ghost" href="${escapeAttr(relativeEditMenuHref(lead.slug))}">Editar mis platos</a>`
+          : ""
+      }
+      ${
         videoHref
           ? `<button type="button" class="btn btn-ghost" id="btn-audio-top">Escuchar</button>`
           : ""
@@ -665,6 +671,11 @@ export function writeClaimPage(
   mkdirSync(dirname(publicPath), { recursive: true });
   writeFileSync(claimPath, html, "utf8");
   writeFileSync(publicPath, html, "utf8");
+
+  if (product === "menu" && menuExists(lead.slug)) {
+    const menuData = loadOrCreateMenuData(lead.slug, config);
+    writeMenuEditorPage(lead, config, menuData);
+  }
 
   // Ensure videos dir exists on Pages for when face-cam lands
   mkdirSync(publicDir("videos"), { recursive: true });

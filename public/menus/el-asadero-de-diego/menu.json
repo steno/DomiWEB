@@ -1,0 +1,234 @@
+{
+  "slug": "el-asadero-de-diego",
+  "owned": true,
+  "updatedAt": "2026-08-01T13:41:21.115Z",
+  "categories": [
+    {
+      "id": "acompanamientos",
+      "label": "Acompañamientos",
+      "items": [
+        {
+          "name": "Arroz blanco",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Arroz integral",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Moro de guandules",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Habichuelas rojas guisadas",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Serv. habichuelas rojas Gr.",
+          "note": "",
+          "priceHint": "RD$177"
+        },
+        {
+          "name": "Serv. habichuelas Pq.",
+          "note": "",
+          "priceHint": "RD$60"
+        },
+        {
+          "name": "Puré de yautía",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Cocido",
+          "note": "",
+          "priceHint": "RD$ —"
+        }
+      ]
+    },
+    {
+      "id": "carnes",
+      "label": "Carnes y platos",
+      "items": [
+        {
+          "name": "Gallina criolla guisada",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Cerdo guisado con tayota",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Costilla ahumada guisada",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Bacalao",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Res guisada",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Carne molida",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pechurina",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pescado frito",
+          "note": "Estilo Boca Chica",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "La paisa de Diego",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pierna al horno",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Serv. pierna sola",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pierna por lb.",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pollo guisado",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pollo al horno",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pollo frito",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Chicharrón por lb.",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pechuga al grill",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Ceviche de chicharrón",
+          "note": "",
+          "priceHint": "RD$ —"
+        }
+      ]
+    },
+    {
+      "id": "sopas",
+      "label": "Sopas",
+      "items": [
+        {
+          "name": "Sopa de pollo",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Sopa de gallina",
+          "note": "",
+          "priceHint": "RD$ —"
+        }
+      ]
+    },
+    {
+      "id": "alitas",
+      "label": "Alitas",
+      "items": [
+        {
+          "name": "Alitas BBQ",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Alitas miel mostaza",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Alitas a la parrilla",
+          "note": "",
+          "priceHint": "RD$ —"
+        }
+      ]
+    },
+    {
+      "id": "ensaladas",
+      "label": "Ensaladas",
+      "items": [
+        {
+          "name": "Ensalada verde",
+          "note": "Elegir de su preferencia",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Ensalada de pasta",
+          "note": "Elegir de su preferencia",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Serv. de ensaladas peq.",
+          "note": "",
+          "priceHint": "RD$88.50"
+        }
+      ]
+    },
+    {
+      "id": "jugos",
+      "label": "Jugos naturales",
+      "items": [
+        {
+          "name": "Sandía limón",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Chinola",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Chinola con leche",
+          "note": "",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Fruit punch",
+          "note": "",
+          "priceHint": "RD$ —"
+        }
+      ]
+    }
+  ],
+  "source": "owner-draft"
+}

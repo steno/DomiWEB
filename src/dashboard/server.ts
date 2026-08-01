@@ -37,9 +37,18 @@ function dbWatchTargets(): string[] {
   return [base, `${base}-wal`, `${base}-shm`];
 }
 
-function latestDbMtimeMs(): number {
+function waSentWatchTargets(): string[] {
+  const dir = dataDir("outreach");
+  return [
+    `${dir}/whatsapp-sent.log`,
+    `${dir}/whatsapp-price-sent.log`,
+    `${dir}/whatsapp-close-sent.log`,
+  ];
+}
+
+function latestWatchedMtimeMs(): number {
   let max = 0;
-  for (const p of dbWatchTargets()) {
+  for (const p of [...dbWatchTargets(), ...waSentWatchTargets()]) {
     if (!existsSync(p)) continue;
     try {
       max = Math.max(max, statSync(p).mtimeMs);
@@ -54,13 +63,13 @@ export function startDashboardServer(port = 4174): void {
   const clients = new Map<number, SseClient>();
   let nextClientId = 1;
   let lastPayload = writeDashboardSnapshot(buildDashboardPayload());
-  let lastMtime = latestDbMtimeMs();
+  let lastMtime = latestWatchedMtimeMs();
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   function broadcast() {
     try {
       lastPayload = writeDashboardSnapshot(buildDashboardPayload());
-      lastMtime = latestDbMtimeMs();
+      lastMtime = latestWatchedMtimeMs();
       const data = `event: update\ndata: ${JSON.stringify(lastPayload)}\n\n`;
       for (const client of clients.values()) {
         client.res.write(data);
@@ -76,7 +85,7 @@ export function startDashboardServer(port = 4174): void {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       debounceTimer = null;
-      const mtime = latestDbMtimeMs();
+      const mtime = latestWatchedMtimeMs();
       if (mtime === lastMtime && reason !== "force") return;
       log.info(`Dashboard refresh (${reason})`);
       broadcast();
@@ -103,9 +112,23 @@ export function startDashboardServer(port = 4174): void {
     /* ignore */
   }
 
-  // Poll as fallback — SQLite WAL updates can be quiet on some FS
+  // WhatsApp sent logs (first / price / close)
+  try {
+    const outreachDir = dataDir("outreach");
+    if (existsSync(outreachDir)) {
+      watch(outreachDir, { persistent: true }, (_event, filename) => {
+        const name = String(filename ?? "");
+        if (!name.includes("whatsapp") || !name.endsWith("-sent.log")) return;
+        scheduleRefresh("wa-sent");
+      });
+    }
+  } catch {
+    /* ignore */
+  }
+
+  // Poll as fallback — SQLite WAL / log appends can be quiet on some FS
   setInterval(() => {
-    const mtime = latestDbMtimeMs();
+    const mtime = latestWatchedMtimeMs();
     if (mtime !== lastMtime) scheduleRefresh("poll");
   }, 1000);
 
@@ -166,6 +189,8 @@ export function startDashboardServer(port = 4174): void {
 
   server.listen(port, () => {
     log.ok(`Dashboard live at http://localhost:${port}`);
-    log.info("Auto-updates when leads.sqlite changes (pipeline events).");
+    log.info(
+      "Auto-updates when leads.sqlite or WhatsApp sent logs change.",
+    );
   });
 }

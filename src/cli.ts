@@ -27,6 +27,7 @@ import {
   siteHtmlExists,
 } from "./generate/review-kit.js";
 import { generateMenusForLeads, menuExists } from "./generate/menu.js";
+import { applyMenuDraft } from "./generate/apply-menu-draft.js";
 import { generateFaceCamVideo } from "./generate/video.js";
 import { downloadToFile, generateLipsyncVideo } from "./generate/lipsync.js";
 import {
@@ -365,6 +366,37 @@ program
     for (const [status, n] of Object.entries(statusCounts()).sort()) {
       console.log(`  ${status.padEnd(18)} ${n}`);
     }
+  });
+
+program
+  .command("apply-menu-draft")
+  .description(
+    "Apply an owner menu JSON draft (from edit-menu download) and regenerate public/menus/<slug>/",
+  )
+  .requiredOption("--slug <slug>", "Lead slug")
+  .requiredOption("--file <path>", "Path to menu-<slug>.json from the owner")
+  .option("-c, --config <path>", "Path to niche.config.json")
+  .action(async (opts: { slug: string; file: string; config?: string }) => {
+    const config = loadConfig(opts.config);
+    log.step(4, "Aplicar borrador de menú");
+    const result = await applyMenuDraft({
+      slug: opts.slug,
+      filePath: opts.file,
+      config,
+    });
+    const urls = resolveGithubPagesUrls(config, result.lead.slug);
+    updateSiteGenerated(result.lead.id, {
+      sitePath:
+        (siteHtmlExists(result.lead.slug) || menuExists(result.lead.slug)) &&
+        result.lead.sitePath
+          ? result.lead.sitePath
+          : result.publicPath,
+      siteUrl: siteHtmlExists(result.lead.slug) ? urls.siteUrl : urls.menuUrl,
+      claimUrl: urls.claimUrl,
+      outreachQuote: result.lead.outreachQuote,
+    });
+    log.ok(`Menú actualizado · ${result.publicPath}`);
+    log.info("Commit + push public/menus/<slug>/ para publicar en Pages");
   });
 
 program

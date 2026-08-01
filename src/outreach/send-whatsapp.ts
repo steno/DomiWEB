@@ -1,18 +1,17 @@
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { execFileSync } from "node:child_process";
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { OutreachMessage } from "./prepare.js";
 import { buildWhatsAppUrl, toWhatsAppDigits } from "./phone.js";
 import { dataDir } from "../utils/paths.js";
 import { log } from "../utils/logger.js";
+import {
+  alreadySent,
+  markSent,
+  type WhatsAppSendKind,
+} from "./whatsapp-sent.js";
 
 /** NANP 555 exchange — reserved for fiction; fixture scrape uses these. */
 function isDemoPhone(phone: string | null | undefined): boolean {
@@ -36,32 +35,7 @@ export function redirectWhatsAppTo(
   });
 }
 
-type SendKind = "whatsapp" | "whatsapp-price" | "whatsapp-close";
-
-function sentLogPath(kind: SendKind = "whatsapp"): string {
-  mkdirSync(dataDir("outreach"), { recursive: true });
-  const file =
-    kind === "whatsapp-price"
-      ? "whatsapp-price-sent.log"
-      : kind === "whatsapp-close"
-        ? "whatsapp-close-sent.log"
-        : "whatsapp-sent.log";
-  return dataDir("outreach", file);
-}
-
-function alreadySent(leadId: string, kind: SendKind = "whatsapp"): boolean {
-  const path = sentLogPath(kind);
-  if (!existsSync(path)) return false;
-  return readFileSync(path, "utf8").includes(`\t${leadId}\t`);
-}
-
-function markSent(leadId: string, slug: string, kind: SendKind = "whatsapp") {
-  appendFileSync(
-    sentLogPath(kind),
-    `${new Date().toISOString()}\t${leadId}\t${slug}\t${kind}\n`,
-    "utf8",
-  );
-}
+type SendKind = WhatsAppSendKind;
 
 function openUrl(url: string) {
   const platform = process.platform;

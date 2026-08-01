@@ -19,6 +19,7 @@
     "generate-sites": "tsx src/cli.ts generate-sites",
     "generate-review-kit": "tsx src/cli.ts generate-review-kit",
     "generate-menus": "tsx src/cli.ts generate-menus",
+    "apply-menu-draft": "tsx src/cli.ts apply-menu-draft",
     "claim-pages": "tsx src/cli.ts claim-pages",
     "serve:public": "npx --yes serve public -p 4173",
     "generate-video": "tsx src/cli.ts generate-video",

@@ -214,6 +214,42 @@
       .badge.rejected { color: #a8aea9; background: rgba(107,115,110,0.2); }
       .badge.error { color: #f0b8ae; background: rgba(196,92,74,0.18); }
       .badge.scraped { color: #cfd6d1; background: rgba(255,255,255,0.06); }
+      .badge.menu-owned { color: #f0d4b8; background: rgba(212,165,116,0.2); }
+      .badge.menu-template { color: #a8aea9; background: rgba(107,115,110,0.18); }
+      .status-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        align-items: flex-start;
+      }
+      .wa-marks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+      .wa-mark {
+        display: inline-block;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 0.18rem 0.4rem;
+        background: rgba(255,255,255,0.05);
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .wa-mark.on {
+        color: #b7dcc8;
+        background: rgba(78,163,126,0.2);
+      }
+      .wa-mark.price.on {
+        color: #f0d4b8;
+        background: rgba(212,165,116,0.2);
+      }
+      .wa-mark.close.on {
+        color: #c5cef8;
+        background: rgba(139,156,240,0.2);
+      }
       .links {
         display: flex;
         flex-wrap: wrap;
@@ -252,8 +288,8 @@
       }
       @media (max-width: 720px) {
         .meta { align-items: flex-start; }
-        th:nth-child(4), td:nth-child(4),
-        th:nth-child(5), td:nth-child(5) { display: none; }
+        th:nth-child(5), td:nth-child(5),
+        th:nth-child(6), td:nth-child(6) { display: none; }
       }
     </style>
   </head>
@@ -286,6 +322,7 @@
             <tr>
               <th>Business</th>
               <th>Status</th>
+              <th>WhatsApp</th>
               <th>Links</th>
               <th>Metro</th>
               <th>Updated</th>
@@ -319,10 +356,23 @@
         error: "Error",
       };
 
-      let state = { generatedAt: null, total: 0, counts: {}, leads: [] };
+      let state = {
+        generatedAt: null,
+        total: 0,
+        counts: {},
+        waCounts: { first: 0, price: 0, close: 0, unsent: 0 },
+        leads: [],
+      };
       let filterStatus = "all";
       let query = "";
       let prevById = new Map();
+
+      const WA_FILTERS = [
+        { key: "wa_first", label: "WA sent" },
+        { key: "wa_price", label: "Price sent" },
+        { key: "wa_close", label: "Close sent" },
+        { key: "wa_unsent", label: "WA unsent" },
+      ];
 
       const el = {
         counts: document.getElementById("counts"),
@@ -353,10 +403,31 @@
         el.liveLabel.textContent = label;
       }
 
+      function matchesWaFilter(l, key) {
+        if (key === "wa_first") return Boolean(l.waFirstAt);
+        if (key === "wa_price") return Boolean(l.waPriceAt);
+        if (key === "wa_close") return Boolean(l.waCloseAt);
+        if (key === "wa_unsent")
+          return l.status === "outreach_ready" && !l.waFirstAt;
+        if (key === "menu_owned") return l.menuOwnership === "owned";
+        if (key === "menu_template") return l.menuOwnership === "template";
+        return true;
+      }
+
       function filteredLeads() {
         const q = query.trim().toLowerCase();
         return state.leads.filter((l) => {
-          if (filterStatus !== "all" && l.status !== filterStatus) return false;
+          if (filterStatus !== "all") {
+            if (
+              WA_FILTERS.some((f) => f.key === filterStatus) ||
+              filterStatus === "menu_owned" ||
+              filterStatus === "menu_template"
+            ) {
+              if (!matchesWaFilter(l, filterStatus)) return false;
+            } else if (l.status !== filterStatus) {
+              return false;
+            }
+          }
           if (!q) return true;
           const hay = [l.name, l.slug, l.phone, l.ownerFirstName, l.metro, l.city]
             .filter(Boolean)
@@ -367,6 +438,11 @@
       }
 
       function renderCounts() {
+        const wa = state.waCounts || { first: 0, price: 0, close: 0, unsent: 0 };
+        const menuOwned = state.menuOwnedCount || 0;
+        const menuTemplate = (state.leads || []).filter(
+          (l) => l.menuOwnership === "template",
+        ).length;
         const items = [
           { key: "all", label: "Total", n: state.total },
           ...STATUS_ORDER.map((key) => ({
@@ -374,7 +450,28 @@
             label: STATUS_LABELS[key],
             n: state.counts[key] || 0,
           })).filter((x) => x.n > 0 || x.key === filterStatus),
-        ];
+          ...WA_FILTERS.map((f) => ({
+            key: f.key,
+            label: f.label,
+            n:
+              f.key === "wa_first"
+                ? wa.first
+                : f.key === "wa_price"
+                  ? wa.price
+                  : f.key === "wa_close"
+                    ? wa.close
+                    : wa.unsent,
+          })).filter((x) => x.n > 0 || x.key === filterStatus),
+          { key: "menu_owned", label: "Menu owned", n: menuOwned },
+          { key: "menu_template", label: "Menu template", n: menuTemplate },
+        ].filter(
+          (x) =>
+            x.key === "all" ||
+            x.n > 0 ||
+            x.key === filterStatus ||
+            x.key === "menu_owned" ||
+            x.key === "menu_template",
+        );
         el.counts.innerHTML = items
           .map(
             (c) => `
@@ -386,16 +483,44 @@
           .join("");
       }
 
+      function menuChip(l) {
+        if (l.menuOwnership === "owned") {
+          return `<span class="badge menu-owned" title="Owner draft applied">Menu owned</span>`;
+        }
+        if (l.menuOwnership === "template") {
+          return `<span class="badge menu-template" title="Placeholder menu">Menu template</span>`;
+        }
+        return "";
+      }
+
+      function waMarks(l) {
+        const marks = [
+          { cls: "", on: l.waFirstAt, label: "1st", title: l.waFirstAt ? `First opened ${fmtTime(l.waFirstAt)}` : "First contact not opened" },
+          { cls: "price", on: l.waPriceAt, label: "Price", title: l.waPriceAt ? `Price opened ${fmtTime(l.waPriceAt)}` : "Price not opened" },
+          { cls: "close", on: l.waCloseAt, label: "Close", title: l.waCloseAt ? `Close opened ${fmtTime(l.waCloseAt)}` : "Close not opened" },
+        ];
+        return `<div class="wa-marks">${marks
+          .map(
+            (m) =>
+              `<span class="wa-mark ${m.cls} ${m.on ? "on" : ""}" title="${escapeAttr(m.title)}">${m.label}</span>`,
+          )
+          .join("")}</div>`;
+      }
+
       function renderRows() {
         const leads = filteredLeads();
         el.shown.textContent = `${leads.length} shown · ${state.total} total`;
         el.empty.hidden = leads.length > 0;
         el.rows.innerHTML = leads
           .map((l) => {
+            const prev = prevById.get(l.id);
             const changed =
-              prevById.has(l.id) &&
-              (prevById.get(l.id).status !== l.status ||
-                prevById.get(l.id).updatedAt !== l.updatedAt);
+              prev &&
+              (prev.status !== l.status ||
+                prev.updatedAt !== l.updatedAt ||
+                prev.waFirstAt !== l.waFirstAt ||
+                prev.waPriceAt !== l.waPriceAt ||
+                prev.waCloseAt !== l.waCloseAt);
             const site = l.siteUrl
               ? `<a href="${escapeAttr(l.siteUrl)}" target="_blank" rel="noopener">Site</a>`
               : `<span class="muted">Site</span>`;
@@ -412,7 +537,8 @@
                 <span class="slug">${escapeHtml(l.slug)}</span>
                 ${owner}
               </td>
-              <td><span class="badge ${escapeAttr(l.status)}">${escapeHtml(l.statusLabel || STATUS_LABELS[l.status] || l.status)}</span></td>
+              <td><div class="status-stack"><span class="badge ${escapeAttr(l.status)}">${escapeHtml(l.statusLabel || STATUS_LABELS[l.status] || l.status)}</span>${menuChip(l)}</div></td>
+              <td>${waMarks(l)}</td>
               <td><div class="links">${site}${claim}</div></td>
               <td>${escapeHtml(l.city || l.metro || "—")}</td>
               <td class="time">${fmtTime(l.updatedAt)}</td>

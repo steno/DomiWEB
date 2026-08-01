@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es-DO">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Menú · Chimichurri El Bacano</title>
+<style>
+:root {
+  --bg: #140f0a;
+  --ink: #f7f1e8;
+  --muted: #b7a894;
+  --accent: #e2a45a;
+  --panel: #1c1610;
+  --line: rgba(226, 164, 90, 0.28);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  background: var(--bg);
+  line-height: 1.45;
+}
+.hero {
+  position: relative;
+  min-height: 72vh;
+  min-height: 72svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(1.4rem, 4vh, 2.2rem) 1.15rem 1.5rem;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(20,15,10,0.2) 0%, rgba(20,15,10,0.55) 48%, rgba(20,15,10,0.96) 100%),
+    linear-gradient(135deg, #2a1c12, #140f0a 55%, #24180f);
+}
+.hero.has-photo {
+  background-image:
+    linear-gradient(180deg, rgba(20,15,10,0.12) 0%, rgba(20,15,10,0.42) 42%, rgba(20,15,10,0.95) 100%),
+    var(--hero-image);
+  background-size: cover, cover;
+  background-position: center, center;
+}
+.hero-inner { position: relative; z-index: 1; max-width: 40rem; }
+.kicker {
+  margin: 0 0 0.55rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.brand {
+  margin: 0;
+  font-size: clamp(2.6rem, 11vw, 4.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  text-wrap: balance;
+  text-shadow: 0 12px 36px rgba(0,0,0,0.45);
+}
+.sub {
+  margin: 0.75rem 0 0;
+  color: #e8dccb;
+  font-size: clamp(1rem, 2.6vw, 1.15rem);
+}
+.meta {
+  margin: 0.7rem 0 0;
+  color: var(--accent);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.cta-row {
+  margin: 1.15rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #1a1208;
+  text-decoration: none;
+  padding: 0.9rem 1.2rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 0.98rem;
+}
+.photo-note {
+  margin: 0.8rem 0 0;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.72rem;
+  color: rgba(247,241,232,0.72);
+}
+.wrap { max-width: 40rem; margin: 0 auto; padding: 1.75rem 1.15rem 3rem; }
+.banner {
+  margin: 0 0 1.5rem;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: #dccbb4;
+}
+.cat { margin: 0 0 1.85rem; }
+.cat h2 {
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.35rem, 3.5vw, 1.7rem);
+  letter-spacing: -0.02em;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.45rem;
+}
+.items { list-style: none; margin: 0; padding: 0; }
+.item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(226,164,90,0.12);
+}
+.pick {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0.2rem;
+  cursor: pointer;
+}
+.pick-cb {
+  position: absolute;
+  opacity: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+}
+.pick-box {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1.5px solid rgba(226,164,90,0.55);
+  display: block;
+  flex-shrink: 0;
+  background: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.pick-cb:checked + .pick-box {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px #140f0a;
+}
+.pick-cb:focus-visible + .pick-box {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.item-name { margin: 0; font-size: 1.08rem; font-weight: 650; }
+.item-note {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.82rem;
+}
+.item-price {
+  margin: 0;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+  padding-top: 0.15rem;
+}
+.order-hint {
+  margin: 0 0 1.25rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.order-bar {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
+  background: rgba(20,15,10,0.94);
+  border-top: 1px solid var(--line);
+  gap: 0.65rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  backdrop-filter: blur(8px);
+  z-index: 15;
+}
+.order-bar.visible { display: flex; }
+.order-bar .order-count {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+.order-bar .btn {
+  border: none;
+  cursor: pointer;
+}
+.order-bar .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+body.has-order .wrap { padding-bottom: 5.5rem; }
+.qr-block {
+  margin: 2.25rem 0 0;
+  padding: 1.25rem 1rem;
+  background: #f3e7d4;
+  color: #1a1208;
+  text-align: center;
+}
+.qr-block h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+}
+.qr-block p {
+  margin: 0 0 1rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: #4a3a28;
+}
+.qr-frame {
+  display: inline-flex;
+  padding: 0.65rem;
+  background: #fff;
+}
+.qr-frame svg { display: block; width: 180px; height: 180px; }
+.qr-url {
+  margin: 0.85rem 0 0;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.72rem;
+  word-break: break-all;
+  color: #5a4632;
+}
+footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.75rem;
+}
+
+body.menu-editing .hero {
+  min-height: 28vh;
+  min-height: 28svh;
+}
+body.menu-editing .qr-block { display: none; }
+body.menu-editing .banner { display: none; }
+body.menu-editing .order-hint { display: none; }
+body.menu-editing .pick { display: none; }
+body.menu-editing .order-bar { display: none !important; }
+body.menu-editing .wrap { padding-bottom: 5.5rem; }
+.edit-hint {
+  display: none;
+  margin: 0 0 1.25rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+body.menu-editing .edit-hint { display: block; }
+body.menu-editing .item {
+  grid-template-columns: 1fr auto auto;
+  align-items: start;
+  gap: 0.55rem;
+}
+body.menu-editing .item-main { display: grid; gap: 0.35rem; }
+body.menu-editing .item input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(226,164,90,0.28);
+  color: inherit;
+  font: inherit;
+  padding: 0.15rem 0;
+  border-radius: 0;
+}
+body.menu-editing .item input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+body.menu-editing .item input.item-name {
+  font-size: 1.08rem;
+  font-weight: 650;
+}
+body.menu-editing .item input.item-note {
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.82rem;
+}
+body.menu-editing .item input.item-price {
+  width: 6.5rem;
+  text-align: right;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+body.menu-editing .item-rm {
+  background: none;
+  border: none;
+  color: #c97858;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.2rem 0.35rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+.add-line {
+  display: none;
+  margin: 0.35rem 0 0;
+  padding: 0.65rem 0;
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px dashed rgba(226,164,90,0.35);
+  color: var(--accent);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+}
+body.menu-editing .add-line { display: block; }
+.add-cat {
+  display: none;
+  margin: 0.5rem 0 1.5rem;
+  padding: 0.75rem 0;
+  width: 100%;
+  background: none;
+  border: 1px dashed rgba(226,164,90,0.4);
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+body.menu-editing .add-cat { display: block; }
+body.menu-editing .cat h2[contenteditable="true"] {
+  outline: none;
+}
+body.menu-editing .cat h2[contenteditable="true"]:focus {
+  color: var(--accent);
+}
+.edit-bar {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
+  background: rgba(20,15,10,0.94);
+  border-top: 1px solid var(--line);
+  gap: 0.65rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+body.menu-editing .edit-bar { display: flex; }
+.edit-bar .btn {
+  border: none;
+  cursor: pointer;
+}
+.edit-bar .btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.edit-status {
+  width: 100%;
+  text-align: center;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--accent);
+  min-height: 1.1em;
+}
+@media (max-width: 520px) {
+  body.menu-editing .item {
+    grid-template-columns: 1fr auto;
+  }
+  body.menu-editing .item-rm {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  body.menu-editing .item input.item-price {
+    grid-column: 1 / -1;
+    width: 100%;
+    text-align: left;
+  }
+}
+
+</style>
+</head>
+<body>
+  <header class="hero has-photo" style="--hero-image:url('https://lh3.googleusercontent.com/gps-cs-s/AHRPTWnDz58Gc9qz4AR9XL011AQpqP966VKlXTwRvQp5d8xRmhs5rUaq_M4KkAmGTDhu2liZfH2B5omzupWXOf_L2r3eoaFFMw-zXD6zHGY-HcXtX-SBsyajwzzfrvzO7BfbbfYLFeMKreFrc8lP=w1920-h1080-k-no')">
+    <div class="hero-inner">
+      <p class="kicker">Menú digital</p>
+      <h1 class="brand">Chimichurri El Bacano</h1>
+      <p class="sub">Cafetería · F3WX+2H4, C. Marginal, Santo Domingo 10410, República Dominicana</p>
+      <p class="meta">4.9★ Google · 11 reseñas</p>
+      <div class="cta-row"><a class="btn" href="https://wa.me/18093348415?text=Hola%2C%20vi%20el%20men%C3%BA%20digital%20de%20Chimichurri%20El%20Bacano%20y%20quiero%20ordenar.">Pedir por WhatsApp</a></div>
+      
+    </div>
+  </header>
+  <main class="wrap">
+    
+    <p class="edit-hint">Edita platos y precios aquí mismo. + Plato agrega una línea.</p>
+    <p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>
+    <div id="menu-list">
+    <section class="cat" id="fuertes">
+  <h2>Platos</h2>
+  <ul class="items"><li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Chimichurri especial"
+      data-note="Con papas"
+      data-price="RD$ 350"
+      data-cat="Platos"
+      aria-label="Agregar Chimichurri especial — Con papas" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
+  <div class="item-main">
+    <p class="item-name">Chimichurri especial</p>
+    <p class="item-note">Con papas</p>
+  </div>
+  <p class="item-price">RD$ 350</p>
+</li>
+<li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Chimi simple"
+      data-note=""
+      data-price="RD$ 250"
+      data-cat="Platos"
+      aria-label="Agregar Chimi simple" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
+  <div class="item-main">
+    <p class="item-name">Chimi simple</p>
+    
+  </div>
+  <p class="item-price">RD$ 250</p>
+</li></ul>
+</section>
+<section class="cat" id="bebidas">
+  <h2>Bebidas</h2>
+  <ul class="items"><li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Refresco"
+      data-note="Lata"
+      data-price="RD$ 50"
+      data-cat="Bebidas"
+      aria-label="Agregar Refresco — Lata" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
+  <div class="item-main">
+    <p class="item-name">Refresco</p>
+    <p class="item-note">Lata</p>
+  </div>
+  <p class="item-price">RD$ 50</p>
+</li></ul>
+</section>
+    </div>
+    <section class="qr-block" aria-label="Código QR del menú">
+      <h2>Tu QR permanente</h2>
+      <p>Imprímelo para la mesa o la ventana. Apunta a este menú.</p>
+      <div class="qr-frame"><svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 35 35" shape-rendering="crispEdges"><path stroke="#1a1208" d="M1 1.5h7m3 0h2m1 0h1m1 0h6m2 0h2m1 0h7M1 2.5h1m5 0h1m3 0h1m1 0h5m4 0h1m4 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m2 0h3m1 0h1m2 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h2m1 0h1m1 0h1m2 0h3m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m1 0h3m4 0h1m1 0h3m2 0h2m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m1 0h1m3 0h1m1 0h3m1 0h1m3 0h1m3 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h1m2 0h1m2 0h1m1 0h1m3 0h2m1 0h2M1 9.5h1m1 0h5m2 0h1m1 0h2m1 0h1m1 0h2m1 0h1m2 0h1m1 0h1m1 0h5M1 10.5h1m3 0h2m1 0h1m3 0h1m3 0h2m1 0h2m1 0h1m1 0h1m2 0h2m1 0h2m1 0h1M2 11.5h6m1 0h2m5 0h4m2 0h2m1 0h1m3 0h1m1 0h2M2 12.5h1m1 0h1m1 0h1m1 0h1m2 0h2m2 0h2m2 0h2m1 0h3m1 0h2m1 0h4M1 13.5h3m1 0h3m1 0h1m1 0h1m6 0h1m4 0h4m1 0h3m1 0h2M1 14.5h2m1 0h3m3 0h1m1 0h1m1 0h2m2 0h7m2 0h1m2 0h4M4 15.5h1m1 0h3m3 0h1m3 0h3m2 0h1m1 0h1m2 0h2m1 0h4M2 16.5h2m2 0h1m1 0h3m1 0h1m1 0h1m2 0h1m3 0h3m1 0h3m1 0h3M1 17.5h4m1 0h2m2 0h2m1 0h1m4 0h2m3 0h4m1 0h2m3 0h1M1 18.5h1m1 0h1m7 0h1m3 0h1m1 0h1m1 0h4m1 0h1m1 0h3m1 0h2m1 0h1M1 19.5h3m2 0h4m2 0h1m2 0h3m1 0h1m1 0h1m5 0h3m1 0h2M1 20.5h5m4 0h1m1 0h1m1 0h4m3 0h2m5 0h6M1 21.5h3m1 0h3m3 0h1m1 0h1m4 0h1m4 0h1m1 0h2m1 0h3m1 0h2M1 22.5h2m1 0h1m1 0h1m3 0h3m1 0h2m1 0h5m1 0h2m2 0h2m1 0h1m2 0h1M1 23.5h1m1 0h1m2 0h2m1 0h1m1 0h1m3 0h2m1 0h1m2 0h2m6 0h1m2 0h1M1 24.5h1m3 0h1m4 0h1m3 0h2m1 0h1m3 0h3m2 0h3m1 0h2M1 25.5h1m4 0h3m2 0h2m1 0h1m5 0h2m1 0h8m1 0h2M9 26.5h2m6 0h1m1 0h5m1 0h1m3 0h1m1 0h1m1 0h1M1 27.5h7m2 0h1m4 0h5m4 0h2m1 0h1m1 0h1m1 0h1M1 28.5h1m5 0h1m1 0h1m1 0h1m1 0h1m3 0h1m4 0h1m1 0h2m3 0h3m1 0h1M1 29.5h1m1 0h3m1 0h1m1 0h5m4 0h1m1 0h1m2 0h1m1 0h6M1 30.5h1m1 0h3m1 0h1m1 0h2m4 0h1m1 0h1m1 0h2m1 0h1m2 0h2m2 0h5M1 31.5h1m1 0h3m1 0h1m1 0h3m2 0h1m1 0h2m3 0h8m1 0h2M1 32.5h1m5 0h1m3 0h2m2 0h2m2 0h1m2 0h1m4 0h1m1 0h3M1 33.5h7m1 0h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h4m1 0h1m1 0h1m1 0h1"/></svg>
+</div>
+      <p class="qr-url">https://steno.github.io/DomiWEB/menus/chimichurri-el-bacano/</p>
+    </section>
+    <footer><p>Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas</p></footer>
+  </main>
+  <div class="order-bar" id="order-bar" hidden>
+    <p class="order-count" id="order-count">0 platos</p>
+    <button type="button" class="btn" id="btn-send-order">Enviar pedido por WhatsApp</button>
+  </div>
+  <div class="edit-bar" id="edit-bar" hidden>
+  <p class="edit-status" id="edit-status" role="status"></p>
+  <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Salir</button>
+  <button type="button" class="btn" id="btn-send-draft">Enviar borrador</button>
+</div>
+  <script>
+(function () {
+  var WA_DIGITS = '18093348415';
+  var NAME = 'Chimichurri El Bacano';
+  var bar = document.getElementById('order-bar');
+  var countEl = document.getElementById('order-count');
+  var sendBtn = document.getElementById('btn-send-order');
+  if (!bar || !sendBtn) return;
+
+  function selected() {
+    return Array.prototype.slice.call(document.querySelectorAll('.pick-cb:checked'));
+  }
+
+  function refresh() {
+    if (document.body.classList.contains('menu-editing')) {
+      bar.classList.remove('visible');
+      bar.hidden = true;
+      document.body.classList.remove('has-order');
+      return;
+    }
+    var items = selected();
+    var n = items.length;
+    if (countEl) {
+      countEl.textContent = n === 1 ? '1 plato seleccionado' : n + ' platos seleccionados';
+    }
+    if (n > 0) {
+      bar.hidden = false;
+      bar.classList.add('visible');
+      document.body.classList.add('has-order');
+      sendBtn.disabled = !WA_DIGITS;
+    } else {
+      bar.classList.remove('visible');
+      bar.hidden = true;
+      document.body.classList.remove('has-order');
+    }
+  }
+
+  document.addEventListener('change', function (ev) {
+    if (ev.target && ev.target.classList && ev.target.classList.contains('pick-cb')) {
+      refresh();
+    }
+  });
+
+  sendBtn.addEventListener('click', function () {
+    if (!WA_DIGITS) return;
+    var items = selected();
+    if (!items.length) return;
+    var lines = ['Hola, quiero pedir en ' + NAME + ':', ''];
+    var byCat = {};
+    items.forEach(function (cb) {
+      var cat = cb.getAttribute('data-cat') || 'Pedido';
+      if (!byCat[cat]) byCat[cat] = [];
+      var name = cb.getAttribute('data-name') || '';
+      var note = cb.getAttribute('data-note') || '';
+      var price = cb.getAttribute('data-price') || '';
+      var line = '• ' + name;
+      if (note) line += ' (' + note + ')';
+      if (price && price !== 'RD$ —') line += ' — ' + price;
+      byCat[cat].push(line);
+    });
+    Object.keys(byCat).forEach(function (cat) {
+      lines.push(cat + ':');
+      byCat[cat].forEach(function (l) { lines.push(l); });
+      lines.push('');
+    });
+    lines.push('Gracias.');
+    var href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(lines.join('\n'));
+    window.open(href, '_blank', 'noopener');
+  });
+
+  refresh();
+})();
+</script>
+  <script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var wantEdit = params.get('edit') === '1' || location.hash === '#edit';
+  if (!wantEdit) return;
+
+  var SLUG = 'chimichurri-el-bacano';
+  var NAME = 'Chimichurri El Bacano';
+  var STORAGE_KEY = 'domiweb-menu-draft-' + SLUG;
+  var WA_HREF = 'https://wa.me/17542133764?text=Hola%20%E2%80%94%20soy%20de%20Chimichurri%20El%20Bacano.%0A%0ATe%20mando%20el%20JSON%20de%20mi%20men%C3%BA%20(slug%3A%20chimichurri-el-bacano).%0AAdjunto%20el%20archivo%20menu-chimichurri-el-bacano.json%20que%20descargu%C3%A9%20del%20men%C3%BA.%0A%0A%C2%BFMe%20lo%20publican%20en%20el%20men%C3%BA%20digital%3F';
+  var WA_DIGITS = '17542133764';
+  var seed = {"slug":"chimichurri-el-bacano","owned":true,"updatedAt":"2026-08-01T13:37:01.134Z","categories":[{"id":"fuertes","label":"Platos","items":[{"name":"Chimichurri especial","note":"Con papas","priceHint":"RD$ 350"},{"name":"Chimi simple","note":"","priceHint":"RD$ 250"}]},{"id":"bebidas","label":"Bebidas","items":[{"name":"Refresco","note":"Lata","priceHint":"RD$ 50"}]}],"source":"owner-draft"};
+  var state = null;
+  var list = document.getElementById('menu-list');
+  var bar = document.getElementById('edit-bar');
+  var statusEl = document.getElementById('edit-status');
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function setStatus(msg) { if (statusEl) statusEl.textContent = msg || ''; }
+  function slugify(label, fallback) {
+    var s = String(label || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return s || fallback || 'cat';
+  }
+  function escAttr(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.categories)) {
+          state = parsed;
+          return;
+        }
+      }
+    } catch (e) {}
+    state = clone(seed);
+  }
+
+  function saveLocal() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function render() {
+    if (!list) return;
+    list.innerHTML = state.categories.map(function (cat, ci) {
+      var items = (cat.items || []).map(function (it, ii) {
+        return (
+          '<li class="item" data-ci="' + ci + '" data-ii="' + ii + '">' +
+            '<div class="item-main">' +
+              '<input class="item-name" data-f="name" aria-label="Plato" value="' + escAttr(it.name || '') + '" />' +
+              '<input class="item-note" data-f="note" aria-label="Nota" placeholder="Nota (opcional)" value="' + escAttr(it.note || '') + '" />' +
+            '</div>' +
+            '<input class="item-price" data-f="priceHint" aria-label="Precio" placeholder="RD$" value="' + escAttr(it.priceHint || '') + '" />' +
+            '<button type="button" class="item-rm" data-act="rm" aria-label="Quitar plato">&times;</button>' +
+          '</li>'
+        );
+      }).join('');
+      return (
+        '<section class="cat" data-ci="' + ci + '" id="' + escAttr(cat.id || ('cat-' + ci)) + '">' +
+          '<h2 contenteditable="true" spellcheck="false" data-f="label"></h2>' +
+          '<ul class="items">' + items + '</ul>' +
+          '<button type="button" class="add-line" data-act="add-item">+ Plato</button>' +
+        '</section>'
+      );
+    }).join('') +
+    '<button type="button" class="add-cat" id="btn-add-cat">+ Categoría</button>';
+
+    list.querySelectorAll('.cat').forEach(function (sec) {
+      var ci = Number(sec.getAttribute('data-ci'));
+      var h = sec.querySelector('h2');
+      if (h && state.categories[ci]) h.textContent = state.categories[ci].label || 'Categoría';
+    });
+  }
+
+  function readDom() {
+    list.querySelectorAll('.cat').forEach(function (sec) {
+      var ci = Number(sec.getAttribute('data-ci'));
+      if (!state.categories[ci]) return;
+      var h = sec.querySelector('h2');
+      if (h) {
+        state.categories[ci].label = (h.textContent || '').trim() || state.categories[ci].label;
+        state.categories[ci].id = slugify(state.categories[ci].label, 'cat-' + (ci + 1));
+      }
+      sec.querySelectorAll('.item').forEach(function (row) {
+        var ii = Number(row.getAttribute('data-ii'));
+        if (!state.categories[ci].items[ii]) return;
+        row.querySelectorAll('input[data-f]').forEach(function (inp) {
+          state.categories[ci].items[ii][inp.getAttribute('data-f')] = inp.value;
+        });
+      });
+    });
+  }
+
+  function buildDraft() {
+    readDom();
+    return {
+      slug: SLUG,
+      owned: false,
+      updatedAt: new Date().toISOString(),
+      source: 'owner-draft',
+      categories: state.categories
+        .map(function (c) {
+          return {
+            id: c.id || slugify(c.label, 'cat'),
+            label: String(c.label || '').trim(),
+            items: (c.items || [])
+              .map(function (it) {
+                return {
+                  name: String(it.name || '').trim(),
+                  note: String(it.note || '').trim(),
+                  priceHint: String(it.priceHint || '').trim() || 'RD$ —',
+                };
+              })
+              .filter(function (it) { return it.name.length > 0; }),
+          };
+        })
+        .filter(function (c) { return c.label && c.items.length > 0; }),
+    };
+  }
+
+  function downloadJson(draft) {
+    var blob = new Blob([JSON.stringify(draft, null, 2) + '\n'], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'menu-' + SLUG + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+
+  function exitEdit() {
+    var u = new URL(location.href);
+    u.searchParams.delete('edit');
+    u.hash = '';
+    location.href = u.pathname + u.search;
+  }
+
+  document.body.classList.add('menu-editing');
+  if (bar) { bar.hidden = false; }
+
+  list.addEventListener('input', function () {
+    readDom();
+    saveLocal();
+    setStatus('Borrador en este teléfono');
+  });
+  list.addEventListener('blur', function (ev) {
+    if (ev.target && ev.target.getAttribute && ev.target.getAttribute('data-f') === 'label') {
+      readDom();
+      saveLocal();
+      render();
+    }
+  }, true);
+
+  list.addEventListener('click', function (ev) {
+    var t = ev.target;
+    if (!t || !t.getAttribute) return;
+    var act = t.getAttribute('data-act');
+    if (!act) return;
+    readDom();
+    if (act === 'add-item') {
+      var sec = t.closest('.cat');
+      var ci = sec ? Number(sec.getAttribute('data-ci')) : -1;
+      if (ci >= 0) {
+        state.categories[ci].items.push({ name: '', note: '', priceHint: 'RD$ ' });
+        saveLocal();
+        render();
+        var rows = list.querySelectorAll('.cat[data-ci="' + ci + '"] .item');
+        var last = rows[rows.length - 1];
+        if (last) {
+          var focus = last.querySelector('input.item-name');
+          if (focus) focus.focus();
+        }
+      }
+      return;
+    }
+    if (act === 'rm') {
+      var row = t.closest('.item');
+      var sec2 = t.closest('.cat');
+      var ci2 = sec2 ? Number(sec2.getAttribute('data-ci')) : -1;
+      var ii = row ? Number(row.getAttribute('data-ii')) : -1;
+      if (ci2 >= 0 && ii >= 0) {
+        state.categories[ci2].items.splice(ii, 1);
+        saveLocal();
+        render();
+      }
+    }
+  });
+
+  list.addEventListener('click', function (ev) {
+    if (ev.target && ev.target.id === 'btn-add-cat') {
+      readDom();
+      var n = state.categories.length + 1;
+      state.categories.push({
+        id: 'cat-' + n,
+        label: 'Nueva categoría',
+        items: [{ name: '', note: '', priceHint: 'RD$ ' }],
+      });
+      saveLocal();
+      render();
+    }
+  });
+
+  var sendBtn = document.getElementById('btn-send-draft');
+  if (sendBtn) sendBtn.addEventListener('click', function () {
+    var draft = buildDraft();
+    if (!draft.categories.length) {
+      setStatus('Agrega al menos un plato con nombre.');
+      return;
+    }
+    saveLocal();
+    downloadJson(draft);
+    setStatus('JSON descargado — adjúntalo en WhatsApp.');
+    var href = WA_HREF;
+    if (!href && WA_DIGITS) {
+      var msg = 'Hola — soy de ' + NAME + '.\n\nTe mando el JSON de mi menú (slug: ' + SLUG + ').\nAdjunto menu-' + SLUG + '.json.\n\n¿Me lo publican?';
+      href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(msg);
+    }
+    if (href) setTimeout(function () { window.open(href, '_blank', 'noopener'); }, 400);
+  });
+
+  var cancelBtn = document.getElementById('btn-cancel-edit');
+  if (cancelBtn) cancelBtn.addEventListener('click', exitEdit);
+
+  loadState();
+  fetch('menu.json', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (remote) {
+      if (remote && Array.isArray(remote.categories)) {
+        var local = null;
+        try { local = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) {}
+        var localIsOwnerDraft = local && local.source === 'owner-draft';
+        if (!local || (remote.owned && !localIsOwnerDraft)) {
+          state = remote;
+        } else if (
+          remote.owned &&
+          local &&
+          remote.updatedAt &&
+          local.updatedAt &&
+          String(remote.updatedAt) > String(local.updatedAt)
+        ) {
+          state = remote;
+        }
+      }
+      render();
+    })
+    .catch(function () { render(); });
+})();
+</script>
+</body>
+</html>

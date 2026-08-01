@@ -118,10 +118,42 @@ body {
 .items { list-style: none; margin: 0; padding: 0; }
 .item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 0.75rem;
+  align-items: start;
   padding: 0.85rem 0;
   border-bottom: 1px solid rgba(226,164,90,0.12);
+}
+.pick {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0.2rem;
+  cursor: pointer;
+}
+.pick-cb {
+  position: absolute;
+  opacity: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+}
+.pick-box {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1.5px solid rgba(226,164,90,0.55);
+  display: block;
+  flex-shrink: 0;
+  background: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.pick-cb:checked + .pick-box {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px #140f0a;
+}
+.pick-cb:focus-visible + .pick-box {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .item-name { margin: 0; font-size: 1.08rem; font-weight: 650; }
 .item-note {
@@ -136,7 +168,46 @@ body {
   font-weight: 700;
   color: var(--accent);
   white-space: nowrap;
+  padding-top: 0.15rem;
 }
+.order-hint {
+  margin: 0 0 1.25rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.order-bar {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
+  background: rgba(20,15,10,0.94);
+  border-top: 1px solid var(--line);
+  gap: 0.65rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  backdrop-filter: blur(8px);
+  z-index: 15;
+}
+.order-bar.visible { display: flex; }
+.order-bar .order-count {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+.order-bar .btn {
+  border: none;
+  cursor: pointer;
+}
+.order-bar .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+body.has-order .wrap { padding-bottom: 5.5rem; }
 .qr-block {
   margin: 2.25rem 0 0;
   padding: 1.25rem 1rem;
@@ -175,6 +246,154 @@ footer {
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.75rem;
 }
+
+body.menu-editing .hero {
+  min-height: 28vh;
+  min-height: 28svh;
+}
+body.menu-editing .qr-block { display: none; }
+body.menu-editing .banner { display: none; }
+body.menu-editing .order-hint { display: none; }
+body.menu-editing .pick { display: none; }
+body.menu-editing .order-bar { display: none !important; }
+body.menu-editing .wrap { padding-bottom: 5.5rem; }
+.edit-hint {
+  display: none;
+  margin: 0 0 1.25rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+body.menu-editing .edit-hint { display: block; }
+body.menu-editing .item {
+  grid-template-columns: 1fr auto auto;
+  align-items: start;
+  gap: 0.55rem;
+}
+body.menu-editing .item-main { display: grid; gap: 0.35rem; }
+body.menu-editing .item input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(226,164,90,0.28);
+  color: inherit;
+  font: inherit;
+  padding: 0.15rem 0;
+  border-radius: 0;
+}
+body.menu-editing .item input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+body.menu-editing .item input.item-name {
+  font-size: 1.08rem;
+  font-weight: 650;
+}
+body.menu-editing .item input.item-note {
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.82rem;
+}
+body.menu-editing .item input.item-price {
+  width: 6.5rem;
+  text-align: right;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+body.menu-editing .item-rm {
+  background: none;
+  border: none;
+  color: #c97858;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.2rem 0.35rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+.add-line {
+  display: none;
+  margin: 0.35rem 0 0;
+  padding: 0.65rem 0;
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px dashed rgba(226,164,90,0.35);
+  color: var(--accent);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+}
+body.menu-editing .add-line { display: block; }
+.add-cat {
+  display: none;
+  margin: 0.5rem 0 1.5rem;
+  padding: 0.75rem 0;
+  width: 100%;
+  background: none;
+  border: 1px dashed rgba(226,164,90,0.4);
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+body.menu-editing .add-cat { display: block; }
+body.menu-editing .cat h2[contenteditable="true"] {
+  outline: none;
+}
+body.menu-editing .cat h2[contenteditable="true"]:focus {
+  color: var(--accent);
+}
+.edit-bar {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
+  background: rgba(20,15,10,0.94);
+  border-top: 1px solid var(--line);
+  gap: 0.65rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+body.menu-editing .edit-bar { display: flex; }
+.edit-bar .btn {
+  border: none;
+  cursor: pointer;
+}
+.edit-bar .btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.edit-status {
+  width: 100%;
+  text-align: center;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--accent);
+  min-height: 1.1em;
+}
+@media (max-width: 520px) {
+  body.menu-editing .item {
+    grid-template-columns: 1fr auto;
+  }
+  body.menu-editing .item-rm {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  body.menu-editing .item input.item-price {
+    grid-column: 1 / -1;
+    width: 100%;
+    text-align: left;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -189,10 +408,22 @@ footer {
     </div>
   </header>
   <main class="wrap">
-    <p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — al reclamar los cambias por tu carta real.</p>
+    <p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — edítalos en el enlace de reclamo o envíanos tu carta real.</p>
+    <p class="edit-hint">Edita platos y precios aquí mismo. + Plato agrega una línea.</p>
+    <p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>
+    <div id="menu-list">
     <section class="cat" id="entradas">
   <h2>Entradas</h2>
   <ul class="items"><li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Tostones"
+      data-note="Con salsa de ajo"
+      data-price="RD$ —"
+      data-cat="Entradas"
+      aria-label="Agregar Tostones — Con salsa de ajo" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Tostones</p>
     <p class="item-note">Con salsa de ajo</p>
@@ -200,6 +431,15 @@ footer {
   <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Empanaditas"
+      data-note="Pollo o queso"
+      data-price="RD$ —"
+      data-cat="Entradas"
+      aria-label="Agregar Empanaditas — Pollo o queso" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Empanaditas</p>
     <p class="item-note">Pollo o queso</p>
@@ -207,6 +447,15 @@ footer {
   <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Ensalada de la casa"
+      data-note="Fresca del día"
+      data-price="RD$ —"
+      data-cat="Entradas"
+      aria-label="Agregar Ensalada de la casa — Fresca del día" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Ensalada de la casa</p>
     <p class="item-note">Fresca del día</p>
@@ -217,6 +466,15 @@ footer {
 <section class="cat" id="fuertes">
   <h2>Platos fuertes</h2>
   <ul class="items"><li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Bandera dominicana"
+      data-note="Arroz, habichuelas y carne"
+      data-price="RD$ —"
+      data-cat="Platos fuertes"
+      aria-label="Agregar Bandera dominicana — Arroz, habichuelas y carne" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Bandera dominicana</p>
     <p class="item-note">Arroz, habichuelas y carne</p>
@@ -224,6 +482,15 @@ footer {
   <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Pollo guisado"
+      data-note="Con acompañamiento"
+      data-price="RD$ —"
+      data-cat="Platos fuertes"
+      aria-label="Agregar Pollo guisado — Con acompañamiento" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Pollo guisado</p>
     <p class="item-note">Con acompañamiento</p>
@@ -231,6 +498,15 @@ footer {
   <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Pescado frito"
+      data-note="Según disponibilidad"
+      data-price="RD$ —"
+      data-cat="Platos fuertes"
+      aria-label="Agregar Pescado frito — Según disponibilidad" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Pescado frito</p>
     <p class="item-note">Según disponibilidad</p>
@@ -238,6 +514,15 @@ footer {
   <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Mofongo"
+      data-note="Con chicharrón o camarones"
+      data-price="RD$ —"
+      data-cat="Platos fuertes"
+      aria-label="Agregar Mofongo — Con chicharrón o camarones" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Mofongo</p>
     <p class="item-note">Con chicharrón o camarones</p>
@@ -248,6 +533,15 @@ footer {
 <section class="cat" id="bebidas">
   <h2>Bebidas</h2>
   <ul class="items"><li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Jugo natural"
+      data-note="Pregunta el sabor del día"
+      data-price="RD$ —"
+      data-cat="Bebidas"
+      aria-label="Agregar Jugo natural — Pregunta el sabor del día" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Jugo natural</p>
     <p class="item-note">Pregunta el sabor del día</p>
@@ -255,6 +549,15 @@ footer {
   <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Refresco"
+      data-note="Lata o vaso"
+      data-price="RD$ —"
+      data-cat="Bebidas"
+      aria-label="Agregar Refresco — Lata o vaso" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Refresco</p>
     <p class="item-note">Lata o vaso</p>
@@ -262,6 +565,15 @@ footer {
   <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Cerveza"
+      data-note="Nacional"
+      data-price="RD$ —"
+      data-cat="Bebidas"
+      aria-label="Agregar Cerveza — Nacional" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Cerveza</p>
     <p class="item-note">Nacional</p>
@@ -269,6 +581,15 @@ footer {
   <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Café"
+      data-note="Dominicano"
+      data-price="RD$ —"
+      data-cat="Bebidas"
+      aria-label="Agregar Café — Dominicano" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Café</p>
     <p class="item-note">Dominicano</p>
@@ -279,6 +600,15 @@ footer {
 <section class="cat" id="postres">
   <h2>Postres</h2>
   <ul class="items"><li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Flan"
+      data-note="Casero"
+      data-price="RD$ —"
+      data-cat="Postres"
+      aria-label="Agregar Flan — Casero" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Flan</p>
     <p class="item-note">Casero</p>
@@ -286,6 +616,15 @@ footer {
   <p class="item-price">RD$ —</p>
 </li>
 <li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="Dulce de leche"
+      data-note="Porción"
+      data-price="RD$ —"
+      data-cat="Postres"
+      aria-label="Agregar Dulce de leche — Porción" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">Dulce de leche</p>
     <p class="item-note">Porción</p>
@@ -293,6 +632,7 @@ footer {
   <p class="item-price">RD$ —</p>
 </li></ul>
 </section>
+    </div>
     <section class="qr-block" aria-label="Código QR del menú">
       <h2>Tu QR permanente</h2>
       <p>Imprímelo para la mesa o la ventana. Apunta a este menú.</p>
@@ -302,5 +642,350 @@ footer {
     </section>
     <footer><p>Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas · Los platos son plantilla — edítalos al reclamar</p></footer>
   </main>
+  <div class="order-bar" id="order-bar" hidden>
+    <p class="order-count" id="order-count">0 platos</p>
+    <button type="button" class="btn" id="btn-send-order">Enviar pedido por WhatsApp</button>
+  </div>
+  <div class="edit-bar" id="edit-bar" hidden>
+  <p class="edit-status" id="edit-status" role="status"></p>
+  <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Salir</button>
+  <button type="button" class="btn" id="btn-send-draft">Enviar borrador</button>
+</div>
+  <script>
+(function () {
+  var WA_DIGITS = '18096201001';
+  var NAME = 'SBG Sophia\'s Bar & Grill';
+  var bar = document.getElementById('order-bar');
+  var countEl = document.getElementById('order-count');
+  var sendBtn = document.getElementById('btn-send-order');
+  if (!bar || !sendBtn) return;
+
+  function selected() {
+    return Array.prototype.slice.call(document.querySelectorAll('.pick-cb:checked'));
+  }
+
+  function refresh() {
+    if (document.body.classList.contains('menu-editing')) {
+      bar.classList.remove('visible');
+      bar.hidden = true;
+      document.body.classList.remove('has-order');
+      return;
+    }
+    var items = selected();
+    var n = items.length;
+    if (countEl) {
+      countEl.textContent = n === 1 ? '1 plato seleccionado' : n + ' platos seleccionados';
+    }
+    if (n > 0) {
+      bar.hidden = false;
+      bar.classList.add('visible');
+      document.body.classList.add('has-order');
+      sendBtn.disabled = !WA_DIGITS;
+    } else {
+      bar.classList.remove('visible');
+      bar.hidden = true;
+      document.body.classList.remove('has-order');
+    }
+  }
+
+  document.addEventListener('change', function (ev) {
+    if (ev.target && ev.target.classList && ev.target.classList.contains('pick-cb')) {
+      refresh();
+    }
+  });
+
+  sendBtn.addEventListener('click', function () {
+    if (!WA_DIGITS) return;
+    var items = selected();
+    if (!items.length) return;
+    var lines = ['Hola, quiero pedir en ' + NAME + ':', ''];
+    var byCat = {};
+    items.forEach(function (cb) {
+      var cat = cb.getAttribute('data-cat') || 'Pedido';
+      if (!byCat[cat]) byCat[cat] = [];
+      var name = cb.getAttribute('data-name') || '';
+      var note = cb.getAttribute('data-note') || '';
+      var price = cb.getAttribute('data-price') || '';
+      var line = '• ' + name;
+      if (note) line += ' (' + note + ')';
+      if (price && price !== 'RD$ —') line += ' — ' + price;
+      byCat[cat].push(line);
+    });
+    Object.keys(byCat).forEach(function (cat) {
+      lines.push(cat + ':');
+      byCat[cat].forEach(function (l) { lines.push(l); });
+      lines.push('');
+    });
+    lines.push('Gracias.');
+    var href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(lines.join('\n'));
+    window.open(href, '_blank', 'noopener');
+  });
+
+  refresh();
+})();
+</script>
+  <script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var wantEdit = params.get('edit') === '1' || location.hash === '#edit';
+  if (!wantEdit) return;
+
+  var SLUG = 'sbg-sophia-s-bar-grill';
+  var NAME = 'SBG Sophia\'s Bar & Grill';
+  var STORAGE_KEY = 'domiweb-menu-draft-' + SLUG;
+  var WA_HREF = 'https://wa.me/17542133764?text=Hola%20%E2%80%94%20soy%20de%20SBG%20Sophia\'s%20Bar%20%26%20Grill.%0A%0ATe%20mando%20el%20JSON%20de%20mi%20men%C3%BA%20(slug%3A%20sbg-sophia-s-bar-grill).%0AAdjunto%20el%20archivo%20menu-sbg-sophia-s-bar-grill.json%20que%20descargu%C3%A9%20del%20men%C3%BA.%0A%0A%C2%BFMe%20lo%20publican%20en%20el%20men%C3%BA%20digital%3F';
+  var WA_DIGITS = '17542133764';
+  var seed = {"slug":"sbg-sophia-s-bar-grill","owned":false,"updatedAt":"2026-08-01T13:47:01.174Z","categories":[{"id":"entradas","label":"Entradas","items":[{"name":"Tostones","note":"Con salsa de ajo","priceHint":"RD$ —"},{"name":"Empanaditas","note":"Pollo o queso","priceHint":"RD$ —"},{"name":"Ensalada de la casa","note":"Fresca del día","priceHint":"RD$ —"}]},{"id":"fuertes","label":"Platos fuertes","items":[{"name":"Bandera dominicana","note":"Arroz, habichuelas y carne","priceHint":"RD$ —"},{"name":"Pollo guisado","note":"Con acompañamiento","priceHint":"RD$ —"},{"name":"Pescado frito","note":"Según disponibilidad","priceHint":"RD$ —"},{"name":"Mofongo","note":"Con chicharrón o camarones","priceHint":"RD$ —"}]},{"id":"bebidas","label":"Bebidas","items":[{"name":"Jugo natural","note":"Pregunta el sabor del día","priceHint":"RD$ —"},{"name":"Refresco","note":"Lata o vaso","priceHint":"RD$ —"},{"name":"Cerveza","note":"Nacional","priceHint":"RD$ —"},{"name":"Café","note":"Dominicano","priceHint":"RD$ —"}]},{"id":"postres","label":"Postres","items":[{"name":"Flan","note":"Casero","priceHint":"RD$ —"},{"name":"Dulce de leche","note":"Porción","priceHint":"RD$ —"}]}],"source":"template"};
+  var state = null;
+  var list = document.getElementById('menu-list');
+  var bar = document.getElementById('edit-bar');
+  var statusEl = document.getElementById('edit-status');
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function setStatus(msg) { if (statusEl) statusEl.textContent = msg || ''; }
+  function slugify(label, fallback) {
+    var s = String(label || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return s || fallback || 'cat';
+  }
+  function escAttr(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.categories)) {
+          state = parsed;
+          return;
+        }
+      }
+    } catch (e) {}
+    state = clone(seed);
+  }
+
+  function saveLocal() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function render() {
+    if (!list) return;
+    list.innerHTML = state.categories.map(function (cat, ci) {
+      var items = (cat.items || []).map(function (it, ii) {
+        return (
+          '<li class="item" data-ci="' + ci + '" data-ii="' + ii + '">' +
+            '<div class="item-main">' +
+              '<input class="item-name" data-f="name" aria-label="Plato" value="' + escAttr(it.name || '') + '" />' +
+              '<input class="item-note" data-f="note" aria-label="Nota" placeholder="Nota (opcional)" value="' + escAttr(it.note || '') + '" />' +
+            '</div>' +
+            '<input class="item-price" data-f="priceHint" aria-label="Precio" placeholder="RD$" value="' + escAttr(it.priceHint || '') + '" />' +
+            '<button type="button" class="item-rm" data-act="rm" aria-label="Quitar plato">&times;</button>' +
+          '</li>'
+        );
+      }).join('');
+      return (
+        '<section class="cat" data-ci="' + ci + '" id="' + escAttr(cat.id || ('cat-' + ci)) + '">' +
+          '<h2 contenteditable="true" spellcheck="false" data-f="label"></h2>' +
+          '<ul class="items">' + items + '</ul>' +
+          '<button type="button" class="add-line" data-act="add-item">+ Plato</button>' +
+        '</section>'
+      );
+    }).join('') +
+    '<button type="button" class="add-cat" id="btn-add-cat">+ Categoría</button>';
+
+    list.querySelectorAll('.cat').forEach(function (sec) {
+      var ci = Number(sec.getAttribute('data-ci'));
+      var h = sec.querySelector('h2');
+      if (h && state.categories[ci]) h.textContent = state.categories[ci].label || 'Categoría';
+    });
+  }
+
+  function readDom() {
+    list.querySelectorAll('.cat').forEach(function (sec) {
+      var ci = Number(sec.getAttribute('data-ci'));
+      if (!state.categories[ci]) return;
+      var h = sec.querySelector('h2');
+      if (h) {
+        state.categories[ci].label = (h.textContent || '').trim() || state.categories[ci].label;
+        state.categories[ci].id = slugify(state.categories[ci].label, 'cat-' + (ci + 1));
+      }
+      sec.querySelectorAll('.item').forEach(function (row) {
+        var ii = Number(row.getAttribute('data-ii'));
+        if (!state.categories[ci].items[ii]) return;
+        row.querySelectorAll('input[data-f]').forEach(function (inp) {
+          state.categories[ci].items[ii][inp.getAttribute('data-f')] = inp.value;
+        });
+      });
+    });
+  }
+
+  function buildDraft() {
+    readDom();
+    return {
+      slug: SLUG,
+      owned: false,
+      updatedAt: new Date().toISOString(),
+      source: 'owner-draft',
+      categories: state.categories
+        .map(function (c) {
+          return {
+            id: c.id || slugify(c.label, 'cat'),
+            label: String(c.label || '').trim(),
+            items: (c.items || [])
+              .map(function (it) {
+                return {
+                  name: String(it.name || '').trim(),
+                  note: String(it.note || '').trim(),
+                  priceHint: String(it.priceHint || '').trim() || 'RD$ —',
+                };
+              })
+              .filter(function (it) { return it.name.length > 0; }),
+          };
+        })
+        .filter(function (c) { return c.label && c.items.length > 0; }),
+    };
+  }
+
+  function downloadJson(draft) {
+    var blob = new Blob([JSON.stringify(draft, null, 2) + '\n'], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'menu-' + SLUG + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+
+  function exitEdit() {
+    var u = new URL(location.href);
+    u.searchParams.delete('edit');
+    u.hash = '';
+    location.href = u.pathname + u.search;
+  }
+
+  document.body.classList.add('menu-editing');
+  if (bar) { bar.hidden = false; }
+
+  list.addEventListener('input', function () {
+    readDom();
+    saveLocal();
+    setStatus('Borrador en este teléfono');
+  });
+  list.addEventListener('blur', function (ev) {
+    if (ev.target && ev.target.getAttribute && ev.target.getAttribute('data-f') === 'label') {
+      readDom();
+      saveLocal();
+      render();
+    }
+  }, true);
+
+  list.addEventListener('click', function (ev) {
+    var t = ev.target;
+    if (!t || !t.getAttribute) return;
+    var act = t.getAttribute('data-act');
+    if (!act) return;
+    readDom();
+    if (act === 'add-item') {
+      var sec = t.closest('.cat');
+      var ci = sec ? Number(sec.getAttribute('data-ci')) : -1;
+      if (ci >= 0) {
+        state.categories[ci].items.push({ name: '', note: '', priceHint: 'RD$ ' });
+        saveLocal();
+        render();
+        var rows = list.querySelectorAll('.cat[data-ci="' + ci + '"] .item');
+        var last = rows[rows.length - 1];
+        if (last) {
+          var focus = last.querySelector('input.item-name');
+          if (focus) focus.focus();
+        }
+      }
+      return;
+    }
+    if (act === 'rm') {
+      var row = t.closest('.item');
+      var sec2 = t.closest('.cat');
+      var ci2 = sec2 ? Number(sec2.getAttribute('data-ci')) : -1;
+      var ii = row ? Number(row.getAttribute('data-ii')) : -1;
+      if (ci2 >= 0 && ii >= 0) {
+        state.categories[ci2].items.splice(ii, 1);
+        saveLocal();
+        render();
+      }
+    }
+  });
+
+  list.addEventListener('click', function (ev) {
+    if (ev.target && ev.target.id === 'btn-add-cat') {
+      readDom();
+      var n = state.categories.length + 1;
+      state.categories.push({
+        id: 'cat-' + n,
+        label: 'Nueva categoría',
+        items: [{ name: '', note: '', priceHint: 'RD$ ' }],
+      });
+      saveLocal();
+      render();
+    }
+  });
+
+  var sendBtn = document.getElementById('btn-send-draft');
+  if (sendBtn) sendBtn.addEventListener('click', function () {
+    var draft = buildDraft();
+    if (!draft.categories.length) {
+      setStatus('Agrega al menos un plato con nombre.');
+      return;
+    }
+    saveLocal();
+    downloadJson(draft);
+    setStatus('JSON descargado — adjúntalo en WhatsApp.');
+    var href = WA_HREF;
+    if (!href && WA_DIGITS) {
+      var msg = 'Hola — soy de ' + NAME + '.\n\nTe mando el JSON de mi menú (slug: ' + SLUG + ').\nAdjunto menu-' + SLUG + '.json.\n\n¿Me lo publican?';
+      href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(msg);
+    }
+    if (href) setTimeout(function () { window.open(href, '_blank', 'noopener'); }, 400);
+  });
+
+  var cancelBtn = document.getElementById('btn-cancel-edit');
+  if (cancelBtn) cancelBtn.addEventListener('click', exitEdit);
+
+  loadState();
+  fetch('menu.json', { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (remote) {
+      if (remote && Array.isArray(remote.categories)) {
+        var local = null;
+        try { local = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) {}
+        var localIsOwnerDraft = local && local.source === 'owner-draft';
+        if (!local || (remote.owned && !localIsOwnerDraft)) {
+          state = remote;
+        } else if (
+          remote.owned &&
+          local &&
+          remote.updatedAt &&
+          local.updatedAt &&
+          String(remote.updatedAt) > String(local.updatedAt)
+        ) {
+          state = remote;
+        }
+      }
+      render();
+    })
+    .catch(function () { render(); });
+})();
+</script>
 </body>
 </html>

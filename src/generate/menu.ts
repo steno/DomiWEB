@@ -1,12 +1,18 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import QRCode from "qrcode";
 import type { Lead, NicheConfig } from "../types/index.js";
 import { resolveGithubPagesUrls } from "../config/load.js";
 import { pickOutreachQuote } from "./site.js";
-import { buildWhatsAppUrl } from "../outreach/phone.js";
+import { buildWhatsAppUrl, toWhatsAppDigits } from "../outreach/phone.js";
 import { dataDir, publicDir } from "../utils/paths.js";
 import { log } from "../utils/logger.js";
+import {
+  buildInlineMenuEditBarHtml,
+  buildInlineMenuEditCss,
+  buildInlineMenuEditScript,
+  writeMenuEditorPage,
+} from "./menu-editor.js";
 
 export interface MenuItem {
   name: string;
@@ -20,12 +26,22 @@ export interface MenuCategory {
   items: MenuItem[];
 }
 
+/** Per-lead menu source of truth (data + public mirrors). */
+export interface MenuData {
+  slug: string;
+  owned: boolean;
+  updatedAt: string;
+  categories: MenuCategory[];
+  source?: "template" | "owner-draft";
+}
+
 export interface GeneratedMenu {
   html: string;
   menuPath: string;
   publicPath: string;
   outreachQuote: string | null;
   menuUrl: string | null;
+  menuData: MenuData;
 }
 
 const DEFAULT_CATEGORIES: MenuCategory[] = [
@@ -93,7 +109,7 @@ function isUsablePhotoUrl(url: string): boolean {
   }
 }
 
-function resolveCategories(config: NicheConfig): MenuCategory[] {
+export function resolveCategoriesFromConfig(config: NicheConfig): MenuCategory[] {
   const custom = config.products?.menu?.categories;
   if (custom?.length) {
     return custom.map((c) => ({
@@ -106,11 +122,80 @@ function resolveCategories(config: NicheConfig): MenuCategory[] {
       })),
     }));
   }
-  return DEFAULT_CATEGORIES;
+  return DEFAULT_CATEGORIES.map((c) => ({
+    ...c,
+    items: c.items.map((it) => ({ ...it })),
+  }));
+}
+
+export function menuDataPath(slug: string): string {
+  return join(dataDir("menus"), slug, "menu.json");
+}
+
+export function publicMenuDataPath(slug: string): string {
+  return join(publicDir("menus"), slug, "menu.json");
 }
 
 export function menuExists(slug: string): boolean {
   return existsSync(join(publicDir("menus"), slug, "index.html"));
+}
+
+export function readMenuData(slug: string): MenuData | null {
+  const path = existsSync(menuDataPath(slug))
+    ? menuDataPath(slug)
+    : existsSync(publicMenuDataPath(slug))
+      ? publicMenuDataPath(slug)
+      : null;
+  if (!path) return null;
+  try {
+    const raw = JSON.parse(readFileSync(path, "utf8")) as MenuData;
+    if (!raw?.slug || !Array.isArray(raw.categories)) return null;
+    return {
+      slug: raw.slug,
+      owned: Boolean(raw.owned),
+      updatedAt: raw.updatedAt || new Date().toISOString(),
+      categories: raw.categories,
+      source: raw.source,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function writeMenuData(data: MenuData): void {
+  const json = `${JSON.stringify(data, null, 2)}\n`;
+  const dataPath = menuDataPath(data.slug);
+  const pubPath = publicMenuDataPath(data.slug);
+  mkdirSync(dirname(dataPath), { recursive: true });
+  mkdirSync(dirname(pubPath), { recursive: true });
+  writeFileSync(dataPath, json, "utf8");
+  writeFileSync(pubPath, json, "utf8");
+}
+
+export function defaultMenuData(slug: string, config: NicheConfig): MenuData {
+  return {
+    slug,
+    owned: false,
+    updatedAt: new Date().toISOString(),
+    categories: resolveCategoriesFromConfig(config),
+    source: "template",
+  };
+}
+
+/** Prefer existing per-lead JSON; otherwise seed a template. */
+export function loadOrCreateMenuData(
+  slug: string,
+  config: NicheConfig,
+): MenuData {
+  const existing = readMenuData(slug);
+  if (existing) return existing;
+  const data = defaultMenuData(slug, config);
+  writeMenuData(data);
+  return data;
+}
+
+export function isMenuOwned(slug: string): boolean {
+  return readMenuData(slug)?.owned === true;
 }
 
 export function resolveMenuUrl(
@@ -132,10 +217,17 @@ async function buildQrSvg(url: string): Promise<string> {
 export function buildMenuHtml(
   lead: Lead,
   config: NicheConfig,
-  opts: { menuUrl: string; qrSvg: string },
+  opts: {
+    menuUrl: string;
+    qrSvg: string;
+    categories: MenuCategory[];
+    owned: boolean;
+    menuData: MenuData;
+  },
 ): string {
   const p = lead.place;
-  const categories = resolveCategories(config);
+  const categories = opts.categories;
+  const owned = opts.owned;
 
   const googlePhotos = p.photos
     .map((ph) => ph.url)
@@ -151,12 +243,16 @@ export function buildMenuHtml(
   const photos = googlePhotos.length ? googlePhotos : illustrative;
   const heroPhoto = photos[0] ?? null;
 
+  const dishNote = owned
+    ? ""
+    : " · Los platos son plantilla — edítalos al reclamar";
   const footer = usingIllustrative
-    ? "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas · Los platos son plantilla — edítalos al reclamar"
+    ? `Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas${dishNote}`
     : googlePhotos.length
-      ? "Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas · Los platos son plantilla — edítalos al reclamar"
-      : "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas · Los platos son plantilla — edítalos al reclamar";
+      ? `Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas${dishNote}`
+      : `Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas${dishNote}`;
 
+  const waDigits = toWhatsAppDigits(p.phone);
   const waOrder = p.phone
     ? buildWhatsAppUrl(
         p.phone,
@@ -167,15 +263,25 @@ export function buildMenuHtml(
   const categoryBlocks = categories
     .map((cat) => {
       const items = cat.items
-        .map(
-          (it) => `<li class="item">
+        .map((it) => {
+          const label = [it.name, it.note].filter(Boolean).join(" — ");
+          return `<li class="item">
+  <label class="pick">
+    <input type="checkbox" class="pick-cb"
+      data-name="${escapeAttr(it.name)}"
+      data-note="${escapeAttr(it.note)}"
+      data-price="${escapeAttr(it.priceHint)}"
+      data-cat="${escapeAttr(cat.label)}"
+      aria-label="Agregar ${escapeAttr(label)}" />
+    <span class="pick-box" aria-hidden="true"></span>
+  </label>
   <div class="item-main">
     <p class="item-name">${escapeHtml(it.name)}</p>
     ${it.note ? `<p class="item-note">${escapeHtml(it.note)}</p>` : ""}
   </div>
   <p class="item-price">${escapeHtml(it.priceHint)}</p>
-</li>`,
-        )
+</li>`;
+        })
         .join("\n");
       return `<section class="cat" id="${escapeAttr(cat.id)}">
   <h2>${escapeHtml(cat.label)}</h2>
@@ -201,6 +307,10 @@ export function buildMenuHtml(
     : p.phone
       ? `<a class="btn" href="tel:${escapeAttr(p.phone.replace(/[^\d+]/g, ""))}">Llamar</a>`
       : "";
+
+  const banner = owned
+    ? ""
+    : `<p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — edítalos en el enlace de reclamo o envíanos tu carta real.</p>`;
 
   return `<!DOCTYPE html>
 <html lang="es-DO">
@@ -322,10 +432,42 @@ body {
 .items { list-style: none; margin: 0; padding: 0; }
 .item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 0.75rem;
+  align-items: start;
   padding: 0.85rem 0;
   border-bottom: 1px solid rgba(226,164,90,0.12);
+}
+.pick {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0.2rem;
+  cursor: pointer;
+}
+.pick-cb {
+  position: absolute;
+  opacity: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+}
+.pick-box {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1.5px solid rgba(226,164,90,0.55);
+  display: block;
+  flex-shrink: 0;
+  background: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.pick-cb:checked + .pick-box {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px #140f0a;
+}
+.pick-cb:focus-visible + .pick-box {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .item-name { margin: 0; font-size: 1.08rem; font-weight: 650; }
 .item-note {
@@ -340,7 +482,46 @@ body {
   font-weight: 700;
   color: var(--accent);
   white-space: nowrap;
+  padding-top: 0.15rem;
 }
+.order-hint {
+  margin: 0 0 1.25rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.order-bar {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
+  background: rgba(20,15,10,0.94);
+  border-top: 1px solid var(--line);
+  gap: 0.65rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  backdrop-filter: blur(8px);
+  z-index: 15;
+}
+.order-bar.visible { display: flex; }
+.order-bar .order-count {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+.order-bar .btn {
+  border: none;
+  cursor: pointer;
+}
+.order-bar .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+body.has-order .wrap { padding-bottom: 5.5rem; }
 .qr-block {
   margin: 2.25rem 0 0;
   padding: 1.25rem 1rem;
@@ -379,6 +560,7 @@ footer {
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.75rem;
 }
+${buildInlineMenuEditCss()}
 </style>
 </head>
 <body>
@@ -393,8 +575,16 @@ footer {
     </div>
   </header>
   <main class="wrap">
-    <p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — al reclamar los cambias por tu carta real.</p>
+    ${banner}
+    <p class="edit-hint">Edita platos y precios aquí mismo. + Plato agrega una línea.</p>
+    ${
+      waDigits
+        ? `<p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>`
+        : ""
+    }
+    <div id="menu-list">
     ${categoryBlocks}
+    </div>
     <section class="qr-block" aria-label="Código QR del menú">
       <h2>Tu QR permanente</h2>
       <p>Imprímelo para la mesa o la ventana. Apunta a este menú.</p>
@@ -403,8 +593,102 @@ footer {
     </section>
     <footer><p>${escapeHtml(footer)}</p></footer>
   </main>
+  <div class="order-bar" id="order-bar" hidden>
+    <p class="order-count" id="order-count">0 platos</p>
+    <button type="button" class="btn" id="btn-send-order"${waDigits ? "" : " disabled"}>Enviar pedido por WhatsApp</button>
+  </div>
+  ${buildInlineMenuEditBarHtml()}
+  ${buildOrderPickerScript(p.name, waDigits)}
+  ${buildInlineMenuEditScript(lead, opts.menuData)}
 </body>
 </html>`;
+}
+
+function escapeJsString(s: string): string {
+  return s
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r");
+}
+
+function buildOrderPickerScript(
+  businessName: string,
+  waDigits: string | null,
+): string {
+  return `<script>
+(function () {
+  var WA_DIGITS = ${waDigits ? `'${escapeJsString(waDigits)}'` : "null"};
+  var NAME = '${escapeJsString(businessName)}';
+  var bar = document.getElementById('order-bar');
+  var countEl = document.getElementById('order-count');
+  var sendBtn = document.getElementById('btn-send-order');
+  if (!bar || !sendBtn) return;
+
+  function selected() {
+    return Array.prototype.slice.call(document.querySelectorAll('.pick-cb:checked'));
+  }
+
+  function refresh() {
+    if (document.body.classList.contains('menu-editing')) {
+      bar.classList.remove('visible');
+      bar.hidden = true;
+      document.body.classList.remove('has-order');
+      return;
+    }
+    var items = selected();
+    var n = items.length;
+    if (countEl) {
+      countEl.textContent = n === 1 ? '1 plato seleccionado' : n + ' platos seleccionados';
+    }
+    if (n > 0) {
+      bar.hidden = false;
+      bar.classList.add('visible');
+      document.body.classList.add('has-order');
+      sendBtn.disabled = !WA_DIGITS;
+    } else {
+      bar.classList.remove('visible');
+      bar.hidden = true;
+      document.body.classList.remove('has-order');
+    }
+  }
+
+  document.addEventListener('change', function (ev) {
+    if (ev.target && ev.target.classList && ev.target.classList.contains('pick-cb')) {
+      refresh();
+    }
+  });
+
+  sendBtn.addEventListener('click', function () {
+    if (!WA_DIGITS) return;
+    var items = selected();
+    if (!items.length) return;
+    var lines = ['Hola, quiero pedir en ' + NAME + ':', ''];
+    var byCat = {};
+    items.forEach(function (cb) {
+      var cat = cb.getAttribute('data-cat') || 'Pedido';
+      if (!byCat[cat]) byCat[cat] = [];
+      var name = cb.getAttribute('data-name') || '';
+      var note = cb.getAttribute('data-note') || '';
+      var price = cb.getAttribute('data-price') || '';
+      var line = '• ' + name;
+      if (note) line += ' (' + note + ')';
+      if (price && price !== 'RD$ —') line += ' — ' + price;
+      byCat[cat].push(line);
+    });
+    Object.keys(byCat).forEach(function (cat) {
+      lines.push(cat + ':');
+      byCat[cat].forEach(function (l) { lines.push(l); });
+      lines.push('');
+    });
+    lines.push('Gracias.');
+    var href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(lines.join('\\n'));
+    window.open(href, '_blank', 'noopener');
+  });
+
+  refresh();
+})();
+</script>`;
 }
 
 function writeMenuFiles(slug: string, html: string): {
@@ -428,15 +712,25 @@ export async function generateMenuForLead(
   const menuUrl =
     urls.menuUrl ??
     `https://steno.github.io/DomiWEB/menus/${lead.slug}/`;
+  const menuData = loadOrCreateMenuData(lead.slug, config);
+  writeMenuData(menuData);
   const qrSvg = await buildQrSvg(menuUrl);
-  const html = buildMenuHtml(lead, config, { menuUrl, qrSvg });
+  const html = buildMenuHtml(lead, config, {
+    menuUrl,
+    qrSvg,
+    categories: menuData.categories,
+    owned: menuData.owned,
+    menuData,
+  });
   const { menuPath, publicPath } = writeMenuFiles(lead.slug, html);
+  writeMenuEditorPage(lead, config, menuData);
   return {
     html,
     menuPath,
     publicPath,
     outreachQuote: pickOutreachQuote(lead.place.reviews),
     menuUrl: urls.menuUrl,
+    menuData,
   };
 }
 
@@ -452,7 +746,7 @@ export async function generateMenusForLeads(
     log.info(`Menú · ${lead.place.name} (${lead.slug})`);
     const menu = await generateMenuForLead(lead, config);
     log.ok(
-      `  → ${menu.publicPath}${menu.menuUrl ? ` · ${menu.menuUrl}` : ""}`,
+      `  → ${menu.publicPath}${menu.menuUrl ? ` · ${menu.menuUrl}` : ""}${menu.menuData.owned ? " · owned" : ""}`,
     );
     out.push({ lead, menu });
   }

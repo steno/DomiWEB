@@ -1,0 +1,97 @@
+{
+  "slug": "arvi-restaurante-vegetariano",
+  "owned": false,
+  "updatedAt": "2026-08-01T13:47:01.161Z",
+  "categories": [
+    {
+      "id": "entradas",
+      "label": "Entradas",
+      "items": [
+        {
+          "name": "Tostones",
+          "note": "Con salsa de ajo",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Empanaditas",
+          "note": "Pollo o queso",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Ensalada de la casa",
+          "note": "Fresca del día",
+          "priceHint": "RD$ —"
+        }
+      ]
+    },
+    {
+      "id": "fuertes",
+      "label": "Platos fuertes",
+      "items": [
+        {
+          "name": "Bandera dominicana",
+          "note": "Arroz, habichuelas y carne",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pollo guisado",
+          "note": "Con acompañamiento",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Pescado frito",
+          "note": "Según disponibilidad",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Mofongo",
+          "note": "Con chicharrón o camarones",
+          "priceHint": "RD$ —"
+        }
+      ]
+    },
+    {
+      "id": "bebidas",
+      "label": "Bebidas",
+      "items": [
+        {
+          "name": "Jugo natural",
+          "note": "Pregunta el sabor del día",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Refresco",
+          "note": "Lata o vaso",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Cerveza",
+          "note": "Nacional",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Café",
+          "note": "Dominicano",
+          "priceHint": "RD$ —"
+        }
+      ]
+    },
+    {
+      "id": "postres",
+      "label": "Postres",
+      "items": [
+        {
+          "name": "Flan",
+          "note": "Casero",
+          "priceHint": "RD$ —"
+        },
+        {
+          "name": "Dulce de leche",
+          "note": "Porción",
+          "priceHint": "RD$ —"
+        }
+      ]
+    }
+  ],
+  "source": "template"
+}
