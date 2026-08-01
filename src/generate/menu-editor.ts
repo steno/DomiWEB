@@ -96,12 +96,29 @@ body.menu-editing .item input.item-note {
   font-size: 0.82rem;
 }
 body.menu-editing .item input.item-price {
-  width: 6.5rem;
+  width: 4.75rem;
   text-align: right;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
   color: var(--accent);
   white-space: nowrap;
+}
+body.menu-editing .price-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 6.5rem;
+  justify-content: flex-end;
+}
+body.menu-editing .price-prefix {
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--accent);
+  opacity: 0.85;
+  user-select: none;
+  pointer-events: none;
+  flex-shrink: 0;
 }
 body.menu-editing .item-rm {
   background: none;
@@ -227,9 +244,14 @@ body.menu-editing .edit-bar { display: flex; }
     grid-row: 1;
   }
   body.menu-editing .item input.item-price {
+    grid-column: auto;
+    width: 4.75rem;
+  }
+  body.menu-editing .price-wrap {
     grid-column: 1 / -1;
+    justify-content: flex-start;
+    min-width: 0;
     width: 100%;
-    text-align: left;
   }
 }
 `;
@@ -298,6 +320,18 @@ export function buildInlineMenuEditScript(
       .replace(/'/g, '&#39;');
   }
 
+  function priceAmount(hint) {
+    var s = String(hint || '').trim().replace(/^RD\$\s*/i, '').trim();
+    if (!s || s === '—' || s === '-' || s === '--') return '';
+    return s;
+  }
+
+  function formatPriceHint(amount) {
+    var a = String(amount || '').trim().replace(/^RD\$\s*/i, '').trim();
+    if (!a || a === '—' || a === '-') return 'RD$ —';
+    return 'RD$ ' + a;
+  }
+
   function loadState() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -326,7 +360,10 @@ export function buildInlineMenuEditScript(
               '<input class="item-name" data-f="name" aria-label="Plato" value="' + escAttr(it.name || '') + '" />' +
               '<input class="item-note" data-f="note" aria-label="Nota" placeholder="Nota (opcional)" value="' + escAttr(it.note || '') + '" />' +
             '</div>' +
-            '<input class="item-price" data-f="priceHint" aria-label="Precio" placeholder="RD$" value="' + escAttr(it.priceHint || '') + '" />' +
+            '<div class="price-wrap">' +
+              '<span class="price-prefix" aria-hidden="true">RD$</span>' +
+              '<input class="item-price" data-f="priceHint" inputmode="decimal" aria-label="Precio en pesos" placeholder="—" value="' + escAttr(priceAmount(it.priceHint)) + '" />' +
+            '</div>' +
             '<button type="button" class="item-rm" data-act="rm" aria-label="Quitar plato">&times;</button>' +
           '</li>'
         );
@@ -370,7 +407,11 @@ export function buildInlineMenuEditScript(
         row.querySelectorAll('input[data-f]').forEach(function (inp) {
           if (inp.dataset.session === '1' && inp.dataset.edited !== '1') return;
           var f = inp.getAttribute('data-f');
-          state.categories[ci].items[ii][f] = inp.value;
+          if (f === 'priceHint') {
+            state.categories[ci].items[ii][f] = formatPriceHint(inp.value);
+          } else {
+            state.categories[ci].items[ii][f] = inp.value;
+          }
         });
       });
     });
@@ -393,7 +434,7 @@ export function buildInlineMenuEditScript(
                 return {
                   name: String(it.name || '').trim(),
                   note: String(it.note || '').trim(),
-                  priceHint: String(it.priceHint || '').trim() || 'RD$ —',
+                  priceHint: formatPriceHint(it.priceHint),
                 };
               })
               .filter(function (it) { return it.name.length > 0; }),
@@ -427,13 +468,16 @@ export function buildInlineMenuEditScript(
 
   function defaultPlaceholder(el) {
     if (el.classList.contains('item-note')) return 'Nota (opcional)';
-    if (el.classList.contains('item-price')) return 'RD$';
+    if (el.classList.contains('item-price')) return '—';
     return '';
   }
 
   function beginFieldEdit(el) {
     if (!el || el.dataset.session === '1') return;
     var current = el.tagName === 'INPUT' ? el.value : (el.textContent || '');
+    if (el.classList.contains('item-price')) {
+      current = priceAmount(current);
+    }
     el.dataset.orig = current;
     el.dataset.edited = '0';
     el.dataset.session = '1';
@@ -451,6 +495,9 @@ export function buildInlineMenuEditScript(
     var edited = el.dataset.edited === '1';
     var raw = el.tagName === 'INPUT' ? el.value : (el.textContent || '');
     var next = String(raw).trim();
+    if (el.classList.contains('item-price')) {
+      next = priceAmount(next);
+    }
     if (!edited || !next) {
       if (el.tagName === 'INPUT') el.value = orig;
       else el.textContent = orig || 'Categoría';
