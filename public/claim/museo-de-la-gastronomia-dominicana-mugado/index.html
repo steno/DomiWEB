@@ -489,8 +489,8 @@ body.menu-editing .cat h2[contenteditable="true"]:focus {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
-  background: rgba(12, 22, 18, 0.92);
-  border-top: 1px solid var(--line);
+  background: rgba(255, 253, 248, 0.96);
+  border-top: 1px solid rgba(10, 143, 138, 0.22);
   gap: 0.65rem;
   justify-content: center;
   flex-wrap: wrap;
@@ -504,15 +504,15 @@ body.menu-editing .edit-bar { display: flex; }
 }
 .edit-bar .btn-ghost {
   background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--line);
+  color: #10312e;
+  border: 1px solid rgba(10, 143, 138, 0.35);
 }
 .edit-status {
   width: 100%;
   text-align: center;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.8rem;
-  color: var(--accent);
+  color: #0a8f8a;
   min-height: 1.1em;
 }
 .send-modal {
@@ -523,18 +523,18 @@ body.menu-editing .edit-bar { display: flex; }
   align-items: flex-end;
   justify-content: center;
   padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
-  background: rgba(8, 16, 12, 0.72);
+  background: rgba(16, 49, 46, 0.4);
   backdrop-filter: blur(6px);
 }
 .send-modal.open { display: flex; }
 .send-modal-card {
   width: min(26rem, 100%);
-  background: var(--panel, #132019);
-  border: 1px solid var(--line, rgba(238, 243, 239, 0.12));
+  background: #fffdf8;
+  border: 1px solid rgba(10, 143, 138, 0.22);
   border-radius: 1rem;
   padding: 1.15rem 1.15rem 1.25rem;
-  color: var(--ink, #eef3ef);
-  box-shadow: 0 18px 40px rgba(0,0,0,0.4);
+  color: #10312e;
+  box-shadow: 0 18px 40px rgba(6, 80, 76, 0.18);
 }
 .send-modal-card h2 {
   margin: 0 0 0.45rem;
@@ -545,7 +545,7 @@ body.menu-editing .edit-bar { display: flex; }
   margin: 0 0 1rem;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.92rem;
-  color: var(--muted, #8fa399);
+  color: #3d5c58;
   line-height: 1.4;
 }
 .send-modal-actions {
@@ -561,8 +561,8 @@ body.menu-editing .edit-bar { display: flex; }
 }
 .send-modal-actions .btn-ghost {
   background: transparent;
-  color: var(--ink, #eef3ef);
-  border: 1px solid var(--line, rgba(238, 243, 239, 0.12));
+  color: #10312e;
+  border: 1px solid rgba(10, 143, 138, 0.35);
 }
 @media (max-width: 520px) {
   body.menu-editing .item {
@@ -590,15 +590,25 @@ body.menu-editing .edit-bar { display: flex; }
   margin: 0 auto;
   padding: 1.15rem 1.15rem 6rem;
 }
-body.menu-editing #editar-menu { display: block; }
+body.menu-editing {
+  background: #fffdf8;
+}
+body.menu-editing #editar-menu {
+  display: block;
+  color: #10312e;
+  min-height: 50vh;
+}
 body.menu-editing .stage,
 body.menu-editing .bottom,
 body.menu-editing .face-dock { display: none !important; }
 body.menu-editing .quote { display: none; }
+body.menu-editing .top {
+  /* keep forest header; content below goes coastal light */
+}
 #editar-menu .edit-hint {
   display: block;
   margin: 0 0 1.25rem;
-  color: var(--muted);
+  color: #3d5c58;
   font-family: system-ui, sans-serif;
   font-size: 0.9rem;
 }
@@ -606,8 +616,9 @@ body.menu-editing .quote { display: none; }
 #editar-menu .cat h2 {
   margin: 0 0 0.75rem;
   font-size: 1.25rem;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(10, 143, 138, 0.22);
   padding-bottom: 0.35rem;
+  color: #10312e;
 }
 #editar-menu .items { list-style: none; margin: 0; padding: 0; }
 #editar-menu .item {
@@ -616,7 +627,8 @@ body.menu-editing .quote { display: none; }
   gap: 0.55rem;
   align-items: start;
   padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(10, 143, 138, 0.14);
+  border-bottom: 1px solid rgba(16, 49, 46, 0.1);
+  color: #10312e;
 }
 </style>
 <section id="editar-menu" hidden aria-label="Editar menú">
