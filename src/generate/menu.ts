@@ -251,7 +251,8 @@ export function buildMenuHtml(
         `Hola, vi el menú digital de ${p.name} y quiero ordenar.`,
       )
     : null;
-  const editMenuHref = `../../claim/${escapeAttr(lead.slug)}/index.html#editar-menu`;
+  const claimHref = `../../claim/${escapeAttr(lead.slug)}/index.html?v=menu`;
+  const editMenuHref = `../../claim/${escapeAttr(lead.slug)}/index.html?v=menu#editar-menu`;
   const pagesBase = (config.hosting.baseUrl || "https://steno.github.io/DomiWEB").replace(
     /\/$/,
     "",
@@ -505,22 +506,28 @@ body {
   font-size: 0.88rem;
   color: var(--muted);
 }
-.edit-back {
+.owner-nav {
   display: none;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.15rem;
   align-items: center;
-  gap: 0.35rem;
   margin: 0 0 1rem;
-  padding: 0.45rem 0;
+}
+body.owner-preview .owner-nav {
+  display: flex;
+}
+.owner-nav a {
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.88rem;
   font-weight: 700;
   color: var(--accent);
   text-decoration: none;
 }
-.edit-back.is-owner {
-  display: inline-flex;
+.owner-nav a:hover { text-decoration: underline; }
+.owner-nav .owner-nav-edit {
+  color: var(--muted);
+  font-weight: 600;
 }
-.edit-back:hover { text-decoration: underline; }
 .owner-preview-hint {
   display: none;
   margin: 0 0 1.25rem;
@@ -596,7 +603,10 @@ footer {
     </div>
   </header>
   <main class="wrap">
-    <p><a class="edit-back" id="edit-back" href="${editMenuHref}" target="_top" hidden>← Editar menú</a></p>
+    <nav class="owner-nav" id="owner-nav" aria-label="Dueño" hidden>
+      <a href="${claimHref}" target="_top">← Volver al reclamo</a>
+      <a class="owner-nav-edit" href="${editMenuHref}" target="_top">Editar menú</a>
+    </nav>
     <p class="owner-preview-hint">Vista previa del cliente — aquí no se envían pedidos; tus clientes lo hacen desde el QR.</p>
     ${
       waDigits
@@ -620,11 +630,8 @@ footer {
     var isOwnerPreview = from === 'claim' && window.top === window.self;
     if (!isOwnerPreview) return;
     document.body.classList.add('owner-preview');
-    var link = document.getElementById('edit-back');
-    if (link) {
-      link.hidden = false;
-      link.classList.add('is-owner');
-    }
+    var nav = document.getElementById('owner-nav');
+    if (nav) nav.hidden = false;
     document.querySelectorAll('.pick-cb').forEach(function (cb) {
       cb.disabled = true;
       cb.checked = false;
