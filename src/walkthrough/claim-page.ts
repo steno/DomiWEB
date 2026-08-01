@@ -81,8 +81,9 @@ export function resolveClaimProduct(
     if (!hasSite && hasKit) return "reviewKit";
     return "site";
   }
-  if (hasSite) return "site";
+  // auto: menu first (restaurant default), then site, then kit
   if (hasMenu) return "menu";
+  if (hasSite) return "site";
   if (hasKit) return "reviewKit";
   return "site";
 }
@@ -246,14 +247,14 @@ export function buildClaimPageHtml(
   const leadCopy =
     product === "reviewKit"
       ? `Armamos respuestas en español para tus reseñas públicas de Google.
-      Míralas abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
+      Revísalas en la vista previa.
       Si te sirven, reclámalas — son tuyas.`
       : product === "menu"
         ? `Armamos tu menú digital con categorías y platos de ejemplo.
-      Míralo abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
-      Aquí editas platos y bajas el QR; al reclamarlo lo publicamos con tu carta.`
+      Revísalo en la vista previa: editas platos, bajas el QR y tus clientes piden por WhatsApp.
+      Al reclamarlo lo publicamos con tu carta.`
         : `Armamos una página con tus reseñas públicas de Google.
-      Mírala abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
+      Revísala en la vista previa.
       Si te gusta, reclámala — es tuya.`;
   const footerAsset =
     product === "reviewKit"
