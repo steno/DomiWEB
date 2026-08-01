@@ -24,7 +24,7 @@ export interface FaceCamResult {
   voiceProvider: string;
 }
 
-function loadVideoPrompt(product: "site" | "menu" = "site"): string {
+function loadVideoPrompt(product: "site" | "menu" = "menu"): string {
   const file =
     product === "menu" ? "face-cam-video-menu.md" : "face-cam-video.md";
   return readFileSync(promptsDir(file), "utf8");

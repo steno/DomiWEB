@@ -142,13 +142,13 @@ export function resolveGithubPagesUrls(
 
 export function priceOnceForProduct(
   config: NicheConfig,
-  product: "site" | "reviewKit" | "menu" = "site",
+  product: "site" | "reviewKit" | "menu" = "menu",
 ): string {
   if (product === "reviewKit") {
     return config.pricing.reviewKitOnceLabel ?? "RD$800";
   }
-  if (product === "menu") {
-    return config.pricing.menuOnceLabel ?? "RD$1,500";
+  if (product === "site") {
+    return config.pricing.onceLabel ?? "RD$2,000";
   }
-  return config.pricing.onceLabel ?? "RD$2,000";
+  return config.pricing.menuOnceLabel ?? "RD$1,500";
 }

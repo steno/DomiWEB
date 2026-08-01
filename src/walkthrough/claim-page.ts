@@ -162,11 +162,11 @@ export function resolveClaimProduct(
     if (!hasSite && hasKit) return "reviewKit";
     return "site";
   }
-  // auto: menu first (restaurant default), then site, then kit
+  // auto: menu first (default product), then site, then kit
   if (hasMenu) return "menu";
   if (hasSite) return "site";
   if (hasKit) return "reviewKit";
-  return "site";
+  return "menu";
 }
 
 /** Niche face-cam video under public/videos/ if present. */

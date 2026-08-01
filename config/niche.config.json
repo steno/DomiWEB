@@ -4,49 +4,49 @@
   "countryName": "República Dominicana",
 
   "niche": {
-    "id": "talleres-mecanicos",
-    "label": "Talleres mecánicos",
-    "labelSingular": "taller mecánico",
+    "id": "restaurantes",
+    "label": "Restaurantes y cafés",
+    "labelSingular": "restaurante",
     "keywords": [
-      "taller mecánico",
-      "taller de autos",
-      "mecánica automotriz",
-      "taller de mecánica",
-      "taller de reparación",
-      "taller de automóviles",
-      "automecánica",
-      "automotriz"
+      "restaurante",
+      "cafetería",
+      "café",
+      "comedor",
+      "parrillada",
+      "pizzería",
+      "food truck",
+      "comida criolla"
     ],
     "categoryHints": [
-      "Auto repair shop",
-      "Car repair",
-      "Mechanic",
-      "Taller mecánico",
-      "Auto workshop",
-      "Taller de reparación de automóviles",
-      "Taller de automóviles",
-      "Taller de chapa y pintura"
+      "Restaurant",
+      "Cafe",
+      "Coffee shop",
+      "Dominican restaurant",
+      "Pizza restaurant",
+      "Fast food restaurant",
+      "Bar",
+      "Food court"
     ],
     "chainBlocklist": [
-      "Firestone",
-      "Goodyear",
-      "Midas",
-      "Jiffy Lube",
-      "Pep Boys",
-      "Discount Tire",
-      "Bridgestone",
-      "Servicio Honda",
-      "Servicio Toyota",
-      "Hyundai",
-      "Kia Motors",
-      "Chevrolet",
-      "Ford Service"
+      "McDonald",
+      "Burger King",
+      "KFC",
+      "Wendy",
+      "Pizza Hut",
+      "Domino",
+      "Subway",
+      "Starbucks",
+      "P.F. Chang",
+      "Applebee",
+      "TGI Friday",
+      "Popeyes",
+      "Little Caesars"
     ],
     "illustrativeImages": [
-      "assets/illustrative/talleres-mecanicos/hero.jpg",
-      "assets/illustrative/talleres-mecanicos/g1.jpg",
-      "assets/illustrative/talleres-mecanicos/g2.jpg",
-      "assets/illustrative/talleres-mecanicos/g3.jpg"
+      "assets/illustrative/restaurantes/hero.jpg",
+      "assets/illustrative/restaurantes/g1.jpg",
+      "assets/illustrative/restaurantes/g2.jpg",
+      "assets/illustrative/restaurantes/g3.jpg"
     ]
   },
 
@@ -55,24 +55,18 @@
       "id": "santo-domingo",
       "name": "Santo Domingo",
       "searchQueries": [
-        "taller mecánico Santo Domingo República Dominicana",
-        "taller de autos Santo Domingo RD"
+        "restaurante Santo Domingo República Dominicana",
+        "cafetería Santo Domingo RD",
+        "comida criolla Santo Domingo"
       ],
-      "maxResults": 80
-    },
-    {
-      "id": "santiago",
-      "name": "Santiago",
-      "searchQueries": [
-        "taller mecánico Santiago República Dominicana"
-      ],
-      "maxResults": 50
+      "maxResults": 60
     },
     {
       "id": "puerto-plata",
       "name": "Puerto Plata",
       "searchQueries": [
-        "taller mecánico Puerto Plata República Dominicana"
+        "restaurante Puerto Plata República Dominicana",
+        "café Puerto Plata RD"
       ],
       "maxResults": 35
     }
@@ -81,8 +75,8 @@
   "qualification": {
     "minRating": 4.0,
     "minReviews": 8,
-    "minPhotos": 5,
-    "recentReviewDays": 90,
+    "minPhotos": 4,
+    "recentReviewDays": 120,
     "allowSocialOnlyWebsite": true,
     "socialWebsiteHosts": [
       "facebook.com",
@@ -95,7 +89,7 @@
   },
 
   "scrape": {
-    "reviewsPerPlace": 40,
+    "reviewsPerPlace": 30,
     "language": "es",
     "maxConcurrency": 5
   },
@@ -118,7 +112,7 @@
 
   "products": {
     "reviewKit": {
-      "enabled": true,
+      "enabled": false,
       "maxReplies": 8
     },
     "menu": {

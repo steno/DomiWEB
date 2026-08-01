@@ -1,24 +1,26 @@
-# DomiWEB — Walkthrough Machine (República Dominicana)
+# DomiWEB — Menú digital (República Dominicana)
 
-Pipeline para encontrar negocios locales en RD **sin sitio web**, generarles un HTML honesto a partir de reseñas públicas de Google, crear walkthrough + página de reclamo, y preparar outreach.
+Pipeline para encontrar **restaurantes y cafés** en RD sin menú digital usable, generarles un menú HTML + QR + pedido por WhatsApp a partir de reseñas públicas de Google, crear página de reclamo, y preparar outreach.
 
 **Hosting por defecto: [GitHub Pages](https://pages.github.com/)** (`public/` → Actions workflow).
 
+**Producto:** menú digital + QR (no talleres / sitios web por defecto).
+
 ---
 
-## Estado actual (Steps 1–2)
+## Estado actual
 
 | Step | Qué | Estado |
 |------|-----|--------|
-| 1 | Niche & metro config (`config/niche.config.json`) | ✅ |
+| 1 | Niche & metro config (`config/niche.config.json` = restaurantes) | ✅ |
 | 2 | Scrape Google Maps (Apify) + gates de calificación | ✅ |
 | 3 | Extracción nombre del dueño (OpenAI) | ✅ |
-| 4 | Generación de sitios HTML | ✅ |
-| 5 | Video face-cam reutilizable | ✅ |
-| 6 | Claim pages + deploy GitHub Pages | ✅ |
-| 7 | Outreach email / postcard | ✅ |
+| 4 | Generación de menús HTML + QR | ✅ |
+| 5 | Claim pages + deploy GitHub Pages | ✅ |
+| 6 | Outreach WhatsApp | ✅ |
 
-Nicho inicial: **talleres mecánicos** en Santo Domingo + Santiago (configurable).
+Nicho por defecto: **restaurantes y cafés** en Santo Domingo + Puerto Plata.  
+Configs archivadas de talleres: `config/niche.talleres.json` (no usar salvo pedido explícito).
 
 ---
 
@@ -44,6 +46,7 @@ Edita `.env`:
 APIFY_TOKEN=apify_api_xxx
 GITHUB_PAGES_BASE_URL=https://steno.github.io/DomiWEB
 GITHUB_REPO=https://github.com/steno/DomiWEB
+CLAIM_WHATSAPP=1809XXXXXXX
 ```
 
 Edita el nicho / ciudades en `config/niche.config.json`.
@@ -53,12 +56,13 @@ Edita el nicho / ciudades en `config/niche.config.json`.
 1. Sube el repo a GitHub.
 2. **Settings → Pages → Source: GitHub Actions**.
 3. El workflow `.github/workflows/pages.yml` publica la carpeta `public/`.
-4. Sitios: `public/sites/<slug>/` → `https://steno.github.io/DomiWEB/sites/<slug>/`
+4. Menús: `public/menus/<slug>/` → `https://steno.github.io/DomiWEB/menus/<slug>/`
 5. Claim: `public/claim/<slug>/` → `https://steno.github.io/DomiWEB/claim/<slug>/`
+6. Share product: `https://tinyurl.com/domenus` → splash menú digital
 
 ---
 
-## Comandos (Steps 1–2)
+## Comandos
 
 ### Probar sin Apify (fixture local)
 
@@ -67,12 +71,10 @@ npm run scrape -- --from-file data/raw/fixture-scrape.json
 npm run status
 ```
 
-Esperado: **2 calificados** (Taller El Rayo, Taller Los Hermanos — Facebook cuenta como “sin web”), **3 rechazados** (tiene web, pocas reseñas, cadena Firestone).
-
 ### Scrape real (Apify)
 
 ```bash
-# Todas las ciudades del config
+# Todas las ciudades del config (restaurantes)
 npm run scrape
 
 # Solo una metro
@@ -81,7 +83,6 @@ npm run scrape -- --metro santo-domingo
 # Re-calificar un dump raw
 npm run qualify -- --from-file data/raw/scrape-XXXX.json
 
-# Contadores
 npm run status
 ```
 
@@ -91,87 +92,67 @@ Salidas:
 - `data/leads/qualified-*.json` / `.csv` — leads que pasan los gates
 - `data/db/leads.sqlite` — base de leads + estado del pipeline
 
-### Step 3 — nombres del dueño (OpenAI)
+### Nombres del dueño (OpenAI)
 
 ```bash
 npm run extract-names
-npm run extract-names -- --force          # re-procesar
+npm run extract-names -- --force
 npm run extract-names -- --limit 5
-npm run status
 ```
 
-O pipeline completo hasta nombres:
+### Menús digitales + QR
 
 ```bash
-npm run pipeline -- --from-file data/raw/fixture-scrape.json
-# live:
-npm run pipeline -- --metro santo-domingo
-```
-
-### Step 4 — sitios HTML (OpenAI + honesty fences)
-
-```bash
-npm run generate-sites
-npm run generate-sites -- --limit 3
-npm run generate-sites -- --force --slug taller-el-rayo
-npm run generate-sites -- --fallback   # plantilla honesta sin AI
+npm run generate-menus
+npm run generate-menus -- --limit 10
+npm run generate-menus -- --force --slug <slug>
 ```
 
 Salida:
-- `data/sites/<slug>/index.html`
-- `public/sites/<slug>/index.html` ← GitHub Pages
 
-Cada sitio: un solo HTML, sin JS, teléfono `tel:`, citas verbatim, footer de atribución Google.
+- `public/menus/<slug>/index.html` ← GitHub Pages
+- QR + pedido WhatsApp al teléfono del negocio
 
-**Design/images are mandatory:** every site gets a full-bleed hero photo (Google when available, otherwise `niche.illustrativeImages` under `public/assets/illustrative/<niche-id>/`). Do not ship empty-gradient heroes. When adding a niche, also add its illustrative asset set in config.
+Platos placeholder + footer de honestidad — no inventar precios reales.
 
-### Step 6 — claim / walkthrough (GitHub Pages)
+### Claim / walkthrough
 
 ```bash
 npm run claim-pages
-npm run claim-pages -- --force --slug taller-el-rayo
+npm run claim-pages -- --force --slug <slug>
 
-# Preview local (recomendado)
 npm run serve:public
-# → http://localhost:4173/claim/taller-el-rayo/
+# → http://localhost:4173/claim/<slug>/
 ```
 
-Cada claim page incluye:
-- iframe del sitio con auto-scroll suave
-- burbuja face-cam (cuando exista `public/videos/facecam-<nicho>.mp4`)
-- botón grande **Reclamar mi sitio** → abre WhatsApp a `CLAIM_WHATSAPP` (tu número) con texto listo; si no, `mailto:` a `CLAIM_INBOX`
-- link al HTML completo
+Outreach al dueño: **siempre** el claim URL (no el menú público directo).
 
-Tras push a `main`, Actions publica `public/`.
-
-### Step 7 — outreach (WhatsApp primero)
-
-En RD el canal principal es **WhatsApp** (teléfono público del negocio). Email y postal quedan como respaldo.
+### Outreach WhatsApp
 
 ```bash
 npm run outreach
-npm run outreach -- --force --slug taller-el-rayo
+npm run outreach -- --force --slug <slug>
 
-# Abre wa.me con el texto listo — tú pulsas Enviar
 npm run send-whatsapp
-npm run send-whatsapp -- --slug taller-el-rayo
+npm run send-whatsapp -- --slug <slug>
 npm run send-whatsapp -- --batch --limit 10
-npm run send-whatsapp -- --slug taller-el-rayo --to +1809XXXXXXX
-# Después de que digan que les gusta:
-npm run send-whatsapp -- --price --slug car-tech-oa-srl
+npm run send-whatsapp -- --slug <slug> --to +1809XXXXXXX
+# Después de interés:
+npm run send-whatsapp -- --price --slug <slug>
+npm run send-whatsapp -- --close --slug <slug>
 ```
 
-(`--to` manda el texto a **tu** WhatsApp para probar. `--price` = follow-up: **RD$2,000** pago único; hosting aparte al precio estándar.)
+(`--to` manda el texto a **tu** WhatsApp para probar. `--price` = follow-up **RD$1,500** menú + QR.)
 
-Templates: `prompts/outreach-whatsapp.md`, `outreach-whatsapp-price.md`. Precios en `config/niche.config.json` → `pricing`.
+`--product` por defecto es **menu**. Templates: `prompts/outreach-whatsapp-menu*.md`.
 
 ### Gates de calificación
 
 1. Sin website **o** solo Facebook/Instagram  
 2. Rating ≥ **4.0**  
-3. ≥ **20** reseñas  
-4. ≥ 1 reseña en los últimos **90** días  
-5. ≥ **5** fotos  
+3. ≥ **8** reseñas (restaurantes)  
+4. Reseña reciente según `qualification.recentReviewDays`  
+5. Fotos mínimas según config  
 6. No cadena (blocklist) / no fuera de nicho  
 
 ---
@@ -183,11 +164,10 @@ Edita `config/niche.config.json`:
 - `niche.keywords`, `niche.labelSingular`, `niche.chainBlocklist`
 - `cities[].searchQueries`, `maxResults`
 - `qualification.*` si quieres aflojar/apretar gates
-
-Luego:
+- Añade assets en `public/assets/illustrative/<niche-id>/` + `illustrativeImages`
 
 ```bash
-npm run scrape -- --metro punta-cana   # después de añadir la ciudad al JSON
+npm run scrape -- --metro santo-domingo
 ```
 
 ---
@@ -195,21 +175,14 @@ npm run scrape -- --metro punta-cana   # después de añadir la ciudad al JSON
 ## Estructura
 
 ```
-config/niche.config.json     # Step 1 — nicho + metros + hosting
+config/niche.config.json     # Restaurantes (default)
+config/niche.talleres.json   # Archivado — no usar
 prompts/                     # Prompts editables (ES)
 src/cli.ts                   # CLI
 src/scrape/                  # Apify + qualifier
 src/db/store.ts              # SQLite + export JSON/CSV
-src/host/github-pages.ts     # URLs Pages
-public/                      # ← lo que despliega GitHub Pages
-data/                        # leads, raw, videos, outreach
+public/menus/                # Menús publicados
+public/claim/                # Páginas de reclamo
+data/                        # leads, raw, outreach
 .github/workflows/pages.yml
 ```
-
----
-
-## Siguiente
-
-Cuando tengas `APIFY_TOKEN` y quieras seguir: **Step 3** (nombre del dueño con OpenAI/Anthropic) → sitios → video → claim pages en `public/` → outreach CSV.
-
-Di qué proveedor de AI prefieres (`OPENAI_API_KEY` / `ANTHROPIC_API_KEY`) y seguimos.

@@ -1,13 +1,13 @@
 ---
-description: DomiWEB sites must ship appealing full-bleed imagery and strong design by default
+description: DomiWEB menus must ship appealing full-bleed imagery and strong design by default
 alwaysApply: true
 ---
 
 # DomiWEB · design & image sourcing (always)
 
-Never ship a business site that is mostly empty gradient / gray void. Visual design and image sourcing are **required pipeline work**, not optional polish the user must request.
+Never ship a menu (or site) that is mostly empty gradient / gray void. Visual design and image sourcing are **required pipeline work**, not optional polish the user must request.
 
-## Before considering a site “done”
+## Before considering a menu “done”
 
 1. **Hero must be a full-bleed photographic plane** (Google photo or niche illustrative image). Brand name is the dominant text on that hero.
 2. Prefer **real Google `photos` URLs** when usable (https, not example.com / localhost).
@@ -17,12 +17,12 @@ Never ship a business site that is mostly empty gradient / gray void. Visual des
    - Illustrative only → “Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas”
    - Google photos → “Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas”
 6. Mark illustrative shots in UI when used (caption / note). Never imply stock photos are the business’s Google photos.
-7. Design bar: expressive system typography, atmosphere, one clear CTA (`tel:` only), mobile-ready, no generic AI purple/cream-terracotta/glow look.
-8. Crafted template in `src/generate/site.ts` is the default generator; keep it photographic-first.
-9. After site changes: regenerate affected `public/sites/<slug>/`, refresh claim pages if needed, and deploy/push when the user expects live Pages updates.
+7. Design bar: expressive system typography, atmosphere, one clear CTA (WhatsApp order / `tel:`), mobile-ready, no generic AI purple/cream-terracotta/glow look.
+8. Menu generator is the default deliverable; keep it photographic-first. Full sites only when explicitly requested.
+9. After menu changes: regenerate affected `public/menus/<slug>/`, refresh claim pages if needed, and deploy/push when the user expects live Pages updates.
 
 ## Do not
 
 - Ask the user whether they “want images” — assume yes.
-- Ship fixture/demo sites without illustrative heroes.
+- Ship fixture/demo menus without illustrative heroes.
 - Invent awards, years, services, or fake testimonials to fill space.

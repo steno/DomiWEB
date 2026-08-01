@@ -51,14 +51,17 @@ import { join } from "node:path";
 import { dataDir, publicDir } from "./utils/paths.js";
 
 function parseProduct(raw?: string): PipelineProduct {
-  const v = (raw ?? "site").trim().toLowerCase();
+  const v = (raw ?? "menu").trim().toLowerCase();
   if (v === "reviewkit" || v === "review-kit" || v === "kit") {
     return "reviewKit";
+  }
+  if (v === "site" || v === "sites" || v === "website") {
+    return "site";
   }
   if (v === "menu" || v === "menus" || v === "digital-menu") {
     return "menu";
   }
-  return "site";
+  return "menu";
 }
 
 const program = new Command();
@@ -66,7 +69,7 @@ const program = new Command();
 program
   .name("domiweb")
   .description(
-    "Walkthrough Machine — República Dominicana · scrape → qualify → sites → outreach",
+    "Walkthrough Machine — República Dominicana · scrape → menus → claim → WhatsApp",
   )
   .version("1.0.0");
 
@@ -547,8 +550,8 @@ program
   .option("--slug <slug>", "Only this slug")
   .option(
     "--product <name>",
-    "site (default) | reviewKit | menu — copy + price",
-    "site",
+    "menu (default) | reviewKit | site — copy + price",
+    "menu",
   )
   .action((opts: {
     config?: string;
@@ -569,9 +572,9 @@ program
       log.warn(
         product === "reviewKit"
           ? "No hay leads con kit + claim. Corre generate-review-kit + claim-pages --product reviewKit."
-          : product === "menu"
-            ? "No hay leads con menú + claim. Corre generate-menus + claim-pages --product menu."
-            : "No hay leads listos. Corre claim-pages primero (status walkthrough_ready).",
+          : product === "site"
+            ? "No hay leads listos. Corre claim-pages primero (status walkthrough_ready)."
+            : "No hay leads con menú + claim. Corre generate-menus + claim-pages --product menu.",
       );
       return;
     }
@@ -613,8 +616,8 @@ program
   .option("--slug <slug>", "Only this slug")
   .option(
     "--product <name>",
-    "site (default) | reviewKit | menu — when rebuilding outreach",
-    "site",
+    "menu (default) | reviewKit | site — when rebuilding outreach",
+    "menu",
   )
   .option(
     "--to <phone>",
@@ -686,7 +689,7 @@ program
       (opts.price && messages.some((m) => !m.whatsappPriceMessage)) ||
       (opts.close && messages.some((m) => !m.whatsappCloseMessage)) ||
       (opts.force === false &&
-        messages.some((m) => (m.product ?? "site") !== product) &&
+        messages.some((m) => (m.product ?? "menu") !== product) &&
         (opts.price || opts.close || opts.product === "reviewKit"))
     ) {
       const leads = listLeadsForOutreach(true, opts.slug, product);

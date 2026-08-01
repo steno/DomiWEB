@@ -1,4 +1,11 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import QRCode from "qrcode";
 import type { Lead, NicheConfig } from "../types/index.js";
@@ -102,6 +109,144 @@ function isUsablePhotoUrl(url: string): boolean {
   }
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/** Resize suffix for Google-hosted photos. */
+function sizedGooglePhotoUrl(url: string, w = 1200, h = 800): string {
+  if (!/googleusercontent\.com/i.test(url)) return url;
+  return url.replace(/=[^=]*$/, `=w${w}-h${h}-k-no`);
+}
+
+function publicHeroPath(slug: string): string {
+  return join(publicDir("menus"), slug, "hero.jpg");
+}
+
+function dataHeroPath(slug: string): string {
+  return join(dataDir("menus"), slug, "hero.jpg");
+}
+
+function heroFileLooksValid(path: string): boolean {
+  try {
+    return existsSync(path) && statSync(path).size > 2000;
+  } catch {
+    return false;
+  }
+}
+
+async function downloadHeroToFile(url: string, outPath: string): Promise<void> {
+  mkdirSync(dirname(outPath), { recursive: true });
+  let lastStatus = 0;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+        Referer: "https://www.google.com/",
+      },
+      redirect: "follow",
+    });
+    lastStatus = res.status;
+    if (res.status === 429 || res.status === 503) {
+      await sleep(400 * Math.pow(2, attempt));
+      continue;
+    }
+    if (!res.ok) {
+      throw new Error(`Hero download failed (${res.status}): ${url}`);
+    }
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length < 2000) {
+      throw new Error(`Hero download too small (${buf.length}b): ${url}`);
+    }
+    writeFileSync(outPath, buf);
+    return;
+  }
+  throw new Error(`Hero download rate-limited (${lastStatus}): ${url}`);
+}
+
+function mirrorHeroToData(slug: string): void {
+  const pub = publicHeroPath(slug);
+  const data = dataHeroPath(slug);
+  if (!heroFileLooksValid(pub)) return;
+  mkdirSync(dirname(data), { recursive: true });
+  copyFileSync(pub, data);
+}
+
+/**
+ * Cache Google (or illustrative) hero next to the menu so CSS backgrounds
+ * do not depend on hotlinking googleusercontent (often 429 in local/batch).
+ */
+export async function ensureLocalMenuHero(
+  lead: Lead,
+  config: NicheConfig,
+): Promise<{
+  href: string;
+  ogImageUrl: string;
+  usingIllustrative: boolean;
+} | null> {
+  const slug = lead.slug;
+  const pagesBase = (
+    config.hosting.baseUrl || "https://steno.github.io/DomiWEB"
+  ).replace(/\/$/, "");
+  const ogLocal = `${pagesBase}/menus/${slug}/hero.jpg`;
+  const pub = publicHeroPath(slug);
+
+  const googlePhotos = lead.place.photos
+    .map((ph) => ph.url)
+    .filter(isUsablePhotoUrl);
+
+  if (heroFileLooksValid(pub)) {
+    mirrorHeroToData(slug);
+    return {
+      href: "hero.jpg",
+      ogImageUrl: ogLocal,
+      usingIllustrative: googlePhotos.length === 0,
+    };
+  }
+
+  for (const remote of googlePhotos.slice(0, 3)) {
+    try {
+      await downloadHeroToFile(sizedGooglePhotoUrl(remote), pub);
+      mirrorHeroToData(slug);
+      return {
+        href: "hero.jpg",
+        ogImageUrl: ogLocal,
+        usingIllustrative: false,
+      };
+    } catch (err) {
+      log.warn(
+        `  hero cache miss (${slug}): ${err instanceof Error ? err.message : String(err)}`,
+      );
+      await sleep(250);
+    }
+  }
+
+  const illustrative = (config.niche.illustrativeImages ?? [])[0];
+  if (illustrative) {
+    const clean = illustrative.replace(/^\/+/, "");
+    const fromPublic = join(process.cwd(), "public", clean);
+    if (existsSync(fromPublic)) {
+      mkdirSync(dirname(pub), { recursive: true });
+      copyFileSync(fromPublic, pub);
+      mirrorHeroToData(slug);
+      return {
+        href: "hero.jpg",
+        ogImageUrl: ogLocal,
+        usingIllustrative: true,
+      };
+    }
+    return {
+      href: `../../${clean}`,
+      ogImageUrl: `${pagesBase}/${clean}`,
+      usingIllustrative: true,
+    };
+  }
+
+  return null;
+}
+
 export function resolveCategoriesFromConfig(config: NicheConfig): MenuCategory[] {
   const custom = config.products?.menu?.categories;
   if (custom?.length) {
@@ -203,7 +348,7 @@ export async function buildQrSvg(url: string): Promise<string> {
     type: "svg",
     margin: 1,
     width: 220,
-    color: { dark: "#1a1208", light: "#00000000" },
+    color: { dark: "#10312e", light: "#00000000" },
   });
 }
 
@@ -215,6 +360,12 @@ export function buildMenuHtml(
     categories: MenuCategory[];
     owned: boolean;
     menuData: MenuData;
+    /** Locally cached hero (preferred). */
+    hero?: {
+      href: string;
+      ogImageUrl: string;
+      usingIllustrative: boolean;
+    } | null;
   },
 ): string {
   const p = lead.place;
@@ -231,13 +382,17 @@ export function buildMenuHtml(
     return `../../${clean}`;
   });
 
-  const usingIllustrative = googlePhotos.length === 0 && illustrative.length > 0;
-  const photos = googlePhotos.length ? googlePhotos : illustrative;
-  const heroPhoto = photos[0] ?? null;
+  const cached = opts.hero ?? null;
+  const usingIllustrative = cached
+    ? cached.usingIllustrative
+    : googlePhotos.length === 0 && illustrative.length > 0;
+  const heroPhoto =
+    cached?.href ??
+    (googlePhotos.length ? googlePhotos[0] : illustrative[0] ?? null);
 
   const honestyBase = usingIllustrative
     ? "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas"
-    : googlePhotos.length
+    : googlePhotos.length || (cached && !cached.usingIllustrative)
       ? "Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas"
       : "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas";
   const footerHtml =
@@ -258,11 +413,15 @@ export function buildMenuHtml(
     "",
   );
   const menuPageUrl = opts.menuUrl || `${pagesBase}/menus/${lead.slug}/`;
-  const ogImageUrl = heroPhoto
-    ? /googleusercontent\.com/i.test(heroPhoto)
-      ? heroPhoto.replace(/=[^=]*$/, "=w1200-h630-c")
-      : heroPhoto
-    : `${pagesBase}/assets/splash-menu/facebook-menu-post.jpg`;
+  const ogImageUrl =
+    cached?.ogImageUrl ??
+    (heroPhoto
+      ? /googleusercontent\.com/i.test(heroPhoto)
+        ? heroPhoto.replace(/=[^=]*$/, "=w1200-h630-c")
+        : heroPhoto.startsWith("../../")
+          ? `${pagesBase}/${heroPhoto.replace(/^\.\.\/\.\.\//, "")}`
+          : heroPhoto
+      : `${pagesBase}/assets/splash-menu/facebook-menu-post.jpg`);
   const ogTitle = `Menú · ${p.name}`;
   const ogDescription = `Marca platos y pide por WhatsApp en ${p.name}.`;
   const ogMeta = `<meta name="description" content="${escapeAttr(ogDescription)}" />
@@ -331,15 +490,18 @@ export function buildMenuHtml(
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Menú · ${escapeHtml(p.name)}</title>
+<meta name="theme-color" content="#0A8F8A" />
 ${ogMeta}
 <style>
 :root {
-  --bg: #140f0a;
-  --ink: #f7f1e8;
-  --muted: #b7a894;
-  --accent: #e2a45a;
-  --panel: #1c1610;
-  --line: rgba(226, 164, 90, 0.28);
+  --bg: #fffdf8;
+  --ink: #10312e;
+  --muted: #3d5c58;
+  --accent: #0a8f8a;
+  --cta: #ffb703;
+  --cta-ink: #10312e;
+  --panel: #f3fffd;
+  --line: rgba(10, 143, 138, 0.22);
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -360,12 +522,12 @@ body {
   padding: clamp(1.4rem, 4vh, 2.2rem) 1.15rem 1.5rem;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(20,15,10,0.2) 0%, rgba(20,15,10,0.55) 48%, rgba(20,15,10,0.96) 100%),
-    linear-gradient(135deg, #2a1c12, #140f0a 55%, #24180f);
+    linear-gradient(180deg, rgba(10,143,138,0.2) 0%, rgba(255,253,248,0.35) 58%, #fffdf8 100%),
+    linear-gradient(145deg, #13a9a2 0%, #066661 55%, #044844 100%);
 }
 .hero.has-photo {
   background-image:
-    linear-gradient(180deg, rgba(20,15,10,0.12) 0%, rgba(20,15,10,0.42) 42%, rgba(20,15,10,0.95) 100%),
+    linear-gradient(180deg, rgba(6,102,97,0.1) 0%, rgba(6,102,97,0.05) 42%, rgba(255,253,248,0.55) 72%, #fffdf8 100%),
     var(--hero-image);
   background-size: cover, cover;
   background-position: center, center;
@@ -386,16 +548,17 @@ body {
   letter-spacing: -0.03em;
   font-weight: 700;
   text-wrap: balance;
-  text-shadow: 0 12px 36px rgba(0,0,0,0.45);
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255,253,248,0.85), 0 10px 28px rgba(255,253,248,0.55);
 }
 .sub {
   margin: 0.75rem 0 0;
-  color: #e8dccb;
+  color: var(--muted);
   font-size: clamp(1rem, 2.6vw, 1.15rem);
 }
 .meta {
   margin: 0.7rem 0 0;
-  color: var(--accent);
+  color: #066661;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
   font-size: 0.92rem;
@@ -411,8 +574,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent);
-  color: #1a1208;
+  background: var(--cta);
+  color: var(--cta-ink);
   text-decoration: none;
   padding: 0.9rem 1.2rem;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
@@ -423,7 +586,7 @@ body {
   margin: 0.8rem 0 0;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.72rem;
-  color: rgba(247,241,232,0.72);
+  color: var(--muted);
 }
 .wrap { max-width: 40rem; margin: 0 auto; padding: 1.75rem 1.15rem 3rem; }
 .cat { margin: 0 0 1.85rem; }
@@ -437,7 +600,7 @@ body {
 .items { list-style: none; margin: 0; padding: 0; }
 .item {
   padding: 0;
-  border-bottom: 1px solid rgba(226,164,90,0.12);
+  border-bottom: 1px solid rgba(16, 49, 46, 0.1);
 }
 .pick {
   display: grid;
@@ -449,7 +612,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .pick:active {
-  background: rgba(226,164,90,0.06);
+  background: rgba(10, 143, 138, 0.06);
 }
 .pick-cb {
   position: absolute;
@@ -463,7 +626,7 @@ body {
   width: 1.15rem;
   height: 1.15rem;
   margin-top: 0.2rem;
-  border: 1.5px solid rgba(226,164,90,0.55);
+  border: 1.5px solid rgba(10, 143, 138, 0.45);
   display: block;
   flex-shrink: 0;
   background: transparent;
@@ -472,7 +635,7 @@ body {
 .pick-cb:checked + .pick-box {
   background: var(--accent);
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 2px #140f0a;
+  box-shadow: inset 0 0 0 2px var(--bg);
 }
 .pick:has(.pick-cb:focus-visible) .pick-box {
   outline: 2px solid var(--accent);
@@ -496,7 +659,7 @@ body {
 .item-price {
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
-  color: var(--accent);
+  color: #066661;
   white-space: nowrap;
   padding-top: 0.15rem;
 }
@@ -554,7 +717,7 @@ body.owner-preview.has-order .wrap { padding-bottom: 3rem; }
   position: fixed;
   left: 0; right: 0; bottom: 0;
   padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
-  background: rgba(20,15,10,0.94);
+  background: rgba(255, 253, 248, 0.96);
   border-top: 1px solid var(--line);
   gap: 0.65rem;
   justify-content: center;
@@ -758,11 +921,13 @@ export async function generateMenuForLead(
     `https://steno.github.io/DomiWEB/menus/${lead.slug}/`;
   const menuData = loadOrCreateMenuData(lead.slug, config);
   writeMenuData(menuData);
+  const hero = await ensureLocalMenuHero(lead, config);
   const html = buildMenuHtml(lead, config, {
     menuUrl,
     categories: menuData.categories,
     owned: menuData.owned,
     menuData,
+    hero,
   });
   const { menuPath, publicPath } = writeMenuFiles(lead.slug, html);
   return {

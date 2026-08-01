@@ -409,7 +409,7 @@ export function updateOutreachReady(
 export function listLeadsForOutreach(
   force = false,
   slug?: string,
-  product: PipelineProduct = "site",
+  product: PipelineProduct = "menu",
 ): Lead[] {
   let leads = force
     ? [
@@ -424,8 +424,8 @@ export function listLeadsForOutreach(
     if (seen.has(l.id)) return false;
     seen.add(l.id);
     if (product === "reviewKit") return kitExists(l.slug);
-    if (product === "menu") return menuExists(l.slug);
-    return siteHtmlExists(l.slug) || Boolean(l.sitePath);
+    if (product === "site") return siteHtmlExists(l.slug) || Boolean(l.sitePath);
+    return menuExists(l.slug);
   });
   if (slug) leads = leads.filter((l) => l.slug === slug);
   return leads;

@@ -1,7 +1,7 @@
 {
   "name": "domiweb-walkthrough-machine",
   "version": "1.0.0",
-  "description": "Walkthrough Machine pipeline for Dominican Republic local businesses — scrape, qualify, build sites, outreach",
+  "description": "Walkthrough Machine pipeline for Dominican Republic restaurants — scrape, qualify, digital menus + QR, WhatsApp outreach",
   "type": "module",
   "bin": {
     "domiweb": "./dist/cli.js"

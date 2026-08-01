@@ -134,7 +134,7 @@ function transferVars(): {
 function resolveClaimUrl(
   lead: Lead,
   config: NicheConfig,
-  product: PipelineProduct = "site",
+  product: PipelineProduct = "menu",
 ): string {
   const urls = resolveGithubPagesUrls(config, lead.slug);
   let url =
@@ -229,7 +229,7 @@ export function buildOutreachForLead(
   config: NicheConfig,
   opts: { product?: PipelineProduct } = {},
 ): OutreachMessage {
-  const product = opts.product ?? "site";
+  const product = opts.product ?? "menu";
   const prompts = whatsappPromptFiles(product);
   const emailFile =
     product === "menu" ? "outreach-email-menu.md" : "outreach-email.md";
@@ -408,7 +408,7 @@ export function prepareOutreach(
   config: NicheConfig,
   opts: { limit?: number; write?: boolean; product?: PipelineProduct } = {},
 ): { messages: OutreachMessage[]; csvPath?: string; jsonPath?: string } {
-  const product = opts.product ?? "site";
+  const product = opts.product ?? "menu";
   const transfer = transferVars();
   if (transfer.missing.length) {
     log.warn(

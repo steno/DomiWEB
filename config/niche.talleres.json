@@ -1,0 +1,128 @@
+{
+  "language": "es-DO",
+  "country": "DO",
+  "countryName": "República Dominicana",
+
+  "niche": {
+    "id": "talleres-mecanicos",
+    "label": "Talleres mecánicos",
+    "labelSingular": "taller mecánico",
+    "keywords": [
+      "taller mecánico",
+      "taller de autos",
+      "mecánica automotriz",
+      "taller de mecánica",
+      "taller de reparación",
+      "taller de automóviles",
+      "automecánica",
+      "automotriz"
+    ],
+    "categoryHints": [
+      "Auto repair shop",
+      "Car repair",
+      "Mechanic",
+      "Taller mecánico",
+      "Auto workshop",
+      "Taller de reparación de automóviles",
+      "Taller de automóviles",
+      "Taller de chapa y pintura"
+    ],
+    "chainBlocklist": [
+      "Firestone",
+      "Goodyear",
+      "Midas",
+      "Jiffy Lube",
+      "Pep Boys",
+      "Discount Tire",
+      "Bridgestone",
+      "Servicio Honda",
+      "Servicio Toyota",
+      "Hyundai",
+      "Kia Motors",
+      "Chevrolet",
+      "Ford Service"
+    ],
+    "illustrativeImages": [
+      "assets/illustrative/talleres-mecanicos/hero.jpg",
+      "assets/illustrative/talleres-mecanicos/g1.jpg",
+      "assets/illustrative/talleres-mecanicos/g2.jpg",
+      "assets/illustrative/talleres-mecanicos/g3.jpg"
+    ]
+  },
+
+  "cities": [
+    {
+      "id": "santo-domingo",
+      "name": "Santo Domingo",
+      "searchQueries": [
+        "taller mecánico Santo Domingo República Dominicana",
+        "taller de autos Santo Domingo RD"
+      ],
+      "maxResults": 80
+    },
+    {
+      "id": "santiago",
+      "name": "Santiago",
+      "searchQueries": [
+        "taller mecánico Santiago República Dominicana"
+      ],
+      "maxResults": 50
+    },
+    {
+      "id": "puerto-plata",
+      "name": "Puerto Plata",
+      "searchQueries": [
+        "taller mecánico Puerto Plata República Dominicana"
+      ],
+      "maxResults": 35
+    }
+  ],
+
+  "qualification": {
+    "minRating": 4.0,
+    "minReviews": 8,
+    "minPhotos": 5,
+    "recentReviewDays": 90,
+    "allowSocialOnlyWebsite": true,
+    "socialWebsiteHosts": [
+      "facebook.com",
+      "fb.com",
+      "fb.me",
+      "instagram.com",
+      "instagr.am",
+      "m.facebook.com"
+    ]
+  },
+
+  "scrape": {
+    "reviewsPerPlace": 40,
+    "language": "es",
+    "maxConcurrency": 5
+  },
+
+  "hosting": {
+    "provider": "github-pages",
+    "baseUrl": "https://steno.github.io/DomiWEB",
+    "sitesPath": "sites",
+    "claimPath": "claim",
+    "kitsPath": "kits",
+    "menusPath": "menus"
+  },
+
+  "pricing": {
+    "onceLabel": "RD$2,000",
+    "hostingNote": "si lo necesitas, lo hablamos aparte",
+    "reviewKitOnceLabel": "RD$800",
+    "menuOnceLabel": "RD$1,500"
+  },
+
+  "products": {
+    "reviewKit": {
+      "enabled": true,
+      "maxReplies": 8
+    },
+    "menu": {
+      "enabled": true
+    }
+  }
+}

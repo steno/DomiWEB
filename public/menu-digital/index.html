@@ -39,10 +39,11 @@
       --line: rgba(16, 49, 46, 0.12);
       --shadow: 0 14px 32px rgba(6, 80, 76, 0.16);
       --radius: 1.2rem;
-      --ui-bg: #140f0a;
-      --ui-ink: #f7f1e8;
-      --ui-muted: #b7a894;
-      --ui-accent: #e2a45a;
+      --ui-bg: #fffdf8;
+      --ui-ink: #10312e;
+      --ui-muted: #3d5c58;
+      --ui-accent: #0a8f8a;
+      --ui-cta: #ffb703;
     }
 
     * { box-sizing: border-box; }
@@ -150,9 +151,9 @@
     .phone {
       width: min(148px, 28vw);
       border-radius: 1.15rem;
-      background: #1a1410;
-      border: 2.5px solid #2a221c;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+      background: #e8f7f5;
+      border: 2.5px solid #9ad5d0;
+      box-shadow: 0 16px 36px rgba(6, 80, 76, 0.18);
       overflow: hidden;
       flex: 0 0 auto;
       transform-origin: bottom center;
@@ -167,7 +168,7 @@
     .phone-right { transform: rotate(4deg) translateY(10px); }
     .phone-bar {
       height: 14px;
-      background: #0c0907;
+      background: #066661;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -177,7 +178,7 @@
       width: 36px;
       height: 4px;
       border-radius: 99px;
-      background: #3a322c;
+      background: rgba(255, 253, 248, 0.45);
     }
     .ui {
       background: var(--ui-bg);
@@ -193,12 +194,13 @@
     .ui-hero {
       height: 58px;
       background:
-        linear-gradient(180deg, rgba(20,15,10,0.2), rgba(20,15,10,0.92)),
+        linear-gradient(180deg, rgba(6,102,97,0.18), rgba(255,253,248,0.92)),
         url("../assets/illustrative/restaurantes/hero.jpg") center / cover;
       padding: 0.45rem 0.5rem;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
+      color: var(--ui-ink);
     }
     .ui-hero strong {
       font-size: 0.85em;
@@ -228,7 +230,7 @@
       gap: 0.3rem;
       align-items: start;
       padding: 0.32rem 0;
-      border-bottom: 1px solid rgba(226, 164, 90, 0.2);
+      border-bottom: 1px solid rgba(16, 49, 46, 0.1);
     }
     .ui-check {
       width: 12px;
@@ -247,7 +249,7 @@
       font-size: 0.9em;
     }
     .ui-price {
-      color: var(--ui-accent);
+      color: var(--ocean-deep);
       font-family: system-ui, sans-serif;
       font-weight: 700;
       font-size: 0.85em;
@@ -256,8 +258,8 @@
     .ui-foot {
       margin-top: auto;
       padding: 0.4rem;
-      background: #1c1610;
-      border-top: 1px solid rgba(226, 164, 90, 0.25);
+      background: rgba(243, 255, 253, 0.95);
+      border-top: 1px solid rgba(10, 143, 138, 0.22);
     }
     .ui-count {
       margin: 0 0 0.3rem;
@@ -271,8 +273,8 @@
       text-align: center;
       padding: 0.4rem 0.35rem;
       border-radius: 999px;
-      background: var(--ui-accent);
-      color: #1a120a;
+      background: var(--ui-cta);
+      color: var(--ui-ink);
       font-family: system-ui, sans-serif;
       font-weight: 800;
       font-size: 0.58rem;

@@ -4,25 +4,28 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Menú · Tu Cena RD</title>
+<meta name="theme-color" content="#0A8F8A" />
 <meta name="description" content="Marca platos y pide por WhatsApp en Tu Cena RD." />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="es_DO" />
 <meta property="og:url" content="https://steno.github.io/DomiWEB/menus/tu-cena-rd/" />
 <meta property="og:title" content="Menú · Tu Cena RD" />
 <meta property="og:description" content="Marca platos y pide por WhatsApp en Tu Cena RD." />
-<meta property="og:image" content="https://lh3.googleusercontent.com/gps-cs-s/AHRPTWl0E9St9y2w-gBbntVa46EpAkTaXKAKKAB8tBQw0eHcf_XWHJhaqfHdv2868-R10v022x3-6P0Lf5xiH5v86I1N442kZoRpUbbyG2WDtXJxPOJ-OX8R7Jyj2tN0SR4w3RYzsfX_=w1200-h630-c" />
+<meta property="og:image" content="https://steno.github.io/DomiWEB/menus/tu-cena-rd/hero.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Menú · Tu Cena RD" />
 <meta name="twitter:description" content="Marca platos y pide por WhatsApp en Tu Cena RD." />
-<meta name="twitter:image" content="https://lh3.googleusercontent.com/gps-cs-s/AHRPTWl0E9St9y2w-gBbntVa46EpAkTaXKAKKAB8tBQw0eHcf_XWHJhaqfHdv2868-R10v022x3-6P0Lf5xiH5v86I1N442kZoRpUbbyG2WDtXJxPOJ-OX8R7Jyj2tN0SR4w3RYzsfX_=w1200-h630-c" />
+<meta name="twitter:image" content="https://steno.github.io/DomiWEB/menus/tu-cena-rd/hero.jpg" />
 <style>
 :root {
-  --bg: #140f0a;
-  --ink: #f7f1e8;
-  --muted: #b7a894;
-  --accent: #e2a45a;
-  --panel: #1c1610;
-  --line: rgba(226, 164, 90, 0.28);
+  --bg: #fffdf8;
+  --ink: #10312e;
+  --muted: #3d5c58;
+  --accent: #0a8f8a;
+  --cta: #ffb703;
+  --cta-ink: #10312e;
+  --panel: #f3fffd;
+  --line: rgba(10, 143, 138, 0.22);
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -43,12 +46,12 @@ body {
   padding: clamp(1.4rem, 4vh, 2.2rem) 1.15rem 1.5rem;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(20,15,10,0.2) 0%, rgba(20,15,10,0.55) 48%, rgba(20,15,10,0.96) 100%),
-    linear-gradient(135deg, #2a1c12, #140f0a 55%, #24180f);
+    linear-gradient(180deg, rgba(10,143,138,0.2) 0%, rgba(255,253,248,0.35) 58%, #fffdf8 100%),
+    linear-gradient(145deg, #13a9a2 0%, #066661 55%, #044844 100%);
 }
 .hero.has-photo {
   background-image:
-    linear-gradient(180deg, rgba(20,15,10,0.12) 0%, rgba(20,15,10,0.42) 42%, rgba(20,15,10,0.95) 100%),
+    linear-gradient(180deg, rgba(6,102,97,0.1) 0%, rgba(6,102,97,0.05) 42%, rgba(255,253,248,0.55) 72%, #fffdf8 100%),
     var(--hero-image);
   background-size: cover, cover;
   background-position: center, center;
@@ -69,16 +72,17 @@ body {
   letter-spacing: -0.03em;
   font-weight: 700;
   text-wrap: balance;
-  text-shadow: 0 12px 36px rgba(0,0,0,0.45);
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255,253,248,0.85), 0 10px 28px rgba(255,253,248,0.55);
 }
 .sub {
   margin: 0.75rem 0 0;
-  color: #e8dccb;
+  color: var(--muted);
   font-size: clamp(1rem, 2.6vw, 1.15rem);
 }
 .meta {
   margin: 0.7rem 0 0;
-  color: var(--accent);
+  color: #066661;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
   font-size: 0.92rem;
@@ -94,8 +98,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent);
-  color: #1a1208;
+  background: var(--cta);
+  color: var(--cta-ink);
   text-decoration: none;
   padding: 0.9rem 1.2rem;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
@@ -106,7 +110,7 @@ body {
   margin: 0.8rem 0 0;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.72rem;
-  color: rgba(247,241,232,0.72);
+  color: var(--muted);
 }
 .wrap { max-width: 40rem; margin: 0 auto; padding: 1.75rem 1.15rem 3rem; }
 .cat { margin: 0 0 1.85rem; }
@@ -120,7 +124,7 @@ body {
 .items { list-style: none; margin: 0; padding: 0; }
 .item {
   padding: 0;
-  border-bottom: 1px solid rgba(226,164,90,0.12);
+  border-bottom: 1px solid rgba(16, 49, 46, 0.1);
 }
 .pick {
   display: grid;
@@ -132,7 +136,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .pick:active {
-  background: rgba(226,164,90,0.06);
+  background: rgba(10, 143, 138, 0.06);
 }
 .pick-cb {
   position: absolute;
@@ -146,7 +150,7 @@ body {
   width: 1.15rem;
   height: 1.15rem;
   margin-top: 0.2rem;
-  border: 1.5px solid rgba(226,164,90,0.55);
+  border: 1.5px solid rgba(10, 143, 138, 0.45);
   display: block;
   flex-shrink: 0;
   background: transparent;
@@ -155,7 +159,7 @@ body {
 .pick-cb:checked + .pick-box {
   background: var(--accent);
   border-color: var(--accent);
-  box-shadow: inset 0 0 0 2px #140f0a;
+  box-shadow: inset 0 0 0 2px var(--bg);
 }
 .pick:has(.pick-cb:focus-visible) .pick-box {
   outline: 2px solid var(--accent);
@@ -179,7 +183,7 @@ body {
 .item-price {
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-weight: 700;
-  color: var(--accent);
+  color: #066661;
   white-space: nowrap;
   padding-top: 0.15rem;
 }
@@ -237,7 +241,7 @@ body.owner-preview.has-order .wrap { padding-bottom: 3rem; }
   position: fixed;
   left: 0; right: 0; bottom: 0;
   padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
-  background: rgba(20,15,10,0.94);
+  background: rgba(255, 253, 248, 0.96);
   border-top: 1px solid var(--line);
   gap: 0.65rem;
   justify-content: center;
@@ -275,7 +279,7 @@ footer {
 </style>
 </head>
 <body>
-  <header class="hero has-photo" style="--hero-image:url('https://lh3.googleusercontent.com/gps-cs-s/AHRPTWl0E9St9y2w-gBbntVa46EpAkTaXKAKKAB8tBQw0eHcf_XWHJhaqfHdv2868-R10v022x3-6P0Lf5xiH5v86I1N442kZoRpUbbyG2WDtXJxPOJ-OX8R7Jyj2tN0SR4w3RYzsfX_=w1920-h1080-k-no')">
+  <header class="hero has-photo" style="--hero-image:url('hero.jpg')">
     <div class="hero-inner">
       <p class="kicker">Menú digital</p>
       <h1 class="brand">Tu Cena RD</h1>

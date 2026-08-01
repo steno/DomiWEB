@@ -1,19 +1,19 @@
 ---
-description: Restaurants default to digital menu + QR order funnel, not full websites
+description: DomiWEB ships restaurant digital menus only (not talleres / full sites by default)
 alwaysApply: true
 ---
 
-# DomiWEB · restaurants → menu product (always)
+# DomiWEB · menus only (always)
 
-For food businesses (restaurantes, cafés, mariscos, beach restaurants, chimis, bars with food), the default deliverable is the **digital menu + QR + WhatsApp ordering** product — not a full marketing website.
+The product is the **digital menu + QR + WhatsApp ordering** funnel for food businesses. Do not run talleres / auto-repair scrapes or default to full marketing websites.
 
 ## Default funnel
 
-1. Scrape/qualify with restaurant niche config
+1. Scrape/qualify with restaurant niche (`config/niche.config.json`)
 2. `generate-menus`
-3. `claim-pages --product menu`
-4. `outreach --product menu` (WhatsApp link = **claim URL only**)
-5. `send-whatsapp --product menu` (then `--price` / `--close` as needed)
+3. `claim-pages` (defaults to menu)
+4. `outreach` (WhatsApp link = **claim URL only**)
+5. `send-whatsapp` (then `--price` / `--close` as needed)
 6. Commit + push `public/menus`, `public/claim`, `public/edit-menu` before first WA
 
 ## URLs
@@ -23,13 +23,12 @@ For food businesses (restaurantes, cafés, mariscos, beach restaurants, chimis, 
 
 ## Do not
 
-- Default to `generate-sites` / claim `site` for restaurants
-- Treat “claim site” / “create a site” / “scan and claim” for a food place as a website request — ship the **menu** claim instead
+- Scrape or pitch talleres mecánicos
+- Default to `generate-sites` / claim `site`
+- Treat “claim site” / “create a site” / “scan and claim” as a website request — ship the **menu** claim instead
 - Put the long GitHub Pages menu or splash URL in first-touch WhatsApp or ads — claim for owners, tinyurl.com/domenus for product share
 - Invent real dish prices; placeholder items + honesty footer only
 
 ## Exception
 
-Use `generate-sites` for a restaurant only when the user explicitly asks for a website (instead of or in addition to the menu).
-
-Talleres / auto repair still use the full `site` funnel.
+Use `generate-sites` or `--product site` / `reviewKit` only when the user explicitly asks.
