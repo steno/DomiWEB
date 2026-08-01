@@ -251,6 +251,7 @@ export function buildMenuHtml(
         `Hola, vi el menú digital de ${p.name} y quiero ordenar.`,
       )
     : null;
+  const editMenuHref = `../../claim/${escapeAttr(lead.slug)}/index.html#editar-menu`;
 
   const categoryBlocks = categories
     .map((cat) => {
@@ -480,6 +481,19 @@ body {
   font-size: 0.88rem;
   color: var(--muted);
 }
+.edit-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+  padding: 0.45rem 0;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+}
+.edit-back:hover { text-decoration: underline; }
 .order-bar {
   display: none;
   position: fixed;
@@ -534,6 +548,7 @@ footer {
     </div>
   </header>
   <main class="wrap">
+    <p><a class="edit-back" href="${editMenuHref}" target="_top">← Editar menú</a></p>
     ${
       waDigits
         ? `<p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>`

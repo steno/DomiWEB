@@ -138,6 +138,13 @@ function resolveClaimUrl(lead: Lead, config: NicheConfig): string {
   return `https://steno.github.io/DomiWEB/claim/${lead.slug}/`;
 }
 
+/** Pretty public share link for the menu product (not per-business). */
+export function resolveMenuShareUrl(): string {
+  const fromEnv = process.env.MENU_SHARE_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  return "https://tinyurl.com/domenus";
+}
+
 function resolveAssetUrl(
   lead: Lead,
   config: NicheConfig,
@@ -265,6 +272,8 @@ export function buildOutreachForLead(
     CLAIM_URL: resolveClaimUrl(lead, config),
     MENU_URL: resolveAssetUrl(lead, config, "menu"),
     SITE_URL: resolveAssetUrl(lead, config, "site"),
+    /** Product promo short link — not the per-business claim */
+    SHARE_URL: resolveMenuShareUrl(),
     PRICE_ONCE: priceOnce,
     HOSTING_NOTE: hostingNote,
     TRANSFER_BANK: transfer.TRANSFER_BANK,

@@ -24,10 +24,17 @@ No marketing homepage of every service for outbound — the live asset is the pi
 | Priority | Product | Config | Price field |
 |----------|---------|--------|-------------|
 | Cash now | `site` (talleres) | `niche.config.json` | `onceLabel` RD$2,000 |
-| Ship next | `menu` (restaurants) | `niche.restaurantes.json` | `menuOnceLabel` RD$1,500 |
+| Default for food | `menu` (restaurants) | `niche.restaurantes.json` | `menuOnceLabel` RD$1,500 |
 | Lighter SKU | `reviewKit` | same scrape | `reviewKitOnceLabel` RD$800 |
 
 Do **not** fragment into new repos. Add templates + niche configs here.
+
+### Default product by niche (do not ask)
+
+- **Restaurants, cafés, beach food, mariscos, chimis, bars with food** → always the **digital menu + QR + WhatsApp order** funnel (`generate-menus` → `claim-pages --product menu` → `outreach --product menu` → `send-whatsapp --product menu`).  
+  If the user says “claim site”, “create a site”, or “scan and claim” for a food business, still ship **menu**, not `generate-sites`.
+- **Talleres / auto repair** → full `site` funnel (`generate-sites` → claim `site`).
+- Only use `generate-sites` for a restaurant if the user **explicitly** asks for a website instead of (or in addition to) the menu.
 
 ## When to use
 
@@ -117,6 +124,8 @@ Placeholder dishes are examples — never invent real prices as facts.
 - Claim CTA only to `CLAIM_WHATSAPP`
 - One outreach message per business
 - Menu: placeholder items + honesty footer
+- **Restaurant outreach URL = claim only** (`/claim/<slug>/`). Do not lead with `/menus/<slug>/` — claim embeds menu + edit + QR.
+- **Pretty product share** (ads, Facebook, generic pitch): `https://tinyurl.com/domenus` → splash `menu-digital/`. Override with `MENU_SHARE_URL` in `.env`. Never use the long GitHub Pages splash URL in promo copy.
 
 ## Product rules
 
