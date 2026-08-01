@@ -250,15 +250,15 @@ body.menu-editing .qr-print { display: none; }
     <p class="eyebrow">Menú digital · restaurante</p>
     <h1>Hola Sebastian, esto es para D' Luis Parrillada</h1>
     <p class="lead">
-      Armamos tu menú digital con categorías, platos de ejemplo y un QR permanente.
+      Armamos tu menú digital con categorías y platos de ejemplo.
       Míralo abajo (con un vistazo rápido en el video).
-      Puedes editar tus platos ahora; al reclamarlo lo publicamos con tu carta real.
+      Aquí editas platos y bajas el QR; al reclamarlo lo publicamos con tu carta.
     </p>
     <p class="quote">“Un negocio con décadas de presencia y calidad en la republica dominicana en la ciudad de Santo Domi…”</p>
     <div class="actions">
       <a class="btn btn-primary" id="btn-claim" href="https://wa.me/17542133764?text=Hola%2C%20soy%20Sebastian%20de%20D&#39;%20Luis%20Parrillada.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Fd-luis-parrillada%2F%0ATel%20del%20negocio%3A%20%2B1%20809-686-2940%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
       <a class="btn btn-ghost" href="#editar-menu">Editar mis platos</a>
-      <a class="btn btn-ghost" href="../../menus/d-luis-parrillada/index.html" target="_blank" rel="noopener">Abrir menú completo</a>
+      <a class="btn btn-ghost" href="../../menus/d-luis-parrillada/index.html" target="_blank" rel="noopener">Ver menú del cliente</a>
     </div>
     <div id="panel-ok" role="status">
       Gracias. Anotamos tu interés en <strong>D' Luis Parrillada</strong>.
@@ -551,7 +551,7 @@ body.menu-editing .quote { display: none; }
 }
 </style>
 <section id="editar-menu" hidden aria-label="Editar menú">
-  <p class="edit-hint">Edita platos y precios aquí. Al enviar, comparte el archivo por WhatsApp (o adjúntalo con el clip 📎 si solo se descarga).</p>
+  <p class="edit-hint">Edita platos y precios aquí (antes de pagar). Al enviar por WhatsApp, lo revisamos y lo publicamos en tu carta.</p>
   <div id="menu-list"></div>
 </section>
 <div class="edit-bar" id="edit-bar" hidden>
@@ -791,7 +791,7 @@ body.menu-editing .quote { display: none; }
     if (navigator.canShare && navigator.canShare(shareData)) {
       navigator.share(shareData)
         .then(function () {
-          setStatus('Elige WhatsApp en el menú para enviar el archivo.');
+          setStatus('En el menú de compartir, elige WhatsApp.');
         })
         .catch(function (err) {
           if (err && err.name === 'AbortError') {

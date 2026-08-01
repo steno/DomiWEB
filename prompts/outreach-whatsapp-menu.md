@@ -8,17 +8,15 @@ Hola{{OWNER_GREETING}}, ¿todo bien?
 
 Encontré {{BUSINESS_NAME}} en Google y las reseñas están buenísimas{{REVIEW_SNIPPET}}.
 
-Te armé un menú digital con QR listo para imprimir. Míralo aquí:
+Te armé un menú digital para que tus clientes marquen platos y te pidan por WhatsApp. Míralo aquí:
 
 {{MENU_URL}}
 
-Para ponerlo a tu nombre y editar platos/precios, entra aquí y toca “Editar mis platos”:
+Para editar platos/precios y bajar el QR para imprimir, entra aquí y toca “Editar mis platos”:
 
 {{CLAIM_URL}}
 
-Cuando envíes tu carta, la publicamos. Tus clientes también pueden marcar lo que quieren en el menú y mandártelo por WhatsApp.
-
-Si no es para ti, no hay problema.
+Cuando envíes tu carta, la publicamos. Si no es para ti, no hay problema.
 
 ## Reglas
 

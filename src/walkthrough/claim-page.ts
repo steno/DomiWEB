@@ -156,7 +156,9 @@ function claimActionHref(
     const subject = encodeURIComponent(
       product === "reviewKit"
         ? `Quiero reclamar las respuestas de ${lead.place.name}`
-        : `Quiero reclamar el sitio de ${lead.place.name}`,
+        : product === "menu"
+          ? `Quiero reclamar el menú de ${lead.place.name}`
+          : `Quiero reclamar el sitio de ${lead.place.name}`,
     );
     const body = encodeURIComponent(
       claimMessage(lead, claimUrl, product),
@@ -230,7 +232,7 @@ export function buildClaimPageHtml(
     product === "reviewKit"
       ? "Abrir kit completo"
       : product === "menu"
-        ? "Abrir menú completo"
+        ? "Ver menú del cliente"
         : "Abrir sitio completo";
   const eyebrow =
     product === "reviewKit"
@@ -244,9 +246,9 @@ export function buildClaimPageHtml(
       Míralas abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
       Si te sirven, reclámalas — son tuyas.`
       : product === "menu"
-        ? `Armamos tu menú digital con categorías, platos de ejemplo y un QR permanente.
+        ? `Armamos tu menú digital con categorías y platos de ejemplo.
       Míralo abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
-      Puedes editar tus platos ahora; al reclamarlo lo publicamos con tu carta real.`
+      Aquí editas platos y bajas el QR; al reclamarlo lo publicamos con tu carta.`
         : `Armamos una página con tus reseñas públicas de Google.
       Mírala abajo${videoHref ? " (con un vistazo rápido en el video)" : ""}.
       Si te gusta, reclámala — es tuya.`;
@@ -262,7 +264,7 @@ export function buildClaimPageHtml(
         ? "Se abre WhatsApp para confirmar — escríbenos ahí y te las pasamos."
         : product === "menu"
           ? "Se abre WhatsApp para confirmar — ahí cerramos y lo dejamos publicado con tu carta."
-          : "Se abre WhatsApp para confirmar — escríbenos ahí y te lo pasamos."
+          : "Se abre WhatsApp para confirmar — escríbenos ahí y te la pasamos."
       : claim.kind === "mailto"
         ? "Revisa tu correo — se abrió un mensaje para confirmar."
         : "Escríbenos por el mismo chat de WhatsApp donde te llegó el enlace para confirmar.";

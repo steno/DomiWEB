@@ -208,11 +208,15 @@ export function buildOutreachForLead(
 ): OutreachMessage {
   const product = opts.product ?? "site";
   const prompts = whatsappPromptFiles(product);
+  const emailFile =
+    product === "menu" ? "outreach-email-menu.md" : "outreach-email.md";
+  const postcardFile =
+    product === "menu" ? "outreach-postcard-menu.md" : "outreach-postcard.md";
   const emailTpl = parseEmailTemplate(
-    readFileSync(promptsDir("outreach-email.md"), "utf8"),
+    readFileSync(promptsDir(emailFile), "utf8"),
   );
   const postcardTpl = parsePostcardTemplate(
-    readFileSync(promptsDir("outreach-postcard.md"), "utf8"),
+    readFileSync(promptsDir(postcardFile), "utf8"),
   );
   const waTpl = parseWhatsAppTemplate(
     readFileSync(promptsDir(prompts.first), "utf8"),

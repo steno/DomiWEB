@@ -6,7 +6,7 @@ Subtle talking-head motion from the still: natural mouth movement, slight head n
 
 ## Spoken script (Spanish — Dominican / casual)
 
-> oye, esto puede sonar un poco random, pero encontré tu {{NICHE_SINGULAR}} en Google, las reseñas están buenísimas de verdad, y noté que todavía usaban menú en papel. así que te armé un menú digital con un QR listo para imprimir. aquí te dejo un vistazo rápido, y si te gusta, es tuyo.
+> oye, esto puede sonar un poco random, pero encontré tu {{NICHE_SINGULAR}} en Google, las reseñas están buenísimas de verdad, y noté que todavía usaban menú en papel. así que te armé un menú digital con QR para la mesa. aquí te dejo un vistazo rápido, y si te gusta, es tuyo.
 
 ## Rules
 

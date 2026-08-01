@@ -10,9 +10,9 @@ Perfecto. El menú digital ya está hecho con tu nombre y el QR permanente.
 Si lo quieres a tu nombre, te lo paso por *{{PRICE_ONCE}}* (pago único). Incluye:
 
 • menú móvil listo
-• QR para imprimir
+• QR para imprimir (en la página de reclamo)
 • te lo paso a tu nombre
-• editas platos y precios desde el mismo menú (y tus clientes piden por WhatsApp)
+• editas platos y precios en la página de reclamo; tus clientes piden por WhatsApp
 
 ¿Te lo paso?
 

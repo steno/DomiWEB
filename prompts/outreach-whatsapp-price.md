@@ -9,8 +9,8 @@ Perfecto. La página ya está hecha con tus reseñas de Google.
 
 Si la quieres a tu nombre, te la paso por *{{PRICE_ONCE}}* (pago único). Incluye:
 
-• sitio listo
-• te lo paso a tu nombre
+• página lista
+• te la paso a tu nombre
 • cambios chiquitos de texto o fotos al inicio
 
 ¿Te la paso?

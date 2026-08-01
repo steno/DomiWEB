@@ -295,7 +295,7 @@ export function buildMenuHtml(
     : "";
 
   const cta = waOrder
-    ? `<a class="btn" href="${escapeAttr(waOrder)}">Pedir por WhatsApp</a>`
+    ? `<a class="btn" href="${escapeAttr(waOrder)}">WhatsApp del local</a>`
     : p.phone
       ? `<a class="btn" href="tel:${escapeAttr(p.phone.replace(/[^\d+]/g, ""))}">Llamar</a>`
       : "";
@@ -545,7 +545,7 @@ footer {
     <footer><p>${footerHtml}</p></footer>
   </main>
   <div class="order-bar" id="order-bar" hidden>
-    <p class="order-count" id="order-count">0 platos</p>
+    <p class="order-count" id="order-count">0 platos seleccionados</p>
     <button type="button" class="btn" id="btn-send-order"${waDigits ? "" : " disabled"}>Enviar pedido por WhatsApp</button>
   </div>
   ${buildOrderPickerScript(p.name, waDigits)}

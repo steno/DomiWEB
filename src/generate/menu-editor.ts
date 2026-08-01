@@ -517,7 +517,7 @@ export function buildInlineMenuEditScript(
     if (navigator.canShare && navigator.canShare(shareData)) {
       navigator.share(shareData)
         .then(function () {
-          setStatus('Elige WhatsApp en el menú para enviar el archivo.');
+          setStatus('En el menú de compartir, elige WhatsApp.');
         })
         .catch(function (err) {
           if (err && err.name === 'AbortError') {
@@ -816,7 +816,7 @@ body.menu-editing .quote { display: none; }
 }
 </style>
 <section id="editar-menu" hidden aria-label="Editar menú">
-  <p class="edit-hint">Edita platos y precios aquí. Al enviar, comparte el archivo por WhatsApp (o adjúntalo con el clip 📎 si solo se descarga).</p>
+  <p class="edit-hint">Edita platos y precios aquí (antes de pagar). Al enviar por WhatsApp, lo revisamos y lo publicamos en tu carta.</p>
   <div id="menu-list"></div>
 </section>
 ${buildInlineMenuEditBarHtml()}

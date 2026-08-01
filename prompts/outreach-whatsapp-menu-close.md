@@ -13,8 +13,9 @@ Dale. Para pasártelo:
    A nombre de: {{TRANSFER_NAME}}
 
 2. Cuando me mandes el comprobante, en {{DELIVERY_HOURS}} te dejo:
-   • el menú en tu link (con el QR)
-   • los cambios de platos/precios que me digas al inicio
+   • el menú publicado en tu link
+   • el QR listo (está en la página de reclamo)
+   • tus platos/precios si ya los editaste o me mandaste la carta
 
 ¿Me confirmas cuando hagas la transferencia?
 

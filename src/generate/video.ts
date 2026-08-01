@@ -58,7 +58,7 @@ export function buildSpokenScript(config: NicheConfig): string {
   const match = prompt.match(/>\s*([\s\S]*?)\n\n## Rules/);
   const fallback =
     product === "menu"
-      ? "oye, esto puede sonar un poco random, pero encontré tu {{NICHE_SINGULAR}} en Google, las reseñas están buenísimas de verdad, y noté que todavía usaban menú en papel. así que te armé un menú digital con un QR listo para imprimir. aquí te dejo un vistazo rápido, y si te gusta, es tuyo."
+      ? "oye, esto puede sonar un poco random, pero encontré tu {{NICHE_SINGULAR}} en Google, las reseñas están buenísimas de verdad, y noté que todavía usaban menú en papel. así que te armé un menú digital con QR para la mesa. aquí te dejo un vistazo rápido, y si te gusta, es tuyo."
       : "oye, esto puede sonar un poco random, pero encontré tu negocio de {{NICHE_SINGULAR}} en Google, las reseñas están buenísimas de verdad, y noté que no tenías página web. así que te armé una con tus propias reseñas. aquí te dejo un vistazo rápido, y si te gusta, es tuya.";
   let script =
     match?.[1]
