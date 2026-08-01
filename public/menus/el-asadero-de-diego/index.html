@@ -1258,15 +1258,23 @@ body.menu-editing .edit-bar { display: flex; }
       .replace(/'/g, '&#39;');
   }
 
+  function stripRdPrefix(raw) {
+    var s = String(raw || '').trim();
+    while (s.length >= 3 && s.slice(0, 3).toUpperCase() === 'RD$') {
+      s = s.slice(3).trim();
+    }
+    return s;
+  }
+
   function priceAmount(hint) {
-    var s = String(hint || '').trim().replace(/^RD$s*/i, '').trim();
-    if (!s || s === '—' || s === '-' || s === '--') return '';
+    var s = stripRdPrefix(hint);
+    if (!s || s === '—' || s === '–' || s === '-' || s === '--' || s === '−') return '';
     return s;
   }
 
   function formatPriceHint(amount) {
-    var a = String(amount || '').trim().replace(/^RD$s*/i, '').trim();
-    if (!a || a === '—' || a === '-') return 'RD$ —';
+    var a = priceAmount(amount);
+    if (!a) return 'RD$ —';
     return 'RD$ ' + a;
   }
 
