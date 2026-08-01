@@ -220,7 +220,7 @@ h1 {
     <p class="quote">“Los mejores mofongos que probado y el chicharrón súper bueno, también sus longanizas artesanales un…”</p>
     <div class="actions">
       <a class="btn btn-primary" id="btn-claim" href="https://wa.me/17542133764?text=Hola%2C%20escribo%20por%20Chicha%20Light.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Fchicha-light%2F%0ATel%20del%20negocio%3A%20%2B1%20849-995-1953%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
-      <a class="btn btn-ghost" href="../../menus/chicha-light/?edit=1">Editar mis platos</a>
+      <a class="btn btn-ghost" href="#editar-menu">Editar mis platos</a>
       <button type="button" class="btn btn-ghost" id="btn-audio-top">Escuchar</button>
       <a class="btn btn-ghost" href="../../menus/chicha-light/index.html" target="_blank" rel="noopener">Abrir menú completo</a>
     </div>
@@ -249,6 +249,761 @@ h1 {
     <a class="btn btn-primary" href="https://wa.me/17542133764?text=Hola%2C%20escribo%20por%20Chicha%20Light.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Fchicha-light%2F%0ATel%20del%20negocio%3A%20%2B1%20849-995-1953%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
   </footer>
 </div>
+<style>
+
+body.menu-editing .hero {
+  min-height: 28vh;
+  min-height: 28svh;
+}
+body.menu-editing .qr-block { display: none; }
+body.menu-editing .banner { display: none; }
+body.menu-editing .order-hint { display: none; }
+body.menu-editing .pick { display: none; }
+body.menu-editing .order-bar { display: none !important; }
+body.menu-editing .wrap { padding-bottom: 5.5rem; }
+.edit-hint {
+  display: none;
+  margin: 0 0 1.25rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+body.menu-editing .edit-hint { display: block; }
+body.menu-editing .item {
+  grid-template-columns: 1fr auto auto;
+  align-items: start;
+  gap: 0.55rem;
+}
+body.menu-editing .item-main { display: grid; gap: 0.35rem; }
+body.menu-editing .item input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(226,164,90,0.28);
+  color: inherit;
+  font: inherit;
+  padding: 0.35rem 0.25rem;
+  border-radius: 0;
+  cursor: text;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+body.menu-editing .item input::placeholder {
+  color: rgba(183, 168, 148, 0.75);
+  font-weight: 400;
+}
+body.menu-editing .item input:hover {
+  border-bottom-color: rgba(226,164,90,0.75);
+  background: rgba(226,164,90,0.07);
+}
+body.menu-editing .item input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+  background: rgba(226,164,90,0.12);
+  box-shadow: 0 1px 0 0 var(--accent);
+}
+body.menu-editing .item input:focus-visible {
+  outline: 2px solid rgba(226,164,90,0.45);
+  outline-offset: 2px;
+}
+body.menu-editing .item input.item-name {
+  font-size: 1.08rem;
+  font-weight: 650;
+}
+body.menu-editing .item input.item-note {
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.82rem;
+}
+body.menu-editing .item input.item-price {
+  width: 4.75rem;
+  text-align: right;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+body.menu-editing .price-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 6.5rem;
+  justify-content: flex-end;
+}
+body.menu-editing .price-prefix {
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--accent);
+  opacity: 0.85;
+  user-select: none;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+body.menu-editing .item-rm {
+  background: none;
+  border: none;
+  color: #c97858;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.2rem 0.35rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  border-radius: 2px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+body.menu-editing .item-rm:hover {
+  color: #f0a090;
+  background: rgba(201, 120, 88, 0.12);
+}
+body.menu-editing .item-rm:focus-visible {
+  outline: 2px solid rgba(201, 120, 88, 0.5);
+  outline-offset: 2px;
+}
+.add-line {
+  display: none;
+  margin: 0.35rem 0 0;
+  padding: 0.65rem 0;
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px dashed rgba(226,164,90,0.35);
+  color: var(--accent);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+}
+body.menu-editing .add-line { display: block; }
+body.menu-editing .add-line:hover {
+  color: #f0c080;
+  border-top-color: rgba(226,164,90,0.7);
+}
+body.menu-editing .add-line:focus-visible {
+  outline: 2px solid rgba(226,164,90,0.45);
+  outline-offset: 2px;
+}
+.add-cat {
+  display: none;
+  margin: 0.5rem 0 1.5rem;
+  padding: 0.75rem 0;
+  width: 100%;
+  background: none;
+  border: 1px dashed rgba(226,164,90,0.4);
+  color: var(--muted);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+body.menu-editing .add-cat { display: block; }
+body.menu-editing .add-cat:hover {
+  color: var(--accent);
+  border-color: rgba(226,164,90,0.75);
+  background: rgba(226,164,90,0.06);
+}
+body.menu-editing .add-cat:focus-visible {
+  outline: 2px solid rgba(226,164,90,0.45);
+  outline-offset: 2px;
+}
+body.menu-editing .cat h2[contenteditable="true"] {
+  outline: none;
+  cursor: text;
+  padding: 0.15rem 0.25rem;
+  margin: 0 0 0.85rem;
+  border-radius: 2px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+body.menu-editing .cat h2[contenteditable="true"]:hover {
+  background: rgba(226,164,90,0.07);
+  color: #f3e7d4;
+}
+body.menu-editing .cat h2[contenteditable="true"]:focus {
+  color: var(--accent);
+  background: rgba(226,164,90,0.12);
+}
+.edit-bar {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
+  background: rgba(20,15,10,0.94);
+  border-top: 1px solid var(--line);
+  gap: 0.65rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+body.menu-editing .edit-bar { display: flex; }
+.edit-bar .btn {
+  border: none;
+  cursor: pointer;
+}
+.edit-bar .btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.edit-status {
+  width: 100%;
+  text-align: center;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--accent);
+  min-height: 1.1em;
+}
+@media (max-width: 520px) {
+  body.menu-editing .item {
+    grid-template-columns: 1fr auto;
+  }
+  body.menu-editing .item-rm {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  body.menu-editing .item input.item-price {
+    grid-column: auto;
+    width: 4.75rem;
+  }
+  body.menu-editing .price-wrap {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+#editar-menu {
+  display: none;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.15rem 1.15rem 6rem;
+}
+body.menu-editing #editar-menu { display: block; }
+body.menu-editing .stage,
+body.menu-editing .bottom,
+body.menu-editing .face-dock { display: none !important; }
+body.menu-editing .quote { display: none; }
+#editar-menu .edit-hint {
+  display: block;
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+}
+#editar-menu .cat { margin: 0 0 1.5rem; }
+#editar-menu .cat h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.35rem;
+}
+#editar-menu .items { list-style: none; margin: 0; padding: 0; }
+#editar-menu .item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.55rem;
+  align-items: start;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(126, 184, 135, 0.18);
+}
+</style>
+<section id="editar-menu" hidden aria-label="Editar menú">
+  <p class="edit-hint">Edita platos y precios aquí. Al enviar, comparte el archivo por WhatsApp (o adjúntalo con el clip 📎 si solo se descarga).</p>
+  <div id="menu-list"></div>
+</section>
+<div class="edit-bar" id="edit-bar" hidden>
+  <p class="edit-status" id="edit-status" role="status"></p>
+  <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Salir</button>
+  <button type="button" class="btn" id="btn-send-draft">Enviar por WhatsApp</button>
+</div>
+<script>
+(function () {
+  var SLUG = 'chicha-light';
+  var NAME = 'Chicha Light';
+  var STORAGE_KEY = 'domiweb-menu-draft-' + SLUG;
+  var MENU_JSON_URL = '../../menus/chicha-light/menu.json';
+  var WA_HREF = 'https://wa.me/17542133764?text=Hola%20%E2%80%94%20soy%20de%20Chicha%20Light.%0A%0ATe%20mando%20mi%20men%C3%BA%20actualizado%20(archivo%20JSON).%0ASi%20no%20se%20adjunt%C3%B3%20solo%2C%20p%C3%A9galo%20con%20el%20clip%20%F0%9F%93%8E%20desde%20Descargas%3A%0Amenu-chicha-light.json%0A%0A%C2%BFMe%20lo%20publican%20en%20el%20men%C3%BA%20digital%3F';
+  var WA_DIGITS = '17542133764';
+  var seed = {"slug":"chicha-light","owned":false,"updatedAt":"2026-08-01T13:47:01.142Z","categories":[{"id":"entradas","label":"Entradas","items":[{"name":"Tostones","note":"Con salsa de ajo","priceHint":"RD$ —"},{"name":"Empanaditas","note":"Pollo o queso","priceHint":"RD$ —"},{"name":"Ensalada de la casa","note":"Fresca del día","priceHint":"RD$ —"}]},{"id":"fuertes","label":"Platos fuertes","items":[{"name":"Bandera dominicana","note":"Arroz, habichuelas y carne","priceHint":"RD$ —"},{"name":"Pollo guisado","note":"Con acompañamiento","priceHint":"RD$ —"},{"name":"Pescado frito","note":"Según disponibilidad","priceHint":"RD$ —"},{"name":"Mofongo","note":"Con chicharrón o camarones","priceHint":"RD$ —"}]},{"id":"bebidas","label":"Bebidas","items":[{"name":"Jugo natural","note":"Pregunta el sabor del día","priceHint":"RD$ —"},{"name":"Refresco","note":"Lata o vaso","priceHint":"RD$ —"},{"name":"Cerveza","note":"Nacional","priceHint":"RD$ —"},{"name":"Café","note":"Dominicano","priceHint":"RD$ —"}]},{"id":"postres","label":"Postres","items":[{"name":"Flan","note":"Casero","priceHint":"RD$ —"},{"name":"Dulce de leche","note":"Porción","priceHint":"RD$ —"}]}],"source":"template"};
+  var state = null;
+  var list = document.getElementById('menu-list');
+  var bar = document.getElementById('edit-bar');
+  var statusEl = document.getElementById('edit-status');
+  var panel = document.getElementById('editar-menu');
+  var stage = document.querySelector('.stage');
+  var bottom = document.querySelector('.bottom');
+  var started = false;
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function setStatus(msg) { if (statusEl) statusEl.textContent = msg || ''; }
+  function slugify(label, fallback) {
+    var s = String(label || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return s || fallback || 'cat';
+  }
+  function escAttr(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function stripRdPrefix(raw) {
+    var s = String(raw || '').trim();
+    while (s.length >= 3 && s.slice(0, 3).toUpperCase() === 'RD$') {
+      s = s.slice(3).trim();
+    }
+    return s;
+  }
+
+  function priceAmount(hint) {
+    var s = stripRdPrefix(hint);
+    if (!s || s === '—' || s === '–' || s === '-' || s === '--' || s === '−') return '';
+    s = s.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+    var parts = s.split('.');
+    if (parts.length > 2) s = parts[0] + '.' + parts.slice(1).join('');
+    if (!s || s === '.') return '';
+    return s;
+  }
+
+  function formatPriceHint(amount) {
+    var a = priceAmount(amount);
+    if (!a) return 'RD$ —';
+    return 'RD$ ' + a;
+  }
+
+  function sanitizePriceInput(el) {
+    if (!el || !el.classList.contains('item-price')) return;
+    var start = el.selectionStart;
+    var before = el.value;
+    var next = priceAmount(before);
+    if (next !== before) {
+      el.value = next;
+      if (typeof start === 'number') {
+        var pos = Math.min(start, next.length);
+        try { el.setSelectionRange(pos, pos); } catch (e) {}
+      }
+    }
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.categories)) {
+          state = parsed;
+          return;
+        }
+      }
+    } catch (e) {}
+    state = clone(seed);
+  }
+
+  function saveLocal() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function render() {
+    if (!list) return;
+    list.innerHTML = state.categories.map(function (cat, ci) {
+      var items = (cat.items || []).map(function (it, ii) {
+        return (
+          '<li class="item" data-ci="' + ci + '" data-ii="' + ii + '">' +
+            '<div class="item-main">' +
+              '<input class="item-name" data-f="name" aria-label="Plato" value="' + escAttr(it.name || '') + '" />' +
+              '<input class="item-note" data-f="note" aria-label="Nota" placeholder="Nota (opcional)" value="' + escAttr(it.note || '') + '" />' +
+            '</div>' +
+            '<div class="price-wrap">' +
+              '<span class="price-prefix" aria-hidden="true">RD$</span>' +
+              '<input class="item-price" data-f="priceHint" type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" aria-label="Precio en pesos" placeholder="—" autocomplete="off" value="' + escAttr(priceAmount(it.priceHint)) + '" />' +
+            '</div>' +
+            '<button type="button" class="item-rm" data-act="rm" aria-label="Quitar plato">&times;</button>' +
+          '</li>'
+        );
+      }).join('');
+      return (
+        '<section class="cat" data-ci="' + ci + '" id="' + escAttr(cat.id || ('cat-' + ci)) + '">' +
+          '<h2 contenteditable="true" spellcheck="false" data-f="label"></h2>' +
+          '<ul class="items">' + items + '</ul>' +
+          '<button type="button" class="add-line" data-act="add-item">+ Plato</button>' +
+        '</section>'
+      );
+    }).join('') +
+    '<button type="button" class="add-cat" id="btn-add-cat">+ Categoría</button>';
+
+    list.querySelectorAll('.cat').forEach(function (sec) {
+      var ci = Number(sec.getAttribute('data-ci'));
+      var h = sec.querySelector('h2');
+      if (h && state.categories[ci]) h.textContent = state.categories[ci].label || 'Categoría';
+    });
+  }
+
+  function readDom() {
+    if (!list) return;
+    list.querySelectorAll('.cat').forEach(function (sec) {
+      var ci = Number(sec.getAttribute('data-ci'));
+      if (!state.categories[ci]) return;
+      var h = sec.querySelector('h2');
+      if (h) {
+        if (!(h.dataset.session === '1' && h.dataset.edited !== '1')) {
+          var labelText = (h.textContent || '').trim();
+          if (h.dataset.session === '1' && h.dataset.edited === '1' && labelText) {
+            state.categories[ci].label = labelText;
+          } else if (h.dataset.session !== '1') {
+            state.categories[ci].label = labelText || state.categories[ci].label;
+          }
+          state.categories[ci].id = slugify(state.categories[ci].label, 'cat-' + (ci + 1));
+        }
+      }
+      sec.querySelectorAll('.item').forEach(function (row) {
+        var ii = Number(row.getAttribute('data-ii'));
+        if (!state.categories[ci].items[ii]) return;
+        row.querySelectorAll('input[data-f]').forEach(function (inp) {
+          if (inp.dataset.session === '1' && inp.dataset.edited !== '1') return;
+          var f = inp.getAttribute('data-f');
+          if (f === 'priceHint') {
+            state.categories[ci].items[ii][f] = formatPriceHint(inp.value);
+          } else {
+            state.categories[ci].items[ii][f] = inp.value;
+          }
+        });
+      });
+    });
+  }
+
+  function buildDraft() {
+    readDom();
+    return {
+      slug: SLUG,
+      owned: false,
+      updatedAt: new Date().toISOString(),
+      source: 'owner-draft',
+      categories: state.categories
+        .map(function (c) {
+          return {
+            id: c.id || slugify(c.label, 'cat'),
+            label: String(c.label || '').trim(),
+            items: (c.items || [])
+              .map(function (it) {
+                return {
+                  name: String(it.name || '').trim(),
+                  note: String(it.note || '').trim(),
+                  priceHint: formatPriceHint(it.priceHint),
+                };
+              })
+              .filter(function (it) { return it.name.length > 0; }),
+          };
+        })
+        .filter(function (c) { return c.label && c.items.length > 0; }),
+    };
+  }
+
+  function draftFile(draft) {
+    var text = JSON.stringify(draft, null, 2) + '\n';
+    var filename = 'menu-' + SLUG + '.json';
+    try {
+      return new File([text], filename, { type: 'application/json' });
+    } catch (e) {
+      var blob = new Blob([text], { type: 'application/json' });
+      blob.name = filename;
+      return blob;
+    }
+  }
+
+  function downloadJson(draft) {
+    var file = draftFile(draft);
+    var url = URL.createObjectURL(file);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'menu-' + SLUG + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+
+  function openWhatsAppFallback() {
+    var href = WA_HREF;
+    if (!href && WA_DIGITS) {
+      var msg = 'Hola — soy de ' + NAME + '.\n\nTe mando mi menú (menu-' + SLUG + '.json).\nAdjúntalo con el clip 📎 desde Descargas.\n\n¿Me lo publican?';
+      href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(msg);
+    }
+    if (href) window.open(href, '_blank', 'noopener');
+  }
+
+  function sendDraft(draft) {
+    var file = draftFile(draft);
+    var shareData = {
+      files: [file],
+      title: 'Menú · ' + NAME,
+      text: 'Hola — soy de ' + NAME + '. Te mando mi menú actualizado (menu-' + SLUG + '.json). ¿Me lo publican?',
+    };
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      navigator.share(shareData)
+        .then(function () {
+          setStatus('Elige WhatsApp en el menú para enviar el archivo.');
+        })
+        .catch(function (err) {
+          if (err && err.name === 'AbortError') {
+            setStatus('Envío cancelado.');
+            return;
+          }
+          downloadJson(draft);
+          setStatus('Archivo descargado — ábrelo en WhatsApp con el clip 📎.');
+          setTimeout(openWhatsAppFallback, 500);
+        });
+      return;
+    }
+    downloadJson(draft);
+    setStatus('Archivo descargado — en WhatsApp toca 📎 y elige menu-' + SLUG + '.json');
+    setTimeout(openWhatsAppFallback, 500);
+  }
+
+  function exitEdit() {
+    document.body.classList.remove('menu-editing');
+    if (panel) panel.hidden = true;
+    if (bar) bar.hidden = true;
+    if (stage) stage.style.display = '';
+    if (bottom) bottom.style.display = '';
+    if (location.hash === '#editar-menu' || location.hash === '#edit') {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  }
+
+  function defaultPlaceholder(el) {
+    if (el.classList.contains('item-note')) return 'Nota (opcional)';
+    if (el.classList.contains('item-price')) return '—';
+    return '';
+  }
+
+  function beginFieldEdit(el) {
+    if (!el || el.dataset.session === '1') return;
+    var current = el.tagName === 'INPUT' ? el.value : (el.textContent || '');
+    if (el.classList.contains('item-price')) {
+      current = priceAmount(current);
+    }
+    el.dataset.orig = current;
+    el.dataset.edited = '0';
+    el.dataset.session = '1';
+    if (el.tagName === 'INPUT') {
+      el.placeholder = current || defaultPlaceholder(el);
+      el.value = '';
+    } else {
+      el.textContent = '';
+    }
+  }
+
+  function endFieldEdit(el) {
+    if (!el || el.dataset.session !== '1') return;
+    var orig = el.dataset.orig || '';
+    var edited = el.dataset.edited === '1';
+    var raw = el.tagName === 'INPUT' ? el.value : (el.textContent || '');
+    var next = String(raw).trim();
+    if (el.classList.contains('item-price')) {
+      next = priceAmount(next);
+    }
+    if (!edited || !next) {
+      if (el.tagName === 'INPUT') el.value = orig;
+      else el.textContent = orig || 'Categoría';
+    } else if (el.tagName !== 'INPUT') {
+      el.textContent = next;
+    } else {
+      el.value = next;
+    }
+    el.dataset.session = '0';
+    if (el.tagName === 'INPUT') {
+      el.placeholder = defaultPlaceholder(el);
+    }
+    delete el.dataset.orig;
+    delete el.dataset.edited;
+  }
+
+  function bindOnce() {
+    if (started || !list) return;
+    started = true;
+
+    list.addEventListener('focusin', function (ev) {
+      var t = ev.target;
+      if (!t) return;
+      if (t.tagName === 'INPUT' && t.getAttribute('data-f')) beginFieldEdit(t);
+      if (t.getAttribute && t.getAttribute('data-f') === 'label') beginFieldEdit(t);
+    });
+
+    list.addEventListener('input', function (ev) {
+      var t = ev.target;
+      if (t && t.classList && t.classList.contains('item-price')) {
+        sanitizePriceInput(t);
+      }
+      if (t && t.dataset && t.dataset.session === '1') {
+        var raw = t.tagName === 'INPUT' ? t.value : (t.textContent || '');
+        t.dataset.edited = String(raw).length > 0 ? '1' : '0';
+      }
+      readDom();
+      saveLocal();
+      setStatus('Borrador en este teléfono');
+    });
+
+    list.addEventListener('keydown', function (ev) {
+      var t = ev.target;
+      if (!t || t.tagName !== 'INPUT') return;
+      if (ev.key === 'Escape') {
+        t.dataset.edited = '0';
+        t.value = '';
+        t.blur();
+        ev.preventDefault();
+        return;
+      }
+      if (t.classList.contains('item-price')) {
+        var allow = ev.key.length !== 1 || /[0-9.,]/.test(ev.key);
+        if (!allow && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+          ev.preventDefault();
+        }
+      }
+    });
+
+    list.addEventListener('focusout', function (ev) {
+      var t = ev.target;
+      if (!t) return;
+      if (t.tagName === 'INPUT' && t.getAttribute('data-f')) {
+        endFieldEdit(t);
+        readDom();
+        saveLocal();
+        return;
+      }
+      if (t.getAttribute && t.getAttribute('data-f') === 'label') {
+        endFieldEdit(t);
+        readDom();
+        saveLocal();
+        render();
+      }
+    });
+
+    list.addEventListener('click', function (ev) {
+      var t = ev.target;
+      if (!t || !t.getAttribute) return;
+      var act = t.getAttribute('data-act');
+      if (!act) return;
+      readDom();
+      if (act === 'add-item') {
+        var sec = t.closest('.cat');
+        var ci = sec ? Number(sec.getAttribute('data-ci')) : -1;
+        if (ci >= 0) {
+          state.categories[ci].items.push({ name: '', note: '', priceHint: 'RD$ ' });
+          saveLocal();
+          render();
+          var rows = list.querySelectorAll('.cat[data-ci="' + ci + '"] .item');
+          var last = rows[rows.length - 1];
+          if (last) {
+            var focus = last.querySelector('input.item-name');
+            if (focus) focus.focus();
+          }
+        }
+        return;
+      }
+      if (act === 'rm') {
+        var row = t.closest('.item');
+        var sec2 = t.closest('.cat');
+        var ci2 = sec2 ? Number(sec2.getAttribute('data-ci')) : -1;
+        var ii = row ? Number(row.getAttribute('data-ii')) : -1;
+        if (ci2 >= 0 && ii >= 0) {
+          state.categories[ci2].items.splice(ii, 1);
+          saveLocal();
+          render();
+        }
+      }
+    });
+
+    list.addEventListener('click', function (ev) {
+      if (ev.target && ev.target.id === 'btn-add-cat') {
+        readDom();
+        var n = state.categories.length + 1;
+        state.categories.push({
+          id: 'cat-' + n,
+          label: 'Nueva categoría',
+          items: [{ name: '', note: '', priceHint: 'RD$ ' }],
+        });
+        saveLocal();
+        render();
+      }
+    });
+
+    var sendBtn = document.getElementById('btn-send-draft');
+    if (sendBtn) sendBtn.addEventListener('click', function () {
+      var draft = buildDraft();
+      if (!draft.categories.length) {
+        setStatus('Agrega al menos un plato con nombre.');
+        return;
+      }
+      saveLocal();
+      sendDraft(draft);
+    });
+
+    var cancelBtn = document.getElementById('btn-cancel-edit');
+    if (cancelBtn) cancelBtn.addEventListener('click', exitEdit);
+  }
+
+  function enterEdit() {
+    if (!list) return;
+    bindOnce();
+    document.body.classList.add('menu-editing');
+    if (panel) panel.hidden = false;
+    if (bar) bar.hidden = false;
+    if (stage) stage.style.display = 'none';
+    if (bottom) bottom.style.display = 'none';
+    if (location.hash !== '#editar-menu') {
+      history.replaceState(null, '', location.pathname + location.search + '#editar-menu');
+    }
+    loadState();
+    render();
+    fetch(MENU_JSON_URL, { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (remote) {
+        if (remote && Array.isArray(remote.categories)) {
+          var local = null;
+          try { local = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) {}
+          var localIsOwnerDraft = local && local.source === 'owner-draft';
+          if (!local || (remote.owned && !localIsOwnerDraft)) {
+            state = remote;
+          } else if (
+            remote.owned &&
+            local &&
+            remote.updatedAt &&
+            local.updatedAt &&
+            String(remote.updatedAt) > String(local.updatedAt)
+          ) {
+            state = remote;
+          }
+        }
+        render();
+      })
+      .catch(function () { render(); });
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.querySelectorAll('a[href="#editar-menu"]').forEach(function (a) {
+    a.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      enterEdit();
+    });
+  });
+
+  window.addEventListener('hashchange', function () {
+    if (location.hash === '#editar-menu' || location.hash === '#edit') enterEdit();
+    else if (document.body.classList.contains('menu-editing')) exitEdit();
+  });
+
+  if (location.hash === '#editar-menu' || location.hash === '#edit') enterEdit();
+})();
+</script>
 <script>
 (function () {
   var frame = document.getElementById("site-frame");

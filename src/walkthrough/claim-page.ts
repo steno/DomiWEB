@@ -3,12 +3,13 @@ import { dirname, join } from "node:path";
 import type { Lead, NicheConfig, PipelineProduct } from "../types/index.js";
 import { resolveGithubPagesUrls } from "../config/load.js";
 import { menuExists, loadOrCreateMenuData } from "../generate/menu.js";
-import { relativeEditMenuHref, writeMenuEditorPage } from "../generate/menu-editor.js";
+import { relativeEditMenuHref, writeMenuEditorPage, buildClaimMenuEditorMarkup } from "../generate/menu-editor.js";
 import { kitExists, siteHtmlExists } from "../generate/review-kit.js";
 import { looksSpanish } from "../generate/site.js";
 import { buildWhatsAppUrl } from "../outreach/phone.js";
 import { dataDir, publicDir } from "../utils/paths.js";
 import { log } from "../utils/logger.js";
+import type { MenuData } from "../generate/menu.js";
 
 export interface GeneratedClaimPage {
   claimPath: string;
@@ -268,6 +269,14 @@ export function buildClaimPageHtml(
       : product === "menu"
         ? "Reclama tu menú"
         : "Reclama tu sitio";
+
+  const menuDataForEdit: MenuData | null =
+    product === "menu" && menuExists(lead.slug)
+      ? loadOrCreateMenuData(lead.slug, config)
+      : null;
+  const menuEditorMarkup = menuDataForEdit
+    ? buildClaimMenuEditorMarkup(lead, menuDataForEdit)
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="es-DO">
@@ -530,6 +539,7 @@ h1 {
     <a class="btn btn-primary" href="${escapeAttr(claimHref)}" ${claimExtra}>${ctaLabel}</a>
   </footer>
 </div>
+${menuEditorMarkup}
 <script>
 (function () {
   var frame = document.getElementById("site-frame");

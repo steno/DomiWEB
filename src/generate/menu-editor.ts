@@ -25,9 +25,9 @@ function escapeJsString(s: string): string {
     .replace(/\r/g, "\\r");
 }
 
-/** Claim CTA → same menu page, inline edit mode. */
-export function relativeEditMenuHref(slug: string): string {
-  return `../../menus/${slug}/?edit=1`;
+/** Claim CTA → editor panel on the claim page (not the public menu). */
+export function relativeEditMenuHref(_slug: string): string {
+  return `#editar-menu`;
 }
 
 export function buildInlineMenuEditCss(): string {
@@ -268,11 +268,13 @@ export function buildInlineMenuEditBarHtml(): string {
 export function buildInlineMenuEditScript(
   lead: Lead,
   menuData: MenuData,
+  opts: { menuJsonUrl?: string } = {},
 ): string {
   const slug = lead.slug;
   const name = lead.place.name;
   const claimWa = process.env.CLAIM_WHATSAPP?.trim() ?? "";
   const waDigits = toWhatsAppDigits(claimWa) ?? "";
+  const menuJsonUrl = opts.menuJsonUrl ?? "menu.json";
   const waDraftMessage = [
     `Hola — soy de ${name}.`,
     "",
@@ -287,13 +289,10 @@ export function buildInlineMenuEditScript(
 
   return `<script>
 (function () {
-  var params = new URLSearchParams(location.search);
-  var wantEdit = params.get('edit') === '1' || location.hash === '#edit';
-  if (!wantEdit) return;
-
   var SLUG = '${escapeJsString(slug)}';
   var NAME = '${escapeJsString(name)}';
   var STORAGE_KEY = 'domiweb-menu-draft-' + SLUG;
+  var MENU_JSON_URL = '${escapeJsString(menuJsonUrl)}';
   var WA_HREF = ${waHref ? `'${escapeJsString(waHref)}'` : "null"};
   var WA_DIGITS = '${escapeJsString(waDigits)}';
   var seed = ${seedJson};
@@ -301,6 +300,10 @@ export function buildInlineMenuEditScript(
   var list = document.getElementById('menu-list');
   var bar = document.getElementById('edit-bar');
   var statusEl = document.getElementById('edit-status');
+  var panel = document.getElementById('editar-menu');
+  var stage = document.querySelector('.stage');
+  var bottom = document.querySelector('.bottom');
+  var started = false;
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function setStatus(msg) { if (statusEl) statusEl.textContent = msg || ''; }
@@ -414,6 +417,7 @@ export function buildInlineMenuEditScript(
   }
 
   function readDom() {
+    if (!list) return;
     list.querySelectorAll('.cat').forEach(function (sec) {
       var ci = Number(sec.getAttribute('data-ci'));
       if (!state.categories[ci]) return;
@@ -534,14 +538,15 @@ export function buildInlineMenuEditScript(
   }
 
   function exitEdit() {
-    var u = new URL(location.href);
-    u.searchParams.delete('edit');
-    u.hash = '';
-    location.href = u.pathname + u.search;
+    document.body.classList.remove('menu-editing');
+    if (panel) panel.hidden = true;
+    if (bar) bar.hidden = true;
+    if (stage) stage.style.display = '';
+    if (bottom) bottom.style.display = '';
+    if (location.hash === '#editar-menu' || location.hash === '#edit') {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
   }
-
-  document.body.classList.add('menu-editing');
-  if (bar) { bar.hidden = false; }
 
   function defaultPlaceholder(el) {
     if (el.classList.contains('item-note')) return 'Nota (opcional)';
@@ -591,159 +596,244 @@ export function buildInlineMenuEditScript(
     delete el.dataset.edited;
   }
 
-  list.addEventListener('focusin', function (ev) {
-    var t = ev.target;
-    if (!t) return;
-    if (t.tagName === 'INPUT' && t.getAttribute('data-f')) beginFieldEdit(t);
-    if (t.getAttribute && t.getAttribute('data-f') === 'label') beginFieldEdit(t);
-  });
+  function bindOnce() {
+    if (started || !list) return;
+    started = true;
 
-  list.addEventListener('input', function (ev) {
-    var t = ev.target;
-    if (t && t.classList && t.classList.contains('item-price')) {
-      sanitizePriceInput(t);
-    }
-    if (t && t.dataset && t.dataset.session === '1') {
-      var raw = t.tagName === 'INPUT' ? t.value : (t.textContent || '');
-      t.dataset.edited = String(raw).length > 0 ? '1' : '0';
-    }
-    readDom();
-    saveLocal();
-    setStatus('Borrador en este teléfono');
-  });
+    list.addEventListener('focusin', function (ev) {
+      var t = ev.target;
+      if (!t) return;
+      if (t.tagName === 'INPUT' && t.getAttribute('data-f')) beginFieldEdit(t);
+      if (t.getAttribute && t.getAttribute('data-f') === 'label') beginFieldEdit(t);
+    });
 
-  list.addEventListener('keydown', function (ev) {
-    var t = ev.target;
-    if (!t || t.tagName !== 'INPUT') return;
-    if (ev.key === 'Escape') {
-      t.dataset.edited = '0';
-      t.value = '';
-      t.blur();
-      ev.preventDefault();
-      return;
-    }
-    if (t.classList.contains('item-price')) {
-      var allow = ev.key.length !== 1 || /[0-9.,]/.test(ev.key);
-      if (!allow && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+    list.addEventListener('input', function (ev) {
+      var t = ev.target;
+      if (t && t.classList && t.classList.contains('item-price')) {
+        sanitizePriceInput(t);
+      }
+      if (t && t.dataset && t.dataset.session === '1') {
+        var raw = t.tagName === 'INPUT' ? t.value : (t.textContent || '');
+        t.dataset.edited = String(raw).length > 0 ? '1' : '0';
+      }
+      readDom();
+      saveLocal();
+      setStatus('Borrador en este teléfono');
+    });
+
+    list.addEventListener('keydown', function (ev) {
+      var t = ev.target;
+      if (!t || t.tagName !== 'INPUT') return;
+      if (ev.key === 'Escape') {
+        t.dataset.edited = '0';
+        t.value = '';
+        t.blur();
         ev.preventDefault();
+        return;
       }
-    }
-  });
-
-  list.addEventListener('focusout', function (ev) {
-    var t = ev.target;
-    if (!t) return;
-    if (t.tagName === 'INPUT' && t.getAttribute('data-f')) {
-      endFieldEdit(t);
-      readDom();
-      saveLocal();
-      return;
-    }
-    if (t.getAttribute && t.getAttribute('data-f') === 'label') {
-      endFieldEdit(t);
-      readDom();
-      saveLocal();
-      render();
-    }
-  });
-
-  list.addEventListener('click', function (ev) {
-    var t = ev.target;
-    if (!t || !t.getAttribute) return;
-    var act = t.getAttribute('data-act');
-    if (!act) return;
-    readDom();
-    if (act === 'add-item') {
-      var sec = t.closest('.cat');
-      var ci = sec ? Number(sec.getAttribute('data-ci')) : -1;
-      if (ci >= 0) {
-        state.categories[ci].items.push({ name: '', note: '', priceHint: 'RD$ ' });
-        saveLocal();
-        render();
-        var rows = list.querySelectorAll('.cat[data-ci="' + ci + '"] .item');
-        var last = rows[rows.length - 1];
-        if (last) {
-          var focus = last.querySelector('input.item-name');
-          if (focus) focus.focus();
+      if (t.classList.contains('item-price')) {
+        var allow = ev.key.length !== 1 || /[0-9.,]/.test(ev.key);
+        if (!allow && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+          ev.preventDefault();
         }
       }
-      return;
-    }
-    if (act === 'rm') {
-      var row = t.closest('.item');
-      var sec2 = t.closest('.cat');
-      var ci2 = sec2 ? Number(sec2.getAttribute('data-ci')) : -1;
-      var ii = row ? Number(row.getAttribute('data-ii')) : -1;
-      if (ci2 >= 0 && ii >= 0) {
-        state.categories[ci2].items.splice(ii, 1);
+    });
+
+    list.addEventListener('focusout', function (ev) {
+      var t = ev.target;
+      if (!t) return;
+      if (t.tagName === 'INPUT' && t.getAttribute('data-f')) {
+        endFieldEdit(t);
+        readDom();
+        saveLocal();
+        return;
+      }
+      if (t.getAttribute && t.getAttribute('data-f') === 'label') {
+        endFieldEdit(t);
+        readDom();
         saveLocal();
         render();
       }
-    }
-  });
+    });
 
-  list.addEventListener('click', function (ev) {
-    if (ev.target && ev.target.id === 'btn-add-cat') {
+    list.addEventListener('click', function (ev) {
+      var t = ev.target;
+      if (!t || !t.getAttribute) return;
+      var act = t.getAttribute('data-act');
+      if (!act) return;
       readDom();
-      var n = state.categories.length + 1;
-      state.categories.push({
-        id: 'cat-' + n,
-        label: 'Nueva categoría',
-        items: [{ name: '', note: '', priceHint: 'RD$ ' }],
-      });
-      saveLocal();
-      render();
-    }
-  });
-
-  var sendBtn = document.getElementById('btn-send-draft');
-  if (sendBtn) sendBtn.addEventListener('click', function () {
-    var draft = buildDraft();
-    if (!draft.categories.length) {
-      setStatus('Agrega al menos un plato con nombre.');
-      return;
-    }
-    saveLocal();
-    sendDraft(draft);
-  });
-
-  var cancelBtn = document.getElementById('btn-cancel-edit');
-  if (cancelBtn) cancelBtn.addEventListener('click', exitEdit);
-
-  loadState();
-  fetch('menu.json', { cache: 'no-store' })
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (remote) {
-      if (remote && Array.isArray(remote.categories)) {
-        var local = null;
-        try { local = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) {}
-        var localIsOwnerDraft = local && local.source === 'owner-draft';
-        if (!local || (remote.owned && !localIsOwnerDraft)) {
-          state = remote;
-        } else if (
-          remote.owned &&
-          local &&
-          remote.updatedAt &&
-          local.updatedAt &&
-          String(remote.updatedAt) > String(local.updatedAt)
-        ) {
-          state = remote;
+      if (act === 'add-item') {
+        var sec = t.closest('.cat');
+        var ci = sec ? Number(sec.getAttribute('data-ci')) : -1;
+        if (ci >= 0) {
+          state.categories[ci].items.push({ name: '', note: '', priceHint: 'RD$ ' });
+          saveLocal();
+          render();
+          var rows = list.querySelectorAll('.cat[data-ci="' + ci + '"] .item');
+          var last = rows[rows.length - 1];
+          if (last) {
+            var focus = last.querySelector('input.item-name');
+            if (focus) focus.focus();
+          }
+        }
+        return;
+      }
+      if (act === 'rm') {
+        var row = t.closest('.item');
+        var sec2 = t.closest('.cat');
+        var ci2 = sec2 ? Number(sec2.getAttribute('data-ci')) : -1;
+        var ii = row ? Number(row.getAttribute('data-ii')) : -1;
+        if (ci2 >= 0 && ii >= 0) {
+          state.categories[ci2].items.splice(ii, 1);
+          saveLocal();
+          render();
         }
       }
-      render();
-    })
-    .catch(function () { render(); });
+    });
+
+    list.addEventListener('click', function (ev) {
+      if (ev.target && ev.target.id === 'btn-add-cat') {
+        readDom();
+        var n = state.categories.length + 1;
+        state.categories.push({
+          id: 'cat-' + n,
+          label: 'Nueva categoría',
+          items: [{ name: '', note: '', priceHint: 'RD$ ' }],
+        });
+        saveLocal();
+        render();
+      }
+    });
+
+    var sendBtn = document.getElementById('btn-send-draft');
+    if (sendBtn) sendBtn.addEventListener('click', function () {
+      var draft = buildDraft();
+      if (!draft.categories.length) {
+        setStatus('Agrega al menos un plato con nombre.');
+        return;
+      }
+      saveLocal();
+      sendDraft(draft);
+    });
+
+    var cancelBtn = document.getElementById('btn-cancel-edit');
+    if (cancelBtn) cancelBtn.addEventListener('click', exitEdit);
+  }
+
+  function enterEdit() {
+    if (!list) return;
+    bindOnce();
+    document.body.classList.add('menu-editing');
+    if (panel) panel.hidden = false;
+    if (bar) bar.hidden = false;
+    if (stage) stage.style.display = 'none';
+    if (bottom) bottom.style.display = 'none';
+    if (location.hash !== '#editar-menu') {
+      history.replaceState(null, '', location.pathname + location.search + '#editar-menu');
+    }
+    loadState();
+    render();
+    fetch(MENU_JSON_URL, { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (remote) {
+        if (remote && Array.isArray(remote.categories)) {
+          var local = null;
+          try { local = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) {}
+          var localIsOwnerDraft = local && local.source === 'owner-draft';
+          if (!local || (remote.owned && !localIsOwnerDraft)) {
+            state = remote;
+          } else if (
+            remote.owned &&
+            local &&
+            remote.updatedAt &&
+            local.updatedAt &&
+            String(remote.updatedAt) > String(local.updatedAt)
+          ) {
+            state = remote;
+          }
+        }
+        render();
+      })
+      .catch(function () { render(); });
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.querySelectorAll('a[href="#editar-menu"]').forEach(function (a) {
+    a.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      enterEdit();
+    });
+  });
+
+  window.addEventListener('hashchange', function () {
+    if (location.hash === '#editar-menu' || location.hash === '#edit') enterEdit();
+    else if (document.body.classList.contains('menu-editing')) exitEdit();
+  });
+
+  if (location.hash === '#editar-menu' || location.hash === '#edit') enterEdit();
 })();
 </script>`;
 }
 
-/** Old /edit-menu/ URLs redirect into inline edit on the live menu. */
+/** Claim page embeds this panel; public menu stays order-only. */
+export function buildClaimMenuEditorMarkup(
+  lead: Lead,
+  menuData: MenuData,
+): string {
+  return `<style>
+${buildInlineMenuEditCss()}
+#editar-menu {
+  display: none;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.15rem 1.15rem 6rem;
+}
+body.menu-editing #editar-menu { display: block; }
+body.menu-editing .stage,
+body.menu-editing .bottom,
+body.menu-editing .face-dock { display: none !important; }
+body.menu-editing .quote { display: none; }
+#editar-menu .edit-hint {
+  display: block;
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+}
+#editar-menu .cat { margin: 0 0 1.5rem; }
+#editar-menu .cat h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.35rem;
+}
+#editar-menu .items { list-style: none; margin: 0; padding: 0; }
+#editar-menu .item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.55rem;
+  align-items: start;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(126, 184, 135, 0.18);
+}
+</style>
+<section id="editar-menu" hidden aria-label="Editar menú">
+  <p class="edit-hint">Edita platos y precios aquí. Al enviar, comparte el archivo por WhatsApp (o adjúntalo con el clip 📎 si solo se descarga).</p>
+  <div id="menu-list"></div>
+</section>
+${buildInlineMenuEditBarHtml()}
+${buildInlineMenuEditScript(lead, menuData, {
+  menuJsonUrl: `../../menus/${lead.slug}/menu.json`,
+})}`;
+}
+
+/** Old /edit-menu/ URLs redirect into the claim-page editor. */
 export function writeMenuEditorPage(
   lead: Lead,
   _config: NicheConfig,
   _menuData: MenuData,
 ): { publicPath: string; dataPath: string } {
-  const target = `../../menus/${lead.slug}/?edit=1`;
+  const target = `../../claim/${lead.slug}/#editar-menu`;
   const html = `<!DOCTYPE html>
 <html lang="es-DO">
 <head>
@@ -753,7 +843,7 @@ export function writeMenuEditorPage(
 <link rel="canonical" href="${escapeAttr(target)}" />
 </head>
 <body>
-<p><a href="${escapeAttr(target)}">Abrir editor en el menú</a></p>
+<p><a href="${escapeAttr(target)}">Abrir editor en la página de reclamo</a></p>
 </body>
 </html>`;
   const publicPath = join(publicDir("edit-menu"), lead.slug, "index.html");

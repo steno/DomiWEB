@@ -7,13 +7,6 @@ import { pickOutreachQuote } from "./site.js";
 import { buildWhatsAppUrl, toWhatsAppDigits } from "../outreach/phone.js";
 import { dataDir, publicDir } from "../utils/paths.js";
 import { log } from "../utils/logger.js";
-import {
-  buildInlineMenuEditBarHtml,
-  buildInlineMenuEditCss,
-  buildInlineMenuEditScript,
-  writeMenuEditorPage,
-} from "./menu-editor.js";
-
 export interface MenuItem {
   name: string;
   note: string;
@@ -250,9 +243,7 @@ export function buildMenuHtml(
       : "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas";
   const footerHtml =
     escapeHtml(honestyBase) +
-    (owned
-      ? ""
-      : ` · Los platos son plantilla — <a class="banner-link" href="?edit=1">edítalos aquí</a>`);
+    (owned ? "" : " · Algunos platos y precios pueden ser de ejemplo");
 
   const waDigits = toWhatsAppDigits(p.phone);
   const waOrder = p.phone
@@ -309,25 +300,6 @@ export function buildMenuHtml(
     : p.phone
       ? `<a class="btn" href="tel:${escapeAttr(p.phone.replace(/[^\d+]/g, ""))}">Llamar</a>`
       : "";
-
-  const claimWa = process.env.CLAIM_WHATSAPP?.trim() ?? "";
-  const sendCartaWa = claimWa
-    ? buildWhatsAppUrl(
-        claimWa,
-        [
-          `Hola — soy de ${p.name}.`,
-          "",
-          "Te mando mi carta real para el menú digital.",
-          `Slug: ${lead.slug}`,
-        ].join("\n"),
-      )
-    : null;
-
-  const banner = owned
-    ? ""
-    : sendCartaWa
-      ? `<p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — <a class="banner-link" href="?edit=1">edítalos aquí</a> o <a class="banner-link" href="${escapeAttr(sendCartaWa)}" target="_blank" rel="noopener">envíanos tu carta real</a>.</p>`
-      : `<p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — <a class="banner-link" href="?edit=1">edítalos aquí</a> o envíanos tu carta real.</p>`;
 
   return `<!DOCTYPE html>
 <html lang="es-DO">
@@ -429,30 +401,6 @@ body {
   color: rgba(247,241,232,0.72);
 }
 .wrap { max-width: 40rem; margin: 0 auto; padding: 1.75rem 1.15rem 3rem; }
-.banner {
-  margin: 0 0 1.5rem;
-  padding: 0.85rem 1rem;
-  border-left: 3px solid var(--accent);
-  background: var(--panel);
-  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  font-size: 0.88rem;
-  color: #dccbb4;
-}
-.banner-link {
-  color: var(--accent);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-}
-.banner-link:hover {
-  color: #f0c080;
-}
-footer .banner-link {
-  color: var(--accent);
-  font-weight: 650;
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-}
 .cat { margin: 0 0 1.85rem; }
 .cat h2 {
   margin: 0 0 0.85rem;
@@ -592,7 +540,6 @@ footer {
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.75rem;
 }
-${buildInlineMenuEditCss()}
 </style>
 </head>
 <body>
@@ -607,8 +554,6 @@ ${buildInlineMenuEditCss()}
     </div>
   </header>
   <main class="wrap">
-    ${banner}
-    <p class="edit-hint">Edita platos y precios aquí mismo. Al enviar, comparte el archivo por WhatsApp (o adjúntalo con el clip 📎 si solo se descarga).</p>
     ${
       waDigits
         ? `<p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>`
@@ -629,9 +574,7 @@ ${buildInlineMenuEditCss()}
     <p class="order-count" id="order-count">0 platos</p>
     <button type="button" class="btn" id="btn-send-order"${waDigits ? "" : " disabled"}>Enviar pedido por WhatsApp</button>
   </div>
-  ${buildInlineMenuEditBarHtml()}
   ${buildOrderPickerScript(p.name, waDigits)}
-  ${buildInlineMenuEditScript(lead, opts.menuData)}
 </body>
 </html>`;
 }
@@ -662,12 +605,6 @@ function buildOrderPickerScript(
   }
 
   function refresh() {
-    if (document.body.classList.contains('menu-editing')) {
-      bar.classList.remove('visible');
-      bar.hidden = true;
-      document.body.classList.remove('has-order');
-      return;
-    }
     var items = selected();
     var n = items.length;
     if (countEl) {
@@ -755,7 +692,6 @@ export async function generateMenuForLead(
     menuData,
   });
   const { menuPath, publicPath } = writeMenuFiles(lead.slug, html);
-  writeMenuEditorPage(lead, config, menuData);
   return {
     html,
     menuPath,
