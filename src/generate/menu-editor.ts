@@ -261,7 +261,7 @@ export function buildInlineMenuEditBarHtml(): string {
   return `<div class="edit-bar" id="edit-bar" hidden>
   <p class="edit-status" id="edit-status" role="status"></p>
   <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Salir</button>
-  <button type="button" class="btn" id="btn-send-draft">Enviar cambios</button>
+  <button type="button" class="btn" id="btn-send-draft">Enviar por WhatsApp</button>
 </div>`;
 }
 
@@ -276,7 +276,9 @@ export function buildInlineMenuEditScript(
   const waDraftMessage = [
     `Hola — soy de ${name}.`,
     "",
-    "Te mando mi menú actualizado. Adjunto el archivo que descargué.",
+    "Te mando mi menú actualizado (archivo JSON).",
+    "Si no se adjuntó solo, pégalo con el clip 📎 desde Descargas:",
+    `menu-${slug}.json`,
     "",
     "¿Me lo publican en el menú digital?",
   ].join("\n");
@@ -470,9 +472,21 @@ export function buildInlineMenuEditScript(
     };
   }
 
+  function draftFile(draft) {
+    var text = JSON.stringify(draft, null, 2) + '\\n';
+    var filename = 'menu-' + SLUG + '.json';
+    try {
+      return new File([text], filename, { type: 'application/json' });
+    } catch (e) {
+      var blob = new Blob([text], { type: 'application/json' });
+      blob.name = filename;
+      return blob;
+    }
+  }
+
   function downloadJson(draft) {
-    var blob = new Blob([JSON.stringify(draft, null, 2) + '\\n'], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
+    var file = draftFile(draft);
+    var url = URL.createObjectURL(file);
     var a = document.createElement('a');
     a.href = url;
     a.download = 'menu-' + SLUG + '.json';
@@ -480,6 +494,43 @@ export function buildInlineMenuEditScript(
     a.click();
     a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+
+  function openWhatsAppFallback() {
+    var href = WA_HREF;
+    if (!href && WA_DIGITS) {
+      var msg = 'Hola — soy de ' + NAME + '.\\n\\nTe mando mi menú (menu-' + SLUG + '.json).\\nAdjúntalo con el clip 📎 desde Descargas.\\n\\n¿Me lo publican?';
+      href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(msg);
+    }
+    if (href) window.open(href, '_blank', 'noopener');
+  }
+
+  function sendDraft(draft) {
+    var file = draftFile(draft);
+    var shareData = {
+      files: [file],
+      title: 'Menú · ' + NAME,
+      text: 'Hola — soy de ' + NAME + '. Te mando mi menú actualizado (menu-' + SLUG + '.json). ¿Me lo publican?',
+    };
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      navigator.share(shareData)
+        .then(function () {
+          setStatus('Elige WhatsApp en el menú para enviar el archivo.');
+        })
+        .catch(function (err) {
+          if (err && err.name === 'AbortError') {
+            setStatus('Envío cancelado.');
+            return;
+          }
+          downloadJson(draft);
+          setStatus('Archivo descargado — ábrelo en WhatsApp con el clip 📎.');
+          setTimeout(openWhatsAppFallback, 500);
+        });
+      return;
+    }
+    downloadJson(draft);
+    setStatus('Archivo descargado — en WhatsApp toca 📎 y elige menu-' + SLUG + '.json');
+    setTimeout(openWhatsAppFallback, 500);
   }
 
   function exitEdit() {
@@ -653,14 +704,7 @@ export function buildInlineMenuEditScript(
       return;
     }
     saveLocal();
-    downloadJson(draft);
-    setStatus('Abriendo WhatsApp — adjunta el archivo descargado.');
-    var href = WA_HREF;
-    if (!href && WA_DIGITS) {
-      var msg = 'Hola — soy de ' + NAME + '.\\n\\nTe mando mi menú actualizado. Adjunto el archivo que descargué.\\n\\n¿Me lo publican en el menú digital?';
-      href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(msg);
-    }
-    if (href) setTimeout(function () { window.open(href, '_blank', 'noopener'); }, 400);
+    sendDraft(draft);
   });
 
   var cancelBtn = document.getElementById('btn-cancel-edit');

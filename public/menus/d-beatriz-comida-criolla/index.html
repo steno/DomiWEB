@@ -500,7 +500,7 @@ body.menu-editing .edit-bar { display: flex; }
   </header>
   <main class="wrap">
     <p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — <a class="banner-link" href="?edit=1">edítalos aquí</a> o <a class="banner-link" href="https://wa.me/17542133764?text=Hola%20%E2%80%94%20soy%20de%20D&#39;Beatriz%20Comida%20Criolla.%0A%0ATe%20mando%20mi%20carta%20real%20para%20el%20men%C3%BA%20digital.%0ASlug%3A%20d-beatriz-comida-criolla" target="_blank" rel="noopener">envíanos tu carta real</a>.</p>
-    <p class="edit-hint">Edita platos y precios aquí mismo. + Plato agrega una línea.</p>
+    <p class="edit-hint">Edita platos y precios aquí mismo. Al enviar, comparte el archivo por WhatsApp (o adjúntalo con el clip 📎 si solo se descarga).</p>
     <p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>
     <div id="menu-list">
     <section class="cat" id="entradas">
@@ -740,7 +740,7 @@ body.menu-editing .edit-bar { display: flex; }
   <div class="edit-bar" id="edit-bar" hidden>
   <p class="edit-status" id="edit-status" role="status"></p>
   <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Salir</button>
-  <button type="button" class="btn" id="btn-send-draft">Enviar cambios</button>
+  <button type="button" class="btn" id="btn-send-draft">Enviar por WhatsApp</button>
 </div>
   <script>
 (function () {
@@ -824,7 +824,7 @@ body.menu-editing .edit-bar { display: flex; }
   var SLUG = 'd-beatriz-comida-criolla';
   var NAME = 'D\'Beatriz Comida Criolla';
   var STORAGE_KEY = 'domiweb-menu-draft-' + SLUG;
-  var WA_HREF = 'https://wa.me/17542133764?text=Hola%20%E2%80%94%20soy%20de%20D\'Beatriz%20Comida%20Criolla.%0A%0ATe%20mando%20mi%20men%C3%BA%20actualizado.%20Adjunto%20el%20archivo%20que%20descargu%C3%A9.%0A%0A%C2%BFMe%20lo%20publican%20en%20el%20men%C3%BA%20digital%3F';
+  var WA_HREF = 'https://wa.me/17542133764?text=Hola%20%E2%80%94%20soy%20de%20D\'Beatriz%20Comida%20Criolla.%0A%0ATe%20mando%20mi%20men%C3%BA%20actualizado%20(archivo%20JSON).%0ASi%20no%20se%20adjunt%C3%B3%20solo%2C%20p%C3%A9galo%20con%20el%20clip%20%F0%9F%93%8E%20desde%20Descargas%3A%0Amenu-d-beatriz-comida-criolla.json%0A%0A%C2%BFMe%20lo%20publican%20en%20el%20men%C3%BA%20digital%3F';
   var WA_DIGITS = '17542133764';
   var seed = {"slug":"d-beatriz-comida-criolla","owned":false,"updatedAt":"2026-08-01T13:47:01.181Z","categories":[{"id":"entradas","label":"Entradas","items":[{"name":"Tostones","note":"Con salsa de ajo","priceHint":"RD$ —"},{"name":"Empanaditas","note":"Pollo o queso","priceHint":"RD$ —"},{"name":"Ensalada de la casa","note":"Fresca del día","priceHint":"RD$ —"}]},{"id":"fuertes","label":"Platos fuertes","items":[{"name":"Bandera dominicana","note":"Arroz, habichuelas y carne","priceHint":"RD$ —"},{"name":"Pollo guisado","note":"Con acompañamiento","priceHint":"RD$ —"},{"name":"Pescado frito","note":"Según disponibilidad","priceHint":"RD$ —"},{"name":"Mofongo","note":"Con chicharrón o camarones","priceHint":"RD$ —"}]},{"id":"bebidas","label":"Bebidas","items":[{"name":"Jugo natural","note":"Pregunta el sabor del día","priceHint":"RD$ —"},{"name":"Refresco","note":"Lata o vaso","priceHint":"RD$ —"},{"name":"Cerveza","note":"Nacional","priceHint":"RD$ —"},{"name":"Café","note":"Dominicano","priceHint":"RD$ —"}]},{"id":"postres","label":"Postres","items":[{"name":"Flan","note":"Casero","priceHint":"RD$ —"},{"name":"Dulce de leche","note":"Porción","priceHint":"RD$ —"}]}],"source":"template"};
   var state = null;
@@ -1002,9 +1002,21 @@ body.menu-editing .edit-bar { display: flex; }
     };
   }
 
+  function draftFile(draft) {
+    var text = JSON.stringify(draft, null, 2) + '\n';
+    var filename = 'menu-' + SLUG + '.json';
+    try {
+      return new File([text], filename, { type: 'application/json' });
+    } catch (e) {
+      var blob = new Blob([text], { type: 'application/json' });
+      blob.name = filename;
+      return blob;
+    }
+  }
+
   function downloadJson(draft) {
-    var blob = new Blob([JSON.stringify(draft, null, 2) + '\n'], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
+    var file = draftFile(draft);
+    var url = URL.createObjectURL(file);
     var a = document.createElement('a');
     a.href = url;
     a.download = 'menu-' + SLUG + '.json';
@@ -1012,6 +1024,43 @@ body.menu-editing .edit-bar { display: flex; }
     a.click();
     a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+
+  function openWhatsAppFallback() {
+    var href = WA_HREF;
+    if (!href && WA_DIGITS) {
+      var msg = 'Hola — soy de ' + NAME + '.\n\nTe mando mi menú (menu-' + SLUG + '.json).\nAdjúntalo con el clip 📎 desde Descargas.\n\n¿Me lo publican?';
+      href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(msg);
+    }
+    if (href) window.open(href, '_blank', 'noopener');
+  }
+
+  function sendDraft(draft) {
+    var file = draftFile(draft);
+    var shareData = {
+      files: [file],
+      title: 'Menú · ' + NAME,
+      text: 'Hola — soy de ' + NAME + '. Te mando mi menú actualizado (menu-' + SLUG + '.json). ¿Me lo publican?',
+    };
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      navigator.share(shareData)
+        .then(function () {
+          setStatus('Elige WhatsApp en el menú para enviar el archivo.');
+        })
+        .catch(function (err) {
+          if (err && err.name === 'AbortError') {
+            setStatus('Envío cancelado.');
+            return;
+          }
+          downloadJson(draft);
+          setStatus('Archivo descargado — ábrelo en WhatsApp con el clip 📎.');
+          setTimeout(openWhatsAppFallback, 500);
+        });
+      return;
+    }
+    downloadJson(draft);
+    setStatus('Archivo descargado — en WhatsApp toca 📎 y elige menu-' + SLUG + '.json');
+    setTimeout(openWhatsAppFallback, 500);
   }
 
   function exitEdit() {
@@ -1185,14 +1234,7 @@ body.menu-editing .edit-bar { display: flex; }
       return;
     }
     saveLocal();
-    downloadJson(draft);
-    setStatus('Abriendo WhatsApp — adjunta el archivo descargado.');
-    var href = WA_HREF;
-    if (!href && WA_DIGITS) {
-      var msg = 'Hola — soy de ' + NAME + '.\n\nTe mando mi menú actualizado. Adjunto el archivo que descargué.\n\n¿Me lo publican en el menú digital?';
-      href = 'https://wa.me/' + WA_DIGITS + '?text=' + encodeURIComponent(msg);
-    }
-    if (href) setTimeout(function () { window.open(href, '_blank', 'noopener'); }, 400);
+    sendDraft(draft);
   });
 
   var cancelBtn = document.getElementById('btn-cancel-edit');

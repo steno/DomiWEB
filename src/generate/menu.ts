@@ -608,7 +608,7 @@ ${buildInlineMenuEditCss()}
   </header>
   <main class="wrap">
     ${banner}
-    <p class="edit-hint">Edita platos y precios aquí mismo. + Plato agrega una línea.</p>
+    <p class="edit-hint">Edita platos y precios aquí mismo. Al enviar, comparte el archivo por WhatsApp (o adjúntalo con el clip 📎 si solo se descarga).</p>
     ${
       waDigits
         ? `<p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>`
