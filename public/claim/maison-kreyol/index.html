@@ -56,8 +56,11 @@ body {
 .top {
   padding: 1rem 1.15rem 0.75rem;
   border-bottom: 1px solid var(--line);
-  background: var(--top-bg);
-  backdrop-filter: blur(10px);
+  background:
+    radial-gradient(ellipse 95% 140% at 5% -30%, #1f4a3a 0%, transparent 58%),
+    radial-gradient(ellipse 80% 120% at 100% -10%, #2f4a36 0%, transparent 55%),
+    radial-gradient(ellipse 60% 80% at 50% 120%, #163028 0%, transparent 50%),
+    #0c1612;
   position: sticky;
   top: 0;
   z-index: 5;
