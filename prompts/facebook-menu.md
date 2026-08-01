@@ -1,7 +1,8 @@
 # Facebook post — menú digital (es-DO)
 
 Asset: `public/assets/splash-menu/facebook-menu-post.jpg` (también `.png`)  
-Link: https://steno.github.io/DomiWEB/menu-digital/
+Link: https://tinyurl.com/domenus  
+(destino: https://steno.github.io/DomiWEB/menu-digital/)
 
 ## Caption (recomendada)
 
@@ -14,7 +15,7 @@ Listo en ~30 minutos.
 Pago único: **RD$1,500**.
 
 Mira cómo funciona:
-https://steno.github.io/DomiWEB/menu-digital/
+https://tinyurl.com/domenus
 
 Si te late, escríbenos por WhatsApp y lo hacemos con el nombre de tu negocio.
 
@@ -24,11 +25,11 @@ Menú digital + QR.
 Clientes marcan → te piden por WhatsApp.
 RD$1,500 · listo en 30 min.
 
-https://steno.github.io/DomiWEB/menu-digital/
+https://tinyurl.com/domenus
 
 ## Tip de publicación
 
-- Imagen cuadrada adjunta
+- Imagen cuadrada adjunta (incluye tinyurl.com/domenus)
 - Primera línea = gancho (papel manchado / WhatsApp)
 - Sin “solo hoy” ni escasez falsa
 - CTA suave: mirar la página, luego WhatsApp
