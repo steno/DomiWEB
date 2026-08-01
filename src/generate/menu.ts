@@ -252,6 +252,29 @@ export function buildMenuHtml(
       )
     : null;
   const editMenuHref = `../../claim/${escapeAttr(lead.slug)}/index.html#editar-menu`;
+  const pagesBase = (config.hosting.baseUrl || "https://steno.github.io/DomiWEB").replace(
+    /\/$/,
+    "",
+  );
+  const menuPageUrl = opts.menuUrl || `${pagesBase}/menus/${lead.slug}/`;
+  const ogImageUrl = heroPhoto
+    ? /googleusercontent\.com/i.test(heroPhoto)
+      ? heroPhoto.replace(/=[^=]*$/, "=w1200-h630-c")
+      : heroPhoto
+    : `${pagesBase}/assets/splash-menu/facebook-menu-post.jpg`;
+  const ogTitle = `Menú · ${p.name}`;
+  const ogDescription = `Marca platos y pide por WhatsApp en ${p.name}.`;
+  const ogMeta = `<meta name="description" content="${escapeAttr(ogDescription)}" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_DO" />
+<meta property="og:url" content="${escapeAttr(menuPageUrl)}" />
+<meta property="og:title" content="${escapeAttr(ogTitle)}" />
+<meta property="og:description" content="${escapeAttr(ogDescription)}" />
+<meta property="og:image" content="${escapeAttr(ogImageUrl)}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${escapeAttr(ogTitle)}" />
+<meta name="twitter:description" content="${escapeAttr(ogDescription)}" />
+<meta name="twitter:image" content="${escapeAttr(ogImageUrl)}" />`;
 
   const categoryBlocks = categories
     .map((cat) => {
@@ -307,6 +330,7 @@ export function buildMenuHtml(
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Menú · ${escapeHtml(p.name)}</title>
+${ogMeta}
 <style>
 :root {
   --bg: #140f0a;

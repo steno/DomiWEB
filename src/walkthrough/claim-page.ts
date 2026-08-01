@@ -38,6 +38,82 @@ function escapeAttr(s: string): string {
   return escapeHtml(s).replace(/'/g, "&#39;");
 }
 
+function isUsableHttpUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (!/^https?:$/i.test(u.protocol)) return false;
+    const host = u.hostname.toLowerCase();
+    if (host === "example.com" || host.endsWith(".example.com")) return false;
+    if (host === "localhost" || host === "127.0.0.1") return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Absolute OG image for WhatsApp / social previews. */
+function resolveClaimOgImage(
+  lead: Lead,
+  config: NicheConfig,
+  product: PipelineProduct,
+): { url: string; width: number; height: number; alt: string } {
+  const base = (config.hosting.baseUrl || "https://steno.github.io/DomiWEB").replace(
+    /\/$/,
+    "",
+  );
+  const branded = `${base}/assets/splash-menu/facebook-menu-post.jpg`;
+  const photo = (lead.place.photos ?? [])
+    .map((p) => p.url)
+    .find((u) => u && isUsableHttpUrl(u));
+
+  if (photo) {
+    let url = photo;
+    if (/googleusercontent\.com/i.test(url)) {
+      url = url.replace(/=[^=]*$/, "=w1200-h630-c");
+    }
+    return {
+      url,
+      width: 1200,
+      height: 630,
+      alt: `${lead.place.name} · DomiWEB`,
+    };
+  }
+
+  return {
+    url: branded,
+    width: 1024,
+    height: 1024,
+    alt:
+      product === "menu"
+        ? "DomiWEB · Menú digital + QR · Pedidos por WhatsApp"
+        : "DomiWEB · Página lista con reseñas de Google",
+  };
+}
+
+function buildClaimOgMeta(opts: {
+  title: string;
+  description: string;
+  url: string;
+  image: { url: string; width: number; height: number; alt: string };
+}): string {
+  const { title, description, url, image } = opts;
+  return `<meta name="description" content="${escapeAttr(description)}" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_DO" />
+<meta property="og:url" content="${escapeAttr(url)}" />
+<meta property="og:title" content="${escapeAttr(title)}" />
+<meta property="og:description" content="${escapeAttr(description)}" />
+<meta property="og:image" content="${escapeAttr(image.url)}" />
+<meta property="og:image:type" content="${image.url.endsWith(".png") ? "image/png" : "image/jpeg"}" />
+<meta property="og:image:width" content="${image.width}" />
+<meta property="og:image:height" content="${image.height}" />
+<meta property="og:image:alt" content="${escapeAttr(image.alt)}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${escapeAttr(title)}" />
+<meta name="twitter:description" content="${escapeAttr(description)}" />
+<meta name="twitter:image" content="${escapeAttr(image.url)}" />`;
+}
+
 /** Relative URL from claim/<slug>/ to sites/<slug>/ */
 export function relativeSiteHref(slug: string): string {
   return `../../sites/${slug}/index.html`;
@@ -280,6 +356,23 @@ export function buildClaimPageHtml(
         ? "Reclama tu menú"
         : "Reclama tu sitio";
 
+  const claimPageUrl =
+    urls.claimUrl ??
+    `https://steno.github.io/DomiWEB/claim/${lead.slug}/`;
+  const ogDescription =
+    product === "reviewKit"
+      ? `Respuestas listas en español para las reseñas de Google de ${lead.place.name}.`
+      : product === "menu"
+        ? `Menú digital con QR para ${lead.place.name}. Edita platos y recibe pedidos por WhatsApp.`
+        : `Página lista con las reseñas públicas de Google de ${lead.place.name}.`;
+  const ogImage = resolveClaimOgImage(lead, config, product);
+  const ogMeta = buildClaimOgMeta({
+    title: `${claimTitle} · ${lead.place.name}`,
+    description: ogDescription,
+    url: claimPageUrl,
+    image: ogImage,
+  });
+
   const menuDataForEdit: MenuData | null =
     product === "menu" && menuExists(lead.slug)
       ? loadOrCreateMenuData(lead.slug, config)
@@ -305,6 +398,7 @@ export function buildClaimPageHtml(
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${claimTitle} · ${escapeHtml(lead.place.name)}</title>
 <meta name="robots" content="noindex" />
+${ogMeta}
 <style>
 :root {
   --bg: #101612;
