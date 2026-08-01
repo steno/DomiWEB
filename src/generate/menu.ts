@@ -243,14 +243,16 @@ export function buildMenuHtml(
   const photos = googlePhotos.length ? googlePhotos : illustrative;
   const heroPhoto = photos[0] ?? null;
 
-  const dishNote = owned
-    ? ""
-    : " · Los platos son plantilla — edítalos al reclamar";
-  const footer = usingIllustrative
-    ? `Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas${dishNote}`
+  const honestyBase = usingIllustrative
+    ? "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas"
     : googlePhotos.length
-      ? `Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas${dishNote}`
-      : `Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas${dishNote}`;
+      ? "Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas"
+      : "Las reseñas provienen de nuestro perfil público de Google · Las fotografías son ilustrativas";
+  const footerHtml =
+    escapeHtml(honestyBase) +
+    (owned
+      ? ""
+      : ` · Los platos son plantilla — <a class="banner-link" href="?edit=1">edítalos aquí</a>`);
 
   const waDigits = toWhatsAppDigits(p.phone);
   const waOrder = p.phone
@@ -310,7 +312,7 @@ export function buildMenuHtml(
 
   const banner = owned
     ? ""
-    : `<p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — edítalos en el enlace de reclamo o envíanos tu carta real.</p>`;
+    : `<p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — <a class="banner-link" href="?edit=1">edítalos aquí</a> o envíanos tu carta real.</p>`;
 
   return `<!DOCTYPE html>
 <html lang="es-DO">
@@ -420,6 +422,21 @@ body {
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.88rem;
   color: #dccbb4;
+}
+.banner-link {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.banner-link:hover {
+  color: #f0c080;
+}
+footer .banner-link {
+  color: var(--accent);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 .cat { margin: 0 0 1.85rem; }
 .cat h2 {
@@ -591,7 +608,7 @@ ${buildInlineMenuEditCss()}
       <div class="qr-frame">${opts.qrSvg}</div>
       <p class="qr-url">${escapeHtml(opts.menuUrl)}</p>
     </section>
-    <footer><p>${escapeHtml(footer)}</p></footer>
+    <footer><p>${footerHtml}</p></footer>
   </main>
   <div class="order-bar" id="order-bar" hidden>
     <p class="order-count" id="order-count">0 platos</p>

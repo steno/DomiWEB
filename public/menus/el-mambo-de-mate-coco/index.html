@@ -107,6 +107,21 @@ body {
   font-size: 0.88rem;
   color: #dccbb4;
 }
+.banner-link {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.banner-link:hover {
+  color: #f0c080;
+}
+footer .banner-link {
+  color: var(--accent);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
 .cat { margin: 0 0 1.85rem; }
 .cat h2 {
   margin: 0 0 0.85rem;
@@ -484,7 +499,7 @@ body.menu-editing .edit-bar { display: flex; }
     </div>
   </header>
   <main class="wrap">
-    <p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — edítalos en el enlace de reclamo o envíanos tu carta real.</p>
+    <p class="banner">Plantilla de menú lista para editar. Los platos y precios son ejemplos — <a class="banner-link" href="?edit=1">edítalos aquí</a> o envíanos tu carta real.</p>
     <p class="edit-hint">Edita platos y precios aquí mismo. + Plato agrega una línea.</p>
     <p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>
     <div id="menu-list">
@@ -716,7 +731,7 @@ body.menu-editing .edit-bar { display: flex; }
 </div>
       <p class="qr-url">https://steno.github.io/DomiWEB/menus/el-mambo-de-mate-coco/</p>
     </section>
-    <footer><p>Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas · Los platos son plantilla — edítalos al reclamar</p></footer>
+    <footer><p>Las reseñas y fotografías provienen de nuestro perfil público de Google · Algunas imágenes pueden ser ilustrativas · Los platos son plantilla — <a class="banner-link" href="?edit=1">edítalos aquí</a></p></footer>
   </main>
   <div class="order-bar" id="order-bar" hidden>
     <p class="order-count" id="order-count">0 platos</p>
