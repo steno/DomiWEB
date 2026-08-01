@@ -503,6 +503,9 @@
       padding: 1rem 0.95rem 1.1rem;
       text-align: center;
       box-shadow: 0 8px 22px rgba(6, 80, 76, 0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .step-num {
       display: inline-grid;
@@ -526,9 +529,72 @@
       letter-spacing: -0.02em;
     }
     .step p {
-      margin: 0;
+      margin: 0 0 0.75rem;
       color: var(--muted);
       font-size: 0.95rem;
+    }
+    .step-visual {
+      width: min(132px, 42vw);
+      margin-top: auto;
+      border-radius: 1rem;
+      background: #1a1410;
+      border: 2px solid #2a221c;
+      overflow: hidden;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+    }
+    .step-visual .ui {
+      min-height: 0;
+      font-size: 0.58rem;
+    }
+    .step-visual .ui-hero {
+      height: 48px;
+    }
+    .step-visual .ui-list {
+      padding: 0.3rem 0.35rem 0.45rem;
+    }
+    .step-visual .ui-row:nth-child(n+4) { display: none; }
+    .step-visual .ui-foot {
+      padding: 0.35rem;
+    }
+    .step-visual .ui-btn {
+      font-size: 0.52rem;
+      padding: 0.35rem 0.3rem;
+    }
+    .step-visual-qr {
+      display: grid;
+      place-items: center;
+      gap: 0.35rem;
+      padding: 0.75rem 0.55rem 0.85rem;
+      background: var(--ui-bg);
+      color: var(--ui-ink);
+      min-height: 148px;
+    }
+    .step-visual-qr .qr-box {
+      width: 72px;
+      height: 72px;
+      border-radius: 0.35rem;
+      background:
+        linear-gradient(90deg, #f7f1e8 2px, transparent 2px) 0 0 / 8px 8px,
+        linear-gradient(#f7f1e8 2px, transparent 2px) 0 0 / 8px 8px,
+        #1a1410;
+      border: 3px solid #f7f1e8;
+      box-shadow: inset 0 0 0 6px #1a1410;
+      position: relative;
+    }
+    .step-visual-qr .qr-box::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      background: var(--ui-accent);
+      border-radius: 2px;
+    }
+    .step-visual-qr span {
+      font-family: system-ui, sans-serif;
+      font-size: 0.55rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ui-accent);
     }
 
     .qr-band {
@@ -856,18 +922,82 @@
         <div class="steps">
           <article class="step">
             <div class="step-num" aria-hidden="true">1</div>
-            <h3>Nos escribes</h3>
-            <p>Por WhatsApp. Nos dices el nombre de tu negocio.</p>
+            <h3>Ves tu menú</h3>
+            <p>Te mostramos la carta digital con el nombre de tu negocio.</p>
+            <div class="step-visual" aria-hidden="true">
+              <div class="ui">
+                <div class="ui-hero">
+                  <span>Tu menú</span>
+                  <strong>Tu negocio</strong>
+                </div>
+                <div class="ui-list">
+                  <p class="ui-cat">Platos</p>
+                  <div class="ui-row">
+                    <span class="ui-check"></span>
+                    <div>
+                      <div class="ui-name">La Bandera</div>
+                      <div class="ui-desc">Arroz, habichuelas, pollo</div>
+                    </div>
+                    <span class="ui-price">RD$350</span>
+                  </div>
+                  <div class="ui-row">
+                    <span class="ui-check"></span>
+                    <div>
+                      <div class="ui-name">Mangú</div>
+                      <div class="ui-desc">Con los tres golpes</div>
+                    </div>
+                    <span class="ui-price">RD$280</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </article>
           <article class="step">
             <div class="step-num" aria-hidden="true">2</div>
-            <h3>Armamos el menú</h3>
-            <p>En ~30 minutos tienes carta digital + QR.</p>
+            <h3>La haces tuya</h3>
+            <p>Editas platos y precios. Te la pasamos por RD$1,500.</p>
+            <div class="step-visual" aria-hidden="true">
+              <div class="ui">
+                <div class="ui-hero">
+                  <span>Editar</span>
+                  <strong>Tus platos</strong>
+                </div>
+                <div class="ui-list">
+                  <p class="ui-cat">Seleccionados</p>
+                  <div class="ui-row">
+                    <span class="ui-check on"></span>
+                    <div>
+                      <div class="ui-name">La Bandera</div>
+                      <div class="ui-desc">Precio actualizado</div>
+                    </div>
+                    <span class="ui-price">RD$375</span>
+                  </div>
+                  <div class="ui-row">
+                    <span class="ui-check on"></span>
+                    <div>
+                      <div class="ui-name">Jugo natural</div>
+                      <div class="ui-desc">Chinola</div>
+                    </div>
+                    <span class="ui-price">RD$120</span>
+                  </div>
+                </div>
+                <div class="ui-foot">
+                  <p class="ui-count">Listo para publicar</p>
+                  <span class="ui-btn">Guardar cambios</span>
+                </div>
+              </div>
+            </div>
           </article>
           <article class="step">
             <div class="step-num" aria-hidden="true">3</div>
-            <h3>Imprimes y listo</h3>
-            <p>Pegas el QR en la mesa. Tus clientes empiezan a pedir.</p>
+            <h3>Imprimes el QR</h3>
+            <p>Lo pegas en la mesa. Tus clientes piden por WhatsApp.</p>
+            <div class="step-visual" aria-hidden="true">
+              <div class="step-visual-qr">
+                <div class="qr-box"></div>
+                <span>Escanea el menú</span>
+              </div>
+            </div>
           </article>
         </div>
 
