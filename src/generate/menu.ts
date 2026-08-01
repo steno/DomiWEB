@@ -521,6 +521,27 @@ body {
   display: inline-flex;
 }
 .edit-back:hover { text-decoration: underline; }
+.owner-preview-hint {
+  display: none;
+  margin: 0 0 1.25rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: var(--accent);
+}
+body.owner-preview .owner-preview-hint { display: block; }
+body.owner-preview .order-hint { display: none; }
+body.owner-preview .pick {
+  pointer-events: none;
+  cursor: default;
+}
+body.owner-preview .pick-cb,
+body.owner-preview .pick-box {
+  visibility: hidden;
+}
+body.owner-preview .order-bar {
+  display: none !important;
+}
+body.owner-preview.has-order .wrap { padding-bottom: 3rem; }
 .order-bar {
   display: none;
   position: fixed;
@@ -576,6 +597,7 @@ footer {
   </header>
   <main class="wrap">
     <p><a class="edit-back" id="edit-back" href="${editMenuHref}" target="_top" hidden>← Editar menú</a></p>
+    <p class="owner-preview-hint">Vista previa del cliente — aquí no se envían pedidos; tus clientes lo hacen desde el QR.</p>
     ${
       waDigits
         ? `<p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>`
@@ -593,15 +615,26 @@ footer {
   ${buildOrderPickerScript(p.name, waDigits)}
   <script>
 (function () {
-  var link = document.getElementById('edit-back');
-  if (!link) return;
   try {
     var from = new URLSearchParams(location.search).get('from');
-    // Only owners opening from claim "Ver menú del cliente" see this.
-    if (from === 'claim' && window.top === window.self) {
+    var isOwnerPreview = from === 'claim' && window.top === window.self;
+    if (!isOwnerPreview) return;
+    document.body.classList.add('owner-preview');
+    var link = document.getElementById('edit-back');
+    if (link) {
       link.hidden = false;
       link.classList.add('is-owner');
     }
+    document.querySelectorAll('.pick-cb').forEach(function (cb) {
+      cb.disabled = true;
+      cb.checked = false;
+    });
+    var bar = document.getElementById('order-bar');
+    if (bar) {
+      bar.hidden = true;
+      bar.classList.remove('visible');
+    }
+    document.body.classList.remove('has-order');
   } catch (e) {}
 })();
   </script>
@@ -623,6 +656,11 @@ function buildOrderPickerScript(
 ): string {
   return `<script>
 (function () {
+  try {
+    if (new URLSearchParams(location.search).get('from') === 'claim' && window.top === window.self) {
+      return; // owner preview from claim — no customer ordering
+    }
+  } catch (e) {}
   var WA_DIGITS = ${waDigits ? `'${escapeJsString(waDigits)}'` : "null"};
   var NAME = '${escapeJsString(businessName)}';
   var bar = document.getElementById('order-bar');
