@@ -190,7 +190,7 @@ body {
   color: var(--muted);
 }
 .edit-back {
-  display: inline-flex;
+  display: none;
   align-items: center;
   gap: 0.35rem;
   margin: 0 0 1rem;
@@ -200,6 +200,9 @@ body {
   font-weight: 700;
   color: var(--accent);
   text-decoration: none;
+}
+.edit-back.is-owner {
+  display: inline-flex;
 }
 .edit-back:hover { text-decoration: underline; }
 .order-bar {
@@ -256,7 +259,7 @@ footer {
     </div>
   </header>
   <main class="wrap">
-    <p><a class="edit-back" href="../../claim/sbg-sophia-s-bar-grill/index.html#editar-menu" target="_top">← Editar menú</a></p>
+    <p><a class="edit-back" id="edit-back" href="../../claim/sbg-sophia-s-bar-grill/index.html#editar-menu" target="_top" hidden>← Editar menú</a></p>
     <p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>
     <div id="menu-list">
     <section class="cat" id="entradas">
@@ -553,5 +556,19 @@ footer {
   refresh();
 })();
 </script>
+  <script>
+(function () {
+  var link = document.getElementById('edit-back');
+  if (!link) return;
+  try {
+    var from = new URLSearchParams(location.search).get('from');
+    // Only owners opening from claim "Ver menú del cliente" see this.
+    if (from === 'claim' && window.top === window.self) {
+      link.hidden = false;
+      link.classList.add('is-owner');
+    }
+  } catch (e) {}
+})();
+  </script>
 </body>
 </html>

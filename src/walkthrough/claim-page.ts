@@ -129,6 +129,11 @@ export function relativeMenuHref(slug: string): string {
   return `../../menus/${slug}/index.html`;
 }
 
+/** Owner-only entry from claim → customer menu (shows ← Editar menú). */
+export function relativeMenuOwnerHref(slug: string): string {
+  return `../../menus/${slug}/index.html?from=claim`;
+}
+
 export function resolveClaimProduct(
   lead: Lead,
   preferred: PipelineProduct | "auto" = "auto",
@@ -284,6 +289,8 @@ export function buildClaimPageHtml(
       : product === "menu"
         ? relativeMenuHref(lead.slug)
         : relativeSiteHref(lead.slug);
+  const openPreviewHref =
+    product === "menu" ? relativeMenuOwnerHref(lead.slug) : previewHref;
   const absolutePreview =
     product === "reviewKit"
       ? (urls.kitUrl ?? previewHref)
@@ -664,7 +671,7 @@ body.menu-editing .qr-print { display: none; }
           ? `<a class="btn btn-ghost" href="${escapeAttr(relativeEditMenuHref(lead.slug))}">Editar mis platos</a>`
           : ""
       }
-      <a class="btn btn-ghost" href="${escapeAttr(previewHref)}" target="_blank" rel="noopener">${openLabel}</a>
+      <a class="btn btn-ghost" href="${escapeAttr(openPreviewHref)}" target="_blank" rel="noopener">${openLabel}</a>
     </div>
     <div id="panel-ok" role="status">
       Gracias. Anotamos tu interés en <strong>${escapeHtml(lead.place.name)}</strong>.

@@ -506,7 +506,7 @@ body {
   color: var(--muted);
 }
 .edit-back {
-  display: inline-flex;
+  display: none;
   align-items: center;
   gap: 0.35rem;
   margin: 0 0 1rem;
@@ -516,6 +516,9 @@ body {
   font-weight: 700;
   color: var(--accent);
   text-decoration: none;
+}
+.edit-back.is-owner {
+  display: inline-flex;
 }
 .edit-back:hover { text-decoration: underline; }
 .order-bar {
@@ -572,7 +575,7 @@ footer {
     </div>
   </header>
   <main class="wrap">
-    <p><a class="edit-back" href="${editMenuHref}" target="_top">← Editar menú</a></p>
+    <p><a class="edit-back" id="edit-back" href="${editMenuHref}" target="_top" hidden>← Editar menú</a></p>
     ${
       waDigits
         ? `<p class="order-hint">Marca lo que quieres y envía el pedido por WhatsApp.</p>`
@@ -588,6 +591,20 @@ footer {
     <button type="button" class="btn" id="btn-send-order"${waDigits ? "" : " disabled"}>Enviar pedido por WhatsApp</button>
   </div>
   ${buildOrderPickerScript(p.name, waDigits)}
+  <script>
+(function () {
+  var link = document.getElementById('edit-back');
+  if (!link) return;
+  try {
+    var from = new URLSearchParams(location.search).get('from');
+    // Only owners opening from claim "Ver menú del cliente" see this.
+    if (from === 'claim' && window.top === window.self) {
+      link.hidden = false;
+      link.classList.add('is-owner');
+    }
+  } catch (e) {}
+})();
+  </script>
 </body>
 </html>`;
 }
