@@ -22,21 +22,21 @@
 <meta name="twitter:image" content="https://lh3.googleusercontent.com/gps-cs-s/AHRPTWkXO2e_CYm4LEIZ_UCicaKU32O63QPly2a-Rz9i2Zahvb1Dyey1WACpAUlUTHTJnvt1lAx0VpLQseN3_dnVxagBkYIB369eP8qIjULL7eEqwICn3Wt7NvKqpCTX6FFKm2OcAKVy1oVKsSM=w1200-h630-c" />
 <style>
 :root {
-  --bg: #fffdf8;
-  --panel: #f3fffd;
-  --ink: #10312e;
-  --muted: #3d5c58;
-  --accent: #0a8f8a;
-  --accent-ink: #fffdf8;
-  --line: rgba(10, 143, 138, 0.22);
-  --danger: #c97858;
+  --bg: #0c1612;
+  --panel: #132019;
+  --ink: #eef3ef;
+  --muted: #8fa399;
+  --accent: #4ea37e;
+  --accent-ink: #0c1612;
+  --line: rgba(238, 243, 239, 0.12);
+  --danger: #c45c4a;
   --cta: #ffb703;
   --cta-ink: #10312e;
-  --top-bg: rgba(255, 253, 248, 0.94);
-  --stage-bg: #e8f7f5;
-  --ok-bg: #e8f7f5;
-  --body-glow-a: #b8f0ea;
-  --body-glow-b: #ffe7a8;
+  --top-bg: rgba(12, 22, 18, 0.55);
+  --stage-bg: #0a1210;
+  --ok-bg: #132019;
+  --body-glow-a: #1a3d30;
+  --body-glow-b: #243528;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -44,8 +44,8 @@ body {
   font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   color: var(--ink);
   background:
-    radial-gradient(ellipse at 10% 0%, var(--body-glow-a) 0%, transparent 45%),
-    radial-gradient(ellipse at 100% 100%, var(--body-glow-b) 0%, transparent 40%),
+    radial-gradient(ellipse 80% 50% at 10% -10%, var(--body-glow-a) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, var(--body-glow-b) 0%, transparent 50%),
     var(--bg);
 }
 .shell {
@@ -57,7 +57,7 @@ body {
   padding: 1rem 1.15rem 0.75rem;
   border-bottom: 1px solid var(--line);
   background: var(--top-bg);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 5;
@@ -278,13 +278,13 @@ body.menu-editing .qr-print { display: none; }
     </p>
     <p class="quote">“I walked by earlier today on the way to the malecón, and the sign caught my eyes so I noted it on g…”</p>
     <div class="actions">
-      <a class="btn btn-primary" id="btn-claim" href="https://wa.me/17542133764?text=Hola%2C%20soy%20Jos%C3%A9%20de%20Tornasol%20Restaurante.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Ftornasol-restaurante%2F%3Fv%3Dmenu%0ATel%20del%20negocio%3A%20%2B1%20809-687-6842%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
+      <a class="btn btn-primary" id="btn-claim" href="#reclamar" data-fallback="1">Reclamar mi menú</a>
       <a class="btn btn-ghost" href="#editar-menu">Editar mis platos</a>
       <a class="btn btn-ghost" href="../../menus/tornasol-restaurante/index.html?from=claim" target="_blank" rel="noopener">Ver menú del cliente</a>
     </div>
     <div id="panel-ok" role="status">
       Gracias. Anotamos tu interés en <strong>Tornasol Restaurante</strong>.
-      Se abre WhatsApp para confirmar — ahí cerramos y lo dejamos publicado con tu carta.
+      Escríbenos por el mismo chat de WhatsApp donde te llegó el enlace para confirmar.
     </div>
   </header>
 
@@ -306,7 +306,7 @@ body.menu-editing .qr-print { display: none; }
       No inventamos datos. El menú vive en
       <a href="https://steno.github.io/DomiWEB/menus/tornasol-restaurante/" style="color:var(--accent)">https://steno.github.io/DomiWEB/menus/tornasol-restaurante/</a>
     </p>
-    <a class="btn btn-primary" href="https://wa.me/17542133764?text=Hola%2C%20soy%20Jos%C3%A9%20de%20Tornasol%20Restaurante.%0AVi%20el%20men%C3%BA%20digital%20con%20QR%20y%20quiero%20reclamarlo.%0ALink%3A%20https%3A%2F%2Fsteno.github.io%2FDomiWEB%2Fclaim%2Ftornasol-restaurante%2F%3Fv%3Dmenu%0ATel%20del%20negocio%3A%20%2B1%20809-687-6842%0A%C2%BFC%C3%B3mo%20seguimos%3F" >Reclamar mi menú</a>
+    <a class="btn btn-primary" href="#reclamar" data-fallback="1">Reclamar mi menú</a>
   </footer>
 </div>
 <style>
@@ -486,12 +486,12 @@ body.menu-editing .cat h2[contenteditable="true"]:focus {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
-  background: color-mix(in srgb, var(--bg, #fffdf8) 94%, transparent);
+  background: rgba(12, 22, 18, 0.92);
   border-top: 1px solid var(--line);
   gap: 0.65rem;
   justify-content: center;
   flex-wrap: wrap;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   z-index: 20;
 }
 body.menu-editing .edit-bar { display: flex; }
@@ -520,18 +520,18 @@ body.menu-editing .edit-bar { display: flex; }
   align-items: flex-end;
   justify-content: center;
   padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
-  background: rgba(16, 49, 46, 0.45);
+  background: rgba(8, 16, 12, 0.72);
   backdrop-filter: blur(6px);
 }
 .send-modal.open { display: flex; }
 .send-modal-card {
   width: min(26rem, 100%);
-  background: var(--panel, #f3fffd);
-  border: 1px solid var(--line, rgba(10, 143, 138, 0.22));
+  background: var(--panel, #132019);
+  border: 1px solid var(--line, rgba(238, 243, 239, 0.12));
   border-radius: 1rem;
   padding: 1.15rem 1.15rem 1.25rem;
-  color: var(--ink, #10312e);
-  box-shadow: 0 18px 40px rgba(6, 80, 76, 0.18);
+  color: var(--ink, #eef3ef);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.4);
 }
 .send-modal-card h2 {
   margin: 0 0 0.45rem;
@@ -542,7 +542,7 @@ body.menu-editing .edit-bar { display: flex; }
   margin: 0 0 1rem;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.92rem;
-  color: var(--muted, #3d5c58);
+  color: var(--muted, #8fa399);
   line-height: 1.4;
 }
 .send-modal-actions {
@@ -558,8 +558,8 @@ body.menu-editing .edit-bar { display: flex; }
 }
 .send-modal-actions .btn-ghost {
   background: transparent;
-  color: var(--ink, #10312e);
-  border: 1px solid var(--line, rgba(10, 143, 138, 0.22));
+  color: var(--ink, #eef3ef);
+  border: 1px solid var(--line, rgba(238, 243, 239, 0.12));
 }
 @media (max-width: 520px) {
   body.menu-editing .item {
@@ -641,8 +641,8 @@ body.menu-editing .quote { display: none; }
   var NAME = 'Tornasol Restaurante';
   var STORAGE_KEY = 'domiweb-menu-draft-' + SLUG;
   var MENU_JSON_URL = '../../menus/tornasol-restaurante/menu.json';
-  var WA_HREF = 'https://wa.me/17542133764?text=Hola%20%E2%80%94%20soy%20de%20Tornasol%20Restaurante.%0A%0ATe%20mando%20mi%20men%C3%BA%20actualizado%20(archivo%20JSON).%0ASi%20no%20se%20adjunt%C3%B3%20solo%2C%20p%C3%A9galo%20con%20el%20clip%20%F0%9F%93%8E%20desde%20Descargas%3A%0Amenu-tornasol-restaurante.json%0A%0A%C2%BFMe%20lo%20publican%20en%20el%20men%C3%BA%20digital%3F';
-  var WA_DIGITS = '17542133764';
+  var WA_HREF = null;
+  var WA_DIGITS = '';
   var seed = {"slug":"tornasol-restaurante","owned":false,"updatedAt":"2026-08-01T13:47:01.188Z","categories":[{"id":"entradas","label":"Entradas","items":[{"name":"Tostones","note":"Con salsa de ajo","priceHint":"RD$ —"},{"name":"Empanaditas","note":"Pollo o queso","priceHint":"RD$ —"},{"name":"Ensalada de la casa","note":"Fresca del día","priceHint":"RD$ —"}]},{"id":"fuertes","label":"Platos fuertes","items":[{"name":"Bandera dominicana","note":"Arroz, habichuelas y carne","priceHint":"RD$ —"},{"name":"Pollo guisado","note":"Con acompañamiento","priceHint":"RD$ —"},{"name":"Pescado frito","note":"Según disponibilidad","priceHint":"RD$ —"},{"name":"Mofongo","note":"Con chicharrón o camarones","priceHint":"RD$ —"}]},{"id":"bebidas","label":"Bebidas","items":[{"name":"Jugo natural","note":"Pregunta el sabor del día","priceHint":"RD$ —"},{"name":"Refresco","note":"Lata o vaso","priceHint":"RD$ —"},{"name":"Cerveza","note":"Nacional","priceHint":"RD$ —"},{"name":"Café","note":"Dominicano","priceHint":"RD$ —"}]},{"id":"postres","label":"Postres","items":[{"name":"Flan","note":"Casero","priceHint":"RD$ —"},{"name":"Dulce de leche","note":"Porción","priceHint":"RD$ —"}]}],"source":"template"};
   var state = null;
   var list = document.getElementById('menu-list');

@@ -420,38 +420,38 @@ ${ogMeta}
 ${
   product === "menu"
     ? `:root {
-  --bg: #fffdf8;
-  --panel: #f3fffd;
-  --ink: #10312e;
-  --muted: #3d5c58;
-  --accent: #0a8f8a;
-  --accent-ink: #fffdf8;
-  --line: rgba(10, 143, 138, 0.22);
-  --danger: #c97858;
+  --bg: #0c1612;
+  --panel: #132019;
+  --ink: #eef3ef;
+  --muted: #8fa399;
+  --accent: #4ea37e;
+  --accent-ink: #0c1612;
+  --line: rgba(238, 243, 239, 0.12);
+  --danger: #c45c4a;
   --cta: #ffb703;
   --cta-ink: #10312e;
-  --top-bg: rgba(255, 253, 248, 0.94);
-  --stage-bg: #e8f7f5;
-  --ok-bg: #e8f7f5;
-  --body-glow-a: #b8f0ea;
-  --body-glow-b: #ffe7a8;
+  --top-bg: rgba(12, 22, 18, 0.55);
+  --stage-bg: #0a1210;
+  --ok-bg: #132019;
+  --body-glow-a: #1a3d30;
+  --body-glow-b: #243528;
 }`
     : `:root {
-  --bg: #101612;
-  --panel: #18211b;
-  --ink: #eef3ee;
-  --muted: #9aab9e;
-  --accent: #7eb887;
-  --accent-ink: #0f1a12;
-  --line: #2a3830;
-  --danger: #c97858;
-  --cta: #7eb887;
-  --cta-ink: #0f1a12;
-  --top-bg: rgba(16,22,18,0.88);
-  --stage-bg: #0a0e0b;
-  --ok-bg: #1e2e24;
-  --body-glow-a: #1e3228;
-  --body-glow-b: #1a2a22;
+  --bg: #0c1612;
+  --panel: #132019;
+  --ink: #eef3ef;
+  --muted: #8fa399;
+  --accent: #4ea37e;
+  --accent-ink: #0c1612;
+  --line: rgba(238, 243, 239, 0.12);
+  --danger: #c45c4a;
+  --cta: #4ea37e;
+  --cta-ink: #0c1612;
+  --top-bg: rgba(12, 22, 18, 0.55);
+  --stage-bg: #0a1210;
+  --ok-bg: #132019;
+  --body-glow-a: #1a3d30;
+  --body-glow-b: #243528;
 }`
 }
 * { box-sizing: border-box; }
@@ -460,8 +460,8 @@ body {
   font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   color: var(--ink);
   background:
-    radial-gradient(ellipse at 10% 0%, var(--body-glow-a) 0%, transparent 45%),
-    radial-gradient(ellipse at 100% 100%, var(--body-glow-b) 0%, transparent 40%),
+    radial-gradient(ellipse 80% 50% at 10% -10%, var(--body-glow-a) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, var(--body-glow-b) 0%, transparent 50%),
     var(--bg);
 }
 .shell {
@@ -473,7 +473,7 @@ body {
   padding: 1rem 1.15rem 0.75rem;
   border-bottom: 1px solid var(--line);
   background: var(--top-bg);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 5;

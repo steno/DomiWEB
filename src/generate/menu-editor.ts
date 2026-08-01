@@ -207,12 +207,12 @@ body.menu-editing .cat h2[contenteditable="true"]:focus {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   padding: 0.85rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
-  background: color-mix(in srgb, var(--bg, #fffdf8) 94%, transparent);
+  background: rgba(12, 22, 18, 0.92);
   border-top: 1px solid var(--line);
   gap: 0.65rem;
   justify-content: center;
   flex-wrap: wrap;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   z-index: 20;
 }
 body.menu-editing .edit-bar { display: flex; }
@@ -241,18 +241,18 @@ body.menu-editing .edit-bar { display: flex; }
   align-items: flex-end;
   justify-content: center;
   padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
-  background: rgba(16, 49, 46, 0.45);
+  background: rgba(8, 16, 12, 0.72);
   backdrop-filter: blur(6px);
 }
 .send-modal.open { display: flex; }
 .send-modal-card {
   width: min(26rem, 100%);
-  background: var(--panel, #f3fffd);
-  border: 1px solid var(--line, rgba(10, 143, 138, 0.22));
+  background: var(--panel, #132019);
+  border: 1px solid var(--line, rgba(238, 243, 239, 0.12));
   border-radius: 1rem;
   padding: 1.15rem 1.15rem 1.25rem;
-  color: var(--ink, #10312e);
-  box-shadow: 0 18px 40px rgba(6, 80, 76, 0.18);
+  color: var(--ink, #eef3ef);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.4);
 }
 .send-modal-card h2 {
   margin: 0 0 0.45rem;
@@ -263,7 +263,7 @@ body.menu-editing .edit-bar { display: flex; }
   margin: 0 0 1rem;
   font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
   font-size: 0.92rem;
-  color: var(--muted, #3d5c58);
+  color: var(--muted, #8fa399);
   line-height: 1.4;
 }
 .send-modal-actions {
@@ -279,8 +279,8 @@ body.menu-editing .edit-bar { display: flex; }
 }
 .send-modal-actions .btn-ghost {
   background: transparent;
-  color: var(--ink, #10312e);
-  border: 1px solid var(--line, rgba(10, 143, 138, 0.22));
+  color: var(--ink, #eef3ef);
+  border: 1px solid var(--line, rgba(238, 243, 239, 0.12));
 }
 @media (max-width: 520px) {
   body.menu-editing .item {
