@@ -505,6 +505,55 @@ body.menu-editing .edit-bar { display: flex; }
   color: var(--accent);
   min-height: 1.1em;
 }
+.send-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  background: rgba(8, 10, 9, 0.72);
+  backdrop-filter: blur(6px);
+}
+.send-modal.open { display: flex; }
+.send-modal-card {
+  width: min(26rem, 100%);
+  background: #18211b;
+  border: 1px solid var(--line, #2a3830);
+  border-radius: 1rem;
+  padding: 1.15rem 1.15rem 1.25rem;
+  color: var(--ink, #eef3ee);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+}
+.send-modal-card h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+.send-modal-card p {
+  margin: 0 0 1rem;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-size: 0.92rem;
+  color: var(--muted, #9aab9e);
+  line-height: 1.4;
+}
+.send-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.send-modal-actions .btn {
+  flex: 1 1 8rem;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+}
+.send-modal-actions .btn-ghost {
+  background: transparent;
+  color: var(--ink, #eef3ee);
+  border: 1px solid var(--line, #2a3830);
+}
 @media (max-width: 520px) {
   body.menu-editing .item {
     grid-template-columns: 1fr auto;
@@ -566,8 +615,18 @@ body.menu-editing .quote { display: none; }
 </section>
 <div class="edit-bar" id="edit-bar" hidden>
   <p class="edit-status" id="edit-status" role="status"></p>
-  <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Salir</button>
-  <button type="button" class="btn" id="btn-send-draft">Enviar por WhatsApp</button>
+  <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Cancelar</button>
+  <button type="button" class="btn" id="btn-finish-edit">Listo</button>
+</div>
+<div class="send-modal" id="send-modal" hidden aria-hidden="true">
+  <div class="send-modal-card" role="dialog" aria-modal="true" aria-labelledby="send-modal-title">
+    <h2 id="send-modal-title">¿Listo para enviar?</h2>
+    <p>Te abrimos WhatsApp para mandarnos tu carta. Cuando la envíes, te mostramos el QR para imprimir.</p>
+    <div class="send-modal-actions">
+      <button type="button" class="btn btn-ghost" id="btn-keep-editing">Seguir editando</button>
+      <button type="button" class="btn" id="btn-send-draft">Enviar por WhatsApp</button>
+    </div>
+  </div>
 </div>
 <script>
 (function () {
@@ -585,6 +644,7 @@ body.menu-editing .quote { display: none; }
   var panel = document.getElementById('editar-menu');
   var stage = document.querySelector('.stage');
   var bottom = document.querySelector('.bottom');
+  var sendModal = document.getElementById('send-modal');
   var started = false;
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -791,6 +851,25 @@ body.menu-editing .quote { display: none; }
     if (href) window.open(href, '_blank', 'noopener');
   }
 
+  function openSendModal() {
+    if (!sendModal) return;
+    sendModal.hidden = false;
+    sendModal.classList.add('open');
+    sendModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeSendModal() {
+    if (!sendModal) return;
+    sendModal.classList.remove('open');
+    sendModal.hidden = true;
+    sendModal.setAttribute('aria-hidden', 'true');
+  }
+
+  function finishAndShowQr() {
+    closeSendModal();
+    exitEdit({ showQr: true });
+  }
+
   function sendDraft(draft) {
     var file = draftFile(draft);
     var shareData = {
@@ -801,7 +880,8 @@ body.menu-editing .quote { display: none; }
     if (navigator.canShare && navigator.canShare(shareData)) {
       navigator.share(shareData)
         .then(function () {
-          setStatus('En el menú de compartir, elige WhatsApp.');
+          setStatus('Enviado — aquí tienes tu QR.');
+          finishAndShowQr();
         })
         .catch(function (err) {
           if (err && err.name === 'AbortError') {
@@ -810,16 +890,20 @@ body.menu-editing .quote { display: none; }
           }
           downloadJson(draft);
           setStatus('Archivo descargado — ábrelo en WhatsApp con el clip 📎.');
-          setTimeout(openWhatsAppFallback, 500);
+          openWhatsAppFallback();
+          setTimeout(finishAndShowQr, 600);
         });
       return;
     }
     downloadJson(draft);
     setStatus('Archivo descargado — en WhatsApp toca 📎 y elige menu-' + SLUG + '.json');
-    setTimeout(openWhatsAppFallback, 500);
+    openWhatsAppFallback();
+    setTimeout(finishAndShowQr, 600);
   }
 
-  function exitEdit() {
+  function exitEdit(opts) {
+    var showQr = opts && opts.showQr;
+    closeSendModal();
     document.body.classList.remove('menu-editing');
     if (panel) panel.hidden = true;
     if (bar) bar.hidden = true;
@@ -828,6 +912,14 @@ body.menu-editing .quote { display: none; }
     if (location.hash === '#editar-menu' || location.hash === '#edit') {
       history.replaceState(null, '', location.pathname + location.search);
     }
+    setTimeout(function () {
+      var target = showQr
+        ? document.getElementById('qr-permanente')
+        : document.querySelector('.stage') || document.querySelector('.top');
+      if (target && target.scrollIntoView) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
   }
 
   function defaultPlaceholder(el) {
@@ -992,14 +1084,39 @@ body.menu-editing .quote { display: none; }
       var draft = buildDraft();
       if (!draft.categories.length) {
         setStatus('Agrega al menos un plato con nombre.');
+        closeSendModal();
         return;
       }
       saveLocal();
       sendDraft(draft);
     });
 
+    var finishBtn = document.getElementById('btn-finish-edit');
+    if (finishBtn) finishBtn.addEventListener('click', function () {
+      readDom();
+      saveLocal();
+      var draft = buildDraft();
+      if (!draft.categories.length) {
+        setStatus('Agrega al menos un plato con nombre.');
+        return;
+      }
+      setStatus('Borrador en este teléfono');
+      openSendModal();
+    });
+
+    var keepBtn = document.getElementById('btn-keep-editing');
+    if (keepBtn) keepBtn.addEventListener('click', closeSendModal);
+
+    if (sendModal) {
+      sendModal.addEventListener('click', function (ev) {
+        if (ev.target === sendModal) closeSendModal();
+      });
+    }
+
     var cancelBtn = document.getElementById('btn-cancel-edit');
-    if (cancelBtn) cancelBtn.addEventListener('click', exitEdit);
+    if (cancelBtn) cancelBtn.addEventListener('click', function () {
+      exitEdit({ showQr: false });
+    });
   }
 
   function enterEdit() {
@@ -1049,7 +1166,16 @@ body.menu-editing .quote { display: none; }
 
   window.addEventListener('hashchange', function () {
     if (location.hash === '#editar-menu' || location.hash === '#edit') enterEdit();
-    else if (document.body.classList.contains('menu-editing')) exitEdit();
+    else if (document.body.classList.contains('menu-editing')) exitEdit({ showQr: false });
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Escape') return;
+    if (sendModal && sendModal.classList.contains('open')) {
+      closeSendModal();
+      return;
+    }
+    if (document.body.classList.contains('menu-editing')) exitEdit({ showQr: false });
   });
 
   if (location.hash === '#editar-menu' || location.hash === '#edit') enterEdit();
