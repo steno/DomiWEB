@@ -291,7 +291,20 @@ export function buildClaimPageHtml(
         ? (urls.menuUrl ?? previewHref)
         : (urls.siteUrl ?? previewHref);
   const videoHref = resolveFaceCamPublicHref(config);
-  const claim = claimActionHref(lead, urls.claimUrl, product);
+  const claimPageUrl = (() => {
+    const base =
+      urls.claimUrl ??
+      `https://steno.github.io/DomiWEB/claim/${lead.slug}/`;
+    if (product !== "menu") return base;
+    try {
+      const u = new URL(base);
+      u.searchParams.set("v", "menu");
+      return u.toString();
+    } catch {
+      return `${base.replace(/\/?$/, "/")}?v=menu`;
+    }
+  })();
+  const claim = claimActionHref(lead, claimPageUrl, product);
   const owner = claimOwnerLabel(lead);
   const greeting = owner ? `Hola ${escapeHtml(owner)}` : "Hola";
   const rawQuote = lead.outreachQuote?.trim() || "";
@@ -356,9 +369,6 @@ export function buildClaimPageHtml(
         ? "Reclama tu menú"
         : "Reclama tu sitio";
 
-  const claimPageUrl =
-    urls.claimUrl ??
-    `https://steno.github.io/DomiWEB/claim/${lead.slug}/`;
   const ogDescription =
     product === "reviewKit"
       ? `Respuestas listas en español para las reseñas de Google de ${lead.place.name}.`
@@ -841,7 +851,18 @@ export async function writeClaimPage(
   return {
     claimPath,
     publicPath,
-    claimUrl: urls.claimUrl,
+    claimUrl: (() => {
+      const base = urls.claimUrl;
+      if (!base) return null;
+      if (product !== "menu") return base;
+      try {
+        const u = new URL(base);
+        u.searchParams.set("v", "menu");
+        return u.toString();
+      } catch {
+        return `${base.replace(/\/?$/, "/")}?v=menu`;
+      }
+    })(),
     siteUrl:
       product === "reviewKit"
         ? urls.kitUrl

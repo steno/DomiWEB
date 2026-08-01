@@ -131,11 +131,27 @@ function transferVars(): {
   };
 }
 
-function resolveClaimUrl(lead: Lead, config: NicheConfig): string {
-  if (lead.claimUrl) return lead.claimUrl;
+function resolveClaimUrl(
+  lead: Lead,
+  config: NicheConfig,
+  product: PipelineProduct = "site",
+): string {
   const urls = resolveGithubPagesUrls(config, lead.slug);
-  if (urls.claimUrl) return urls.claimUrl;
-  return `https://steno.github.io/DomiWEB/claim/${lead.slug}/`;
+  let url =
+    lead.claimUrl ||
+    urls.claimUrl ||
+    `https://steno.github.io/DomiWEB/claim/${lead.slug}/`;
+  // Menu claims use ?v=menu so WhatsApp/OG caches don't keep an old "sitio" preview.
+  if (product === "menu") {
+    try {
+      const u = new URL(url);
+      u.searchParams.set("v", "menu");
+      url = u.toString();
+    } catch {
+      url = url.includes("?") ? `${url}&v=menu` : `${url.replace(/\/?$/, "/")}?v=menu`;
+    }
+  }
+  return url;
 }
 
 /** Pretty public share link for the menu product (not per-business). */
@@ -269,7 +285,7 @@ export function buildOutreachForLead(
     BUSINESS_NAME: lead.place.name,
     REVIEW_QUOTE: finalQuote ?? "",
     REVIEW_SNIPPET: reviewSnippet(finalQuote),
-    CLAIM_URL: resolveClaimUrl(lead, config),
+    CLAIM_URL: resolveClaimUrl(lead, config, product),
     MENU_URL: resolveAssetUrl(lead, config, "menu"),
     SITE_URL: resolveAssetUrl(lead, config, "site"),
     /** Product promo short link — not the per-business claim */
