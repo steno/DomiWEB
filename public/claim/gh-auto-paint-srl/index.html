@@ -251,7 +251,7 @@ body.menu-editing .qr-print { display: none; }
     <h1>Hola Wildy, esto es para GH Auto Paint SRL</h1>
     <p class="lead">
       Armamos una página con tus reseñas públicas de Google.
-      Mírala abajo (con un vistazo rápido en el video).
+      Mírala abajo.
       Si te gusta, reclámala — es tuya.
     </p>
     <p class="quote">“Una experiencia agradable y buen servicio al cliente”</p>
@@ -268,12 +268,7 @@ body.menu-editing .qr-print { display: none; }
 
   <section class="stage" aria-label="Vista previa">
     <iframe id="site-frame" title="GH Auto Paint SRL" src="../../sites/gh-auto-paint-srl/index.html" loading="eager"></iframe>
-    <div class="face-dock">
-      <div class="bubble" id="face-bubble" title="Escuchar" role="button" tabindex="0">
-        <video id="face-video" src="../../videos/facecam-talleres-mecanicos.mp4" autoplay muted loop playsinline preload="auto"></video>
-      </div>
-      <button type="button" class="audio-btn" id="unmute-btn">Escuchar</button>
-    </div>
+    
   </section>
 
   
@@ -299,9 +294,8 @@ body.menu-editing .qr-print { display: none; }
     if (ok) ok.classList.add("visible");
   }
 
-  if (localStorage.getItem("domiweb-claim-gh-auto-paint-srl")) {
-    if (ok) ok.classList.add("visible");
-  }
+  // Only show the Gracias bar right after they click Reclamar — not on page load.
+  // Restoring from localStorage made return/first-look visits look like WhatsApp was opening.
 
   buttons.forEach(function (btn) {
     btn.addEventListener("click", function (ev) {

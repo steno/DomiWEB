@@ -89,6 +89,9 @@ export function resolveClaimProduct(
 
 /** Niche face-cam video under public/videos/ if present. */
 export function resolveFaceCamPublicHref(config: NicheConfig): string | null {
+  // Face-cam on claim pages disabled for now — re-enable by removing this early return.
+  if (process.env.CLAIM_FACECAM !== "1") return null;
+
   const file = `facecam-${config.niche.id}.mp4`;
   const pub = join(publicDir("videos"), file);
   const data = join(dataDir("videos"), file);
@@ -574,7 +577,7 @@ body.menu-editing .qr-print { display: none; }
       </div>
       <button type="button" class="audio-btn" id="unmute-btn">Escuchar</button>
     </div>`
-        : `<div class="face-dock"><div class="bubble"><div class="bubble-placeholder">Video face-cam<br/>próximamente</div></div></div>`
+        : ""
     }
   </section>
 
